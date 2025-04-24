@@ -1,0 +1,13 @@
+---
+title: "Tutorial for Clone-Censor-Weighting Analyses"
+---
+
+# Introduction  
+
+## Acknowledgements {.unnumbered}
+
+The tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.
+
+```{r}
+1 + 1
+```
