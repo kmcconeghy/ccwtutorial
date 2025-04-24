@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Tutorial on Clone-Censor-Weight"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: about.qmd
+        text: About
+      - href: 01_syndata.qmd
+        text: Data
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+

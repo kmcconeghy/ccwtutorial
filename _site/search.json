@@ -1,0 +1,44 @@
+[
+  {
+    "objectID": "NEWS.html",
+    "href": "NEWS.html",
+    "title": "Version 0.0.1 02-19-2025",
+    "section": "",
+    "text": "Version 0.0.1 02-19-2025\nProject set-up"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "about.html#versions",
+    "href": "about.html#versions",
+    "title": "About",
+    "section": "Versions",
+    "text": "Versions\n\nVersion 1.0, established 04.24.2024"
+  },
+  {
+    "objectID": "01_syndata.html",
+    "href": "01_syndata.html",
+    "title": "Data Simulation",
+    "section": "",
+    "text": "library(here())\n\nhere() starts at C:/Users/kevin/Documents/R/ccwtutorial\n\nsource(here('scripts', 'setup.R'), echo=F)\n\nloading canon packages....\n\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   3.5.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.0.4     \n\n\n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\n\nDone \n\n# Set seed for reproducibility\nset.seed(42)\n\n# Number of participants\nn &lt;- 1000\n\n# COVARIATES ----\n\n  # Generate age (normal distribution with mean=75, std=10)\n    age &lt;- round(rnorm(n, mean = 75, sd = 10), 1)\n  \n  # Generate gender (66% female, 34% male)\n    female &lt;- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34))\n  \n  # Generate treatment status (20% treated, 90% control)\n    treat &lt;- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.2, 0.9))\n\n# SIMULATE FAILURE TIMES ----\n  \n  # Simulate failure times (exponential distribution for simplicity)\n    hr_treatment = 0.8\n    hr_gender = 0.9\n    hr_age = 0.98\n  \n  # Calculate linear predictor (log-hazard)\n    lp_outc &lt;- log(hr_treatment) * treat +\n      log(hr_gender) * female +\n      log(hr_age) * age\n  \n  # Simulate baseline survival times (exponential distribution)\n    baseline_hazard &lt;- 0.05 \n    baseline_survival &lt;- rexp(n, rate = baseline_hazard)\n    \n  # Adjust survival times based on linear predictor\n    t_outc &lt;- round(baseline_survival * exp(-lp_outc))\n    summary(t_outc)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n    0.0    27.0    64.5   102.1   134.2   982.0 \n\n  # TREATIME INITIATION TIMES\n    lp_treat &lt;- log(0.7) * female + log(1.02) * age\n  \n    baseline_hazard &lt;- 0.1\n    t_treat &lt;- ifelse(treat==1, round(rexp(n, rate = baseline_hazard)* exp(-lp_treat)), Inf)\n    \n    summary(t_treat)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n      0     Inf     Inf     Inf     Inf     Inf \n\n  # Create dataset\n    data &lt;- data.frame(\n      X1 = age,\n      X2 = female,\n      treat = treat, #ever treated\n      t_treat = t_treat, # time treat initiated\n      t_outc = t_outc # time of outcome\n    ) %&gt;%\n      mutate(id = row_number(),\n             time = pmin(60, t_outc), # set 60 as end of follow-up\n             event_outc = if_else(time==t_outc, 1L, 0L))\n\n# quick test\nsurvfit(Surv(time, event_outc) ~ treat, data = data)\n\nCall: survfit(formula = Surv(time, event_outc) ~ treat, data = data)\n\n          n events median 0.95LCL 0.95UCL\ntreat=0 797    398     NA      58      NA\ntreat=1 203     82     NA      NA      NA\n\nsaveRDS(data, here('dta', 'survdta.R'))"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Tutorial for Clone-Censor-Weighting Analyses",
+    "section": "",
+    "text": "The tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html#acknowledgements",
+    "href": "index.html#acknowledgements",
+    "title": "Tutorial for Clone-Censor-Weighting Analyses",
+    "section": "",
+    "text": "The tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.\n\n1 + 1\n\n[1] 2"
+  }
+]

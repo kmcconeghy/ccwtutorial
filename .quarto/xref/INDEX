@@ -1,0 +1,17 @@
+{
+  "index.qmd": {
+    "index.html": "5988b11d"
+  },
+  "about.qmd": {
+    "about.html": "d101b282"
+  },
+  "00_preface.qmd": {
+    "00_preface.html": "5d5310f9"
+  },
+  "NEWS.md": {
+    "NEWS.html": "279a4fa0"
+  },
+  "01_syndata.qmd": {
+    "01_syndata.html": "2122712d"
+  }
+}

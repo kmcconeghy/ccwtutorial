@@ -1,0 +1,15 @@
+{
+  "hash": "2de33b6f5a5443fb7bdd81e7f7d4e15c",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Tutorial for Clone-Censor-Weighting Analyses\"\n---\n\n\n\n\n# Introduction  \n\n## Acknowledgements {.unnumbered}\n\nThe tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

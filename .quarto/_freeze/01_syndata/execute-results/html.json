@@ -1,0 +1,15 @@
+{
+  "hash": "14630ba83b59226309005e64ed6c036d",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Data Simulation\"\n---\n\n::: {.cell}\n::: {.cell-output .cell-output-stdout}\n\n```\nloading canon packages....\n```\n\n\n:::\n\n::: {.cell-output .cell-output-stdout}\n\n```\nDone \n```\n\n\n:::\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n# Set seed for reproducibility\nset.seed(42)\n\n# Number of participants\nn <- 1000\n\n# COVARIATES ----\n\n  # Generate age (normal distribution with mean=75, std=10)\n    age <- round(rnorm(n, mean = 75, sd = 10), 1)\n  \n  # Generate gender (66% female, 34% male)\n    female <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34))\n  \n  # Generate treatment status (20% treated, 90% control)\n    treat <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.2, 0.9))\n\n# SIMULATE FAILURE TIMES ----\n  \n  # Simulate failure times (exponential distribution for simplicity)\n    hr_treatment = 0.8\n    hr_gender = 0.9\n    hr_age = 0.98\n  \n  # Calculate linear predictor (log-hazard)\n    lp_outc <- log(hr_treatment) * treat +\n      log(hr_gender) * female +\n      log(hr_age) * age\n  \n  # Simulate baseline survival times (exponential distribution)\n    baseline_hazard <- 0.05 \n    baseline_survival <- rexp(n, rate = baseline_hazard)\n    \n  # Adjust survival times based on linear predictor\n    t_outc <- round(baseline_survival * exp(-lp_outc))\n    summary(t_outc)\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n    0.0    27.0    64.5   102.1   134.2   982.0 \n```\n\n\n:::\n\n```{.r .cell-code}\n  # TREATIME INITIATION TIMES\n    lp_treat <- log(0.7) * female + log(1.02) * age\n  \n    baseline_hazard <- 0.1\n    t_treat <- ifelse(treat==1, round(rexp(n, rate = baseline_hazard)* exp(-lp_treat)), Inf)\n    \n    summary(t_treat)\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n      0     Inf     Inf     Inf     Inf     Inf \n```\n\n\n:::\n\n```{.r .cell-code}\n  # Create dataset\n    data <- data.frame(\n      X1 = age,\n      X2 = female,\n      treat = treat, #ever treated\n      t_treat = t_treat, # time treat initiated\n      t_outc = t_outc # time of outcome\n    ) %>%\n      mutate(id = row_number(),\n             time = pmin(60, t_outc), # set 60 as end of follow-up\n             event_outc = if_else(time==t_outc, 1L, 0L))\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n# quick test\nsurvfit(Surv(time, event_outc) ~ treat, data = data)\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\nCall: survfit(formula = Surv(time, event_outc) ~ treat, data = data)\n\n          n events median 0.95LCL 0.95UCL\ntreat=0 797    398     NA      58      NA\ntreat=1 203     82     NA      NA      NA\n```\n\n\n:::\n:::\n\n::: {.cell}\n\n:::",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
