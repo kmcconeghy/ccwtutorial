@@ -1,0 +1,134 @@
+---
+title: "Data Simulation"
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+```
+
+To generate a working dataset for use in the tutorial, I follow these steps:
+
+1) Use a starting sample size of a 1000 (i.e. persons) 
+2) I generate a few covariates for weighting:
+  i) Age, normally distributed mean=75, SD=10
+  ii) Gender, random 0/1 binary variable for female, with 66% probability of female
+  iii) Dx_1 (Pr=0.1); Dx_2 (Pr=0.4) taken as some chronic condition diagnosis
+    
+::: {.callout-note}
+These variables are generated independently, but in real-life would be correlated...
+:::
+
+
+3) Assign relative effect sizes for each
+  i)   ef_treat  = 0.8
+  ii)  ef_gender = 0.9
+  iii) ef_age    = 0.98 (per unit of age)
+  iv)  ef_dx_1   = 1.2
+  v)   ef_dx_2   = 0.8 
+  
+```{r }
+#| label: sim-params
+
+# Number of participants
+  n <- 1000
+
+# COVARIATES ----
+
+  # Generate age (normal distribution with mean=75, std=10)
+    age <- round(rnorm(n, mean = 75, sd = 10), 1)
+  
+  # Generate gender (66% female, 34% male)
+    female <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34))
+  
+  # Generate treatment status (20% treated, 90% control)
+    treat <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.2, 0.8))
+    
+  # Generate chronic conditions
+    dx_1 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.1, 0.9))
+    dx_2 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.4, 0.6))
+    
+    # effect sizes
+    ef_treat = 0.8
+    ef_gender = 0.9
+    ef_age = 0.98
+    ef_dx_1 = 1.2
+    ef_dx_2 = 0.8
+```
+
+4) Compute the linear predictor, with a baseline hazard of 0.05. 0.05 selected based on trial and error.
+
+```{r }
+#| label: base-hazard
+# log-hazard
+    lp_outc <- log(ef_treat) * treat +
+      log(ef_gender) * female +
+      log(ef_age) * age + log(ef_dx_1)*dx_1 + log(ef_dx_2)*dx_2
+  
+  # Simulate baseline survival times (exponential distribution)
+    baseline_hazard <- 0.05 
+
+```
+
+# SIMULATE FAILURE TIMES ----
+
+  1) Simulate survival times from the baseline hazard, using exponential distribution
+  2) Adjust the times based on linear predictor
+  
+```{r }
+#| label: lp-hazard
+    baseline_survival <- rexp(n, rate = baseline_hazard)
+    
+  # Adjust survival times based on linear predictor
+    t_outc <- round(baseline_survival * exp(-lp_outc))
+```
+
+  3) Simulate treatment start times based on key variables (for informative weighting model); assumed dx_1 and dx_2 unrelated to treatment.
+
+```{r }
+#| label: treat-hazard
+  # TREATIME INITIATION TIMES
+    lp_treat <- log(0.7) * female + log(1.02) * age
+  
+    baseline_hazard <- 0.1
+    t_treat <- ifelse(treat==1, round(rexp(n, rate = baseline_hazard)* exp(-lp_treat)), Inf)
+```
+
+  4) Combine into one dataset; set administrative end of follow-up at 60
+  
+```{r }
+  # Create dataset
+    data <- data.frame(
+      age = age,
+      female = female,
+      dx_1 = dx_1,
+      dx_2 = dx_2,
+      treat = treat, #ever treated
+      t_treat = t_treat, # time treat initiated
+      t_outc = t_outc # time of outcome
+    ) %>%
+      mutate(id = row_number(),
+             time = pmin(60, t_outc), # set 60 as end of follow-up
+             event_outc = if_else(time==t_outc, 1L, 0L))
+```
+
+# Summary of dataset  
+
+```{r }
+# quick test
+summary(survfit(Surv(time, event_outc) ~ treat, data = data))
+```
+ * Note: no censoring mechanism except end of follow-up at day 60. 
+
+```{r }
+#| label: save-dta
+#| echo: false
+saveRDS(data, here('dta', 'survdta.R'))
+```

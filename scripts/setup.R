@@ -1,4 +1,3 @@
-cat('loading canon packages....')
   #source(here('r', 'onetime.R'))
 
   pkg_toload <- c('tidyverse', 
@@ -11,5 +10,3 @@ cat('loading canon packages....')
                      warn.conflicts=F, quietly=T,
                      character.only=T)
   here()
-
-cat('Done', '\n')

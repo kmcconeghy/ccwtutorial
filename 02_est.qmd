@@ -1,0 +1,36 @@
+---
+title: "Estimation"
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+
+ #increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+  
+  #analysis options stored in list and saved
+  d_output = list(runtime = Sys.time(),
+                  #params = l_tte_params,
+                  runplan = list(boots = 50, #bootstraps
+                                 workers = 8,
+                                 seed = as.integer(ymd('2024-11-16'))
+                                 ))
+```
+
+# Simulation Parameters  
+  
+::: callout-note
+These variables are generated independently, but in real-life would be correlated...
+:::

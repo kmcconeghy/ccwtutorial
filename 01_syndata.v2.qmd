@@ -1,0 +1,176 @@
+---
+title: "Simulate data for CCW project"
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+```
+
+# Simulation Parameters {#sec-simparams} 
+
+```{r }
+#| label: sim-params
+    n = 10000 # <1>
+    age = round(rnorm(n, mean = 75, sd = 10), 1) # <2>
+    female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)) # <3>
+    treat <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.2, 0.8)) # <4>
+    dx_1 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.05, 0.95)) # <5>
+    dx_2 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.4, 0.6)) # <6>
+    ef_treat = 0.8 # <7>
+    ef_gender = 0.9 # <7>
+    ef_age = 0.98 # <7>
+    ef_dx_1 = 1.2 # <7>
+    ef_dx_2 = 0.8 # <7>
+```
+
+1.  Use a starting sample size of a 1000 (i.e. persons) Generate covariates:
+2.  Generate age (normal distribution with mean=75, std=10)
+3.  Female, 66%/34%
+4.  Treatment, 20%/80%
+5.  A rare chronic condition `dx_1` 5%/95%
+6.  A prevalent chronic condition `dx_2` 40%/60%
+7.  Assign relative effect sizes for each
+  *  ef_treat = 0.8
+  * ef_gender = 0.9
+  * ef_age = 0.98 (per unit of age)
+  * ef_dx_1 = 1.2
+  *  ef_dx_2 = 0.8
+  
+::: callout-note
+These variables are generated independently, but in real-life would be correlated...
+:::
+
+# Linear Predictor {#sec-linpred} 
+
+```{r }
+#| label: base-hazard
+# log-hazard
+    lp_outc <- log(ef_treat) * treat +
+      log(ef_gender) * female +
+      log(ef_age) * age + log(ef_dx_1)*dx_1 + log(ef_dx_2)*dx_2 # <1>
+  
+  # Simulate baseline survival times (exponential distribution)
+    baseline_hazard <- 0.05 # <2>
+```
+
+1. Compute the linear predictor, 
+2. Simulation will use a random exponential distribution with rate of 0.05 (baseline hazard). This was selected based on trial and error.  
+
+# Simulate Event Time {#sec-etimes}
+
+```{r }
+#| label: lp-hazard
+    baseline_survival <- rexp(n, rate = baseline_hazard) # <1>
+    
+  # Adjust survival times based on linear predictor
+    t_outc <- round(baseline_survival * exp(-lp_outc)) # <2>
+```
+
+1.  Simulate survival times using exponential distribution
+2.  Adjust the times with linear predictor and round to nearest whole number.
+
+# Simulate Treatment Start {#sec-ttimes}
+
+```{r }
+#| label: treat-hazard
+    lp_treat = log(0.7) * female + log(1.02) * age # <1>
+    baseline_hazard = 0.1 # <2>
+    t_treat = if_else(treat==1, round(rexp(n, rate = baseline_hazard)* exp(-lp_treat)), Inf) # <3>
+```
+1. Simulate treatment start times based on female and age. (for weighting model); assumed dx_1 and dx_2 unrelated to treatment.
+2. Used a different rate, so treatment happens early relative to outcome.
+3. Generate treatment times and adjust for linear predictor.  
+
+# Finalize dataset {#sec-dta}
+
+```{r }
+  # Create dataset
+    data <- data.frame(
+      age = age,
+      female = female,
+      dx_1 = dx_1,
+      dx_2 = dx_2,
+      treat = treat, 
+      t_treat = t_treat, 
+      t_outc = t_outc 
+    ) %>%
+      mutate(id = row_number(),
+             time = pmin(60, t_outc), # <1>
+             event_outc = if_else(time==t_outc, 1L, 0L))
+```
+1. Set administrative end of follow-up at 60. No other censoring mechanism, e.g. lost to follow-up.   
+
+# Summary of survival dataset {#sec-dta}
+
+```{r }
+#| label: glimpse-survdta
+glimpse(data)
+```
+
+```{r }
+#| label: summ-survdta
+summary(survfit(Surv(time, event_outc) ~ treat, data = data), times = c(0, 12, 30, 60))
+```
+
+::: callout-note
+Treat=1 means they EVER received treatment, so additional work needed to describe a treatment window etc.
+:::
+
+```{r }
+#| label: save-dta
+#| echo: false
+saveRDS(data, here('dta', 'survdta.R'))
+```
+
+# Cloning procedure {#sec-cloning}
+
+The cloning procedure is very project specific, tied to how the treatment strategy is defined so it is hard to give general recommendations here. For this tutorial, we describe an arbitrary window in which treatment is expected to initiate and outline strategies around this:
+
+**Treatment Strategies: **
+1) Do not ever receive treatment
+2) Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12. 
+
+::: callout-note
+The grace window is a funny concept when you first consider it. This does not reflect any trial I have ever heard of actually being done but may identify an interesting or important effect. It is essentially outlying a treatment "protocol" and saying what if everyone adhered to this protocol counterfactual to what was observed.
+:::
+
+To clone, you make two copies of the data, and make a new `artifical censoring` variable, which is a censoring time for the period when clones observed data are no longer consistent with their assigned strategy.  
+
+```{r }
+#| label: clone-dta
+data_cloned = bind_rows( # <1>
+                     data %>% # <1>
+                       mutate(assign = 0, # <1>
+                              t_artcens = if_else(t_treat < time, t_treat, Inf) # <1>
+                       ), # <1>
+                     data %>% # <2>
+                       mutate(assign = 1, # <2>
+                              t_artcens = if_else(t_treat > 12, 12, Inf) # <2>
+                              ) # <2>
+                       ) %>% # <2>
+  mutate(t_clone = pmin(time, t_artcens), # <3>
+         event_outc = if_else(t_clone<time, 0, event_outc)) # <3>
+```
+1. Clones assigned to strategy 1 (No treatment)
+2. Clones assigned to strategy 2 (grace window for treatment)
+3. Update failure times and events counting  artificial censoring
+
+::: callout-note
+I set failure times to Infinite when the event is unobserved, e.g. if no treatment, time to treatment is INF
+:::
+
+```{r }
+#| label: save-clone-dta
+#| echo: false
+saveRDS(select(data_cloned, id, assign, t_clone, event_outc, time, t_artcens, t_treat, treat, 
+               age, female, dx_1, dx_2),
+               here('dta', 'survdta_cloned.R'))
+```

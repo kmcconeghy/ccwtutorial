@@ -5,13 +5,17 @@ project:
 website:
   title: "Tutorial on Clone-Censor-Weight"
   navbar:
+    title: "Section"
     left:
+      - href: 02_est.qmd
+        text: Estimators      
       - href: index.qmd
         text: Home
+      - href: 01_syndata.v2.qmd
+        text: Data
       - href: about.qmd
         text: About
-      - href: 01_syndata.qmd
-        text: Data
+
 format:
   html:
     theme: cosmo

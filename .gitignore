@@ -32,3 +32,5 @@
 # translation temp files
 po/*~
 
+
+/.quarto/
