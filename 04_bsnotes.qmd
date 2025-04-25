@@ -1,0 +1,27 @@
+---
+title: "Reporting Results"
+subtite: "Table 1 Considerations"
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+```
+
+Inferential statistics
+
+Several steps in the analysis makes the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights should be considered. Currently, most researchers are using bootstrapping to obtain confidence limits via percentile method. It is critical that 1) the bootstrapping step occur prior to sequential repeated sampling, cloning or estimation of weights, 2) the bootstrap sampling with replacement must be at the cluster-level (person). Also consider, bootstrapping may fail to produce valid estimates in cases of matching procedures, or restricted regression procedures (i.e. LASSO or other shrinkage estimators).(Campanovo 2015, Abadie and Imbens 2008) Other bootstrapping failures may arise due to limited sample size or values on the boundary of a parameter space. 
+Note: Poisson Bootstrap procedure Especially for large datasets, the bootstrap procedure can be computationally intensive (requiring holding multiple large matrices in memory simultaneously). Rather than sampling rows of the matrix with replacement, an alternative is to approximate the sampling with a frequency weight. If you randomly assign every observation a value drawn from a Poisson distribution with mean 1, and use this value as a frequency weight in estimators you will closely approximate the full bootstrap procedure as long as the overall sample size is >100. (Hanley and Macgibbon 2006) This is very computationally efficient because you do not need to know the dataset size prior to assigning the frequency weight, and do not need to sample large matrices. 
+
+
+  
+::: callout-note
+These variables are generated independently, but in real-life would be correlated...
+:::
