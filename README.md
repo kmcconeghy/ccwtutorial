@@ -7,22 +7,12 @@ A series of codefiles and vignettes to assist collaborators with understanding t
 
 # Usage  
 
-1) Run the `onetime.R` file initialize Renv package and install necessary packages.  
-2) Run files in order, `01_*.R-0#_*.R)`.   
+People interested in the tutorial only, need but go to: https://kmcconeghy.github.io/ccwtutorial/
+Those interested in the raw code used to generate the website, may fork the package 
+then run the `onetime.R` file to initialize Renv and install necessary packages.  
 
-Select each vignette to explore an aspect of target trial emulation methods.  
-
-# Vignettes  
-Companion documents have been written to assist interested readers with the background and use of the package.  
-
-  - Simulate data; Describes how to simulate a dataset for different estimation problems.
-  
 # Latest Version Updates  
 This package is in the early stages of development. Many features may change in a short amount of time.  
-
-# Future Goals  
-
-# Important References   
 
 # Authors  
 Kevin W. McConeghy, Pharm.D, Ph.D., MS, Providence VA Medical Center, Brown University School of Public Health, Dept. Health Services Research  

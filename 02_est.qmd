@@ -20,14 +20,90 @@ set.seed(42)
     survminer:::print.ggsurvplot(x, newpage=F)
   }
   
-  #analysis options stored in list and saved
-  d_output = list(runtime = Sys.time(),
-                  #params = l_tte_params,
-                  runplan = list(boots = 50, #bootstraps
-                                 workers = 8,
-                                 seed = as.integer(ymd('2024-11-16'))
-                                 ))
+d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
 ```
+
+# Introduction
+
+I recommend the following stepwise procedure in estimation: (PLR = pooled logistic regression; KM = Kaplan-Meier estimator). 
+
+  1) Estimate unweighted/unadjusted cumulative incidences with KM method
+  2) Estimate a pooled logistic regression model without weights  
+    i) Compare KM vs PLR, estimates should be similar
+  3) Estimate censoring weights
+    i) Estimate KM model for treatment initiation
+    ii) Estimate PLR for treatment initation
+    iii) compare estimates, should be similar
+    iv) estimate full weighted model, compute IPCW
+    v) examine IPCW weights for extreme values, non-sensical values
+    vi) examine balance in covariates across time
+    vii) generate "table 1" with some weighted difference statistic (e.g. wSMD)
+  4) Estimate weighted outcome models
+    i) Estimate a weighted outcome model, no covariate adjustment
+    ii) Estimate a weighted outcome + covariates (main estimate)
+  5) Once satisified with steps 1-4, execute bootstraps
+  6) In report, provide KM, unweighted, PLR estimates in an appendix; main results reported should be the IPCW-weighted PLR analysis with or without covariate adjustment in the outcome model (project specific decision). 
+    
+# Kaplan-Meier Estimator  
+
+A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is "naive" in that the artificial censoring is not considered, it is very useful for the following reasons:
+
+  1) It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low. 
+  
+  2) The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) across which must be modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).  
+  
+## Estimation
+
+```{r }
+#| label: KM-est
+ 
+# Naive estimator ----
+
+# Run a simple Kaplan-Meier, No adjustments made ----
+  ## Kaplan-Meier function ----
+  # one row per clone, not panel data, needs time, event, treat variables
+
+# Point estimate ----
+
+  d_surv_pe = broom::tidy(
+    survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned)) %>%
+    mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
+    ) %>%
+    arrange(time) %>%
+    select(-strata) %>%
+    mutate(pr_e = 1-estimate) %>%
+    rename(pr_s = estimate) %>%
+    pivot_wider(id_cols = c(time), 
+                names_from = assign,
+                values_from = c(pr_e, pr_s,
+                                n.risk, n.event)) %>%
+    mutate(cir = pr_e_1 / pr_e_0,
+           cid = (pr_e_1 - pr_e_0))
+```
+
+## Summarize KM estimator
+
+```{r }
+ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned),
+                            data=data_cloned,
+                            fun = 'event',
+                            xlim = c(0, 60),
+                            xlab = 'Follow-up',
+                            break.time.by=6,
+                            palette = c('red', 'blue'),
+                            linetype = 'strata',
+                            censor=F,
+                            cumevents=T,
+                            conf.int=F, pval=F,
+                            risk.table=T, risk.table.col = 'strata',
+                            risk.table.height=0.25, 
+                            ggtheme = theme_classic())
+```
+
+##
+
+# Pooled logistic regression  
+
 
 # Simulation Parameters  
   
