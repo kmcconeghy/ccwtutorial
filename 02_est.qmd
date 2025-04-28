@@ -85,7 +85,7 @@ A reasonable starting point is to evaluate the cloned dataset without probabilit
 
 ```{r }
 ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned),
-                            data=data_cloned,
+                            data=d_cloned,
                             fun = 'event',
                             xlim = c(0, 60),
                             xlab = 'Follow-up',

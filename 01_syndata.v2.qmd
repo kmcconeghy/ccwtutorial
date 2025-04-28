@@ -108,7 +108,7 @@ These variables are generated independently, but in real-life would be correlate
 ```
 1. Set administrative end of follow-up at 60. No other censoring mechanism, e.g. lost to follow-up.   
 
-# Summary of survival dataset {#sec-dta}
+# Summary of survival dataset {#sec-summdta}
 
 ```{r }
 #| label: glimpse-survdta
