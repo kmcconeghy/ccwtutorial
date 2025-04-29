@@ -1,0 +1,43 @@
+---
+title: "Additional Topics"
+subtitle: "Reporting CCW results, and troubleshooting"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+```
+
+# Description of cohort, “Table 1” 
+
+In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e. no p-values or confidence intervals) but will provide a standardized mean difference. 
+
+Some special considerations are needed when presenting target trial emulations. 
+
+## Cloning & Grace Period  
+
+	The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
+	
+# Evaluation of Target Trial Design  
+
+## Evaluate of Grace Period  
+
+# Evaluation of Weighting  
+
+## Weighting distributions  
+
+## Covariate balance across pre-, post-weighting during follow-up  
+
+# Computational issues  
+
+## Speed considerations  
+
+

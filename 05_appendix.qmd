@@ -1,0 +1,19 @@
+---
+title: "Appendix"
+subtite: "Additional notes on theory, weighting and causal inference"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+```
+
+# Grace windows  
+
+# Weight assignments in CCW design  

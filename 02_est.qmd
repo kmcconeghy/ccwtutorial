@@ -337,6 +337,7 @@ I think there is some controversy in this procedure. Others have not modeled the
 This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to [Weighting](04_wtnotes.qmd) for further discussion. 
 
 ```{r }
+#| label: cpt-weights
   setDT(d_panel_outc)
   
   d_panel_outc[, ipw := fcase(
@@ -359,12 +360,14 @@ This step is highly specific to a project and must be considered carefully. I ha
 
 ```{r }
 #| label: desc-ipw
+#| echo: false
   summary(d_panel_outc$ipw)
 ```
 
 Now with the estimated weights, it is simple to generate weighted cumulative incidences:  
 
 ```{r }
+#| label: est-plr-wt
   d_glm_pe = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), weights = ipw) # <1>
   
   d_panel_outc$pr_ev = d_glm_pe$fitted.values # <2>
@@ -385,6 +388,9 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 2. Summarize across group, time as before.  
 
 ```{r }
+#| label: plot-plr-weighted
+#| echo: false
+
   ### Plot ----
     d_gg_ci = d_res %>%
       ggplot(aes(x=time)) +

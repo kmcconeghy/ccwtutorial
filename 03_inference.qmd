@@ -1,6 +1,7 @@
 ---
 title: "Reporting Results"
 subtite: "Table 1 Considerations"
+bibliography: references.bib
 ---
 
 ```{r }

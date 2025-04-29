@@ -1,5 +1,6 @@
 ---
 title: "Simulate data for CCW project"
+bibliography: references.bib
 ---
 
 ```{r }

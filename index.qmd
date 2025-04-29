@@ -1,10 +1,14 @@
 ---
 title: "Tutorial for Clone-Censor-Weighting Analyses"
+bibliography: references.bib
 ---
 # Sections {#sec-sections}
 
-1) [Data](01_syndata.v2.qmd); Demonstrates how to simulate a dataset for use in CCW along with the cloning process. A key process is how to generate a "cloned" dataset, refer [here](01_syndata.v2.qmd#cloning)
-2) [Estimation](02_est.qmd); Main section which walks through each estimation step.
+1. [Data](01_syndata.v2.qmd); Demonstrates how to simulate a dataset for use in CCW along with the cloning process. A key process is how to generate a "cloned" dataset, refer [here](01_syndata.v2.qmd#cloning)
+2. [Estimation](02_est.qmd); Main section which walks through each estimation step.
+3. [Inference](03_inference.qmd); Examples on how to obtain confidence intervals.  
+4. [Additional Topics](04_advanced.qmd)
+5. [Appendix](05_appendix.qmd); some notes on causal inference, theory that may be helpful in adapting this tutorial to a specific project.  
 
 For production notes and future efforts see: [About](about.qmd).
 
@@ -27,3 +31,7 @@ The following readings are recommended to shore up that background and prepare f
 ## Acknowledgements {.unnumbered}
 
 The tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.
+
+::: {#refs}
+
+:::
