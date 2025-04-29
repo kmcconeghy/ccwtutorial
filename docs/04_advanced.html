@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Reporting Results – Tutorial on Clone-Censor-Weight</title>
+<title>Additional Topics – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -97,6 +97,18 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Estimators</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./03_inference.html"> 
+<span class="menu-text">Inference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./04_advanced.html" aria-current="page"> 
+<span class="menu-text">Additional Topics</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./05_appendix.html"> 
+<span class="menu-text">Appendix</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./01_syndata.v2.html"> 
 <span class="menu-text">Data</span></a>
   </li>  
@@ -120,9 +132,22 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#simulation-parameters" id="toc-simulation-parameters" class="nav-link active" data-scroll-target="#simulation-parameters">Simulation Parameters</a>
+  <li><a href="#description-of-cohort-table-1" id="toc-description-of-cohort-table-1" class="nav-link active" data-scroll-target="#description-of-cohort-table-1">Description of cohort, “Table 1”</a>
   <ul class="collapse">
-  <li><a href="#baseline" id="toc-baseline" class="nav-link" data-scroll-target="#baseline">Baseline</a></li>
+  <li><a href="#cloning-grace-period" id="toc-cloning-grace-period" class="nav-link" data-scroll-target="#cloning-grace-period">Cloning &amp; Grace Period</a></li>
+  </ul></li>
+  <li><a href="#evaluation-of-target-trial-design" id="toc-evaluation-of-target-trial-design" class="nav-link" data-scroll-target="#evaluation-of-target-trial-design">Evaluation of Target Trial Design</a>
+  <ul class="collapse">
+  <li><a href="#evaluate-of-grace-period" id="toc-evaluate-of-grace-period" class="nav-link" data-scroll-target="#evaluate-of-grace-period">Evaluate of Grace Period</a></li>
+  </ul></li>
+  <li><a href="#evaluation-of-weighting" id="toc-evaluation-of-weighting" class="nav-link" data-scroll-target="#evaluation-of-weighting">Evaluation of Weighting</a>
+  <ul class="collapse">
+  <li><a href="#weighting-distributions" id="toc-weighting-distributions" class="nav-link" data-scroll-target="#weighting-distributions">Weighting distributions</a></li>
+  <li><a href="#covariate-balance-across-pre--post-weighting-during-follow-up" id="toc-covariate-balance-across-pre--post-weighting-during-follow-up" class="nav-link" data-scroll-target="#covariate-balance-across-pre--post-weighting-during-follow-up">Covariate balance across pre-, post-weighting during follow-up</a></li>
+  </ul></li>
+  <li><a href="#computational-issues" id="toc-computational-issues" class="nav-link" data-scroll-target="#computational-issues">Computational issues</a>
+  <ul class="collapse">
+  <li><a href="#speed-considerations" id="toc-speed-considerations" class="nav-link" data-scroll-target="#speed-considerations">Speed considerations</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -132,7 +157,8 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Reporting Results</h1>
+<h1 class="title">Additional Topics</h1>
+<p class="subtitle lead">Reporting CCW results, and troubleshooting</p>
 </div>
 
 
@@ -149,35 +175,34 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="simulation-parameters" class="level1">
-<h1>Simulation Parameters</h1>
-<p>Description of cohort, “Table 1” In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort. Often researchers compare those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e.&nbsp;no p-values or confidence intervals). At most I will provide a standardized mean difference. This follows some template like below: Basic “Table 1” set up often found in research manuscripts:</p>
-<p>Treatment No treatment Age - - Gender - - Chronic condition - - … - -</p>
-<p>Some special considerations are needed when presenting target trial emulations. Sequential target trials If conducting sequential daily target trial emulations, even though there may be only 100 unique persons in your study, because you repeatedly use some as controls, the number of observations in the control arm could be substantially larger. Assume 100 unique people analyzed across 2 sequential emulations, and on average 10% get treatment on any given sequence. You can expect ([100 * 0.1] + [90 * 0.1]) = 19 treated, and (90 + 81) = 171 control observations. So how do you present this in the “Table 1”? One approach is to present every observation. Since baseline is indexed to each sequence this can be important if the baseline information changes across sequences (e.g.&nbsp;a diagnosis is present for one sequence but not the other). However, this can be misleading (inflating sample size) or confusing to the reader especially if they are unfamiliar with emulation methods. It is important to report the number of unique persons and follow-up time if relevant as well as the total number of observations. Other possibilities include randomly selecting one observation per person within each group but analytical methods will lose precision. In the working example, 9 people used as controls in the first sequence, were included in the treatment arm for the second sequence. Present all observations Treatment N=19 (19 unique people) No treatment N=171 (90 unique people) Randomly select one observation per person Treatment N=19 No treatment N=90</p>
-<p>Cloning &amp; Grace Period The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then two columns describing the intervention groups at the end of the grace period. Additionally, it makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.) Basic “Table 1” set up for a clone-censor-weight target trial emulation:</p>
-<p>Baseline (N=100) No treatment at 6 months (N=50) Treatment within 6 months (N=50) Age - - - Gender - - - Hypertension</p>
-<section id="baseline" class="level2">
-<h2 class="anchored" data-anchor-id="baseline">Baseline</h2>
-<ul>
-<li></li>
-<li>Month prior to index</li>
-<li></li>
-<li></li>
-<li></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>These variables are generated independently, but in real-life would be correlated…</p>
-</div>
-</div>
+<section id="description-of-cohort-table-1" class="level1">
+<h1>Description of cohort, “Table 1”</h1>
+<p>In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e.&nbsp;no p-values or confidence intervals) but will provide a standardized mean difference.</p>
+<p>Some special considerations are needed when presenting target trial emulations.</p>
+<section id="cloning-grace-period" class="level2">
+<h2 class="anchored" data-anchor-id="cloning-grace-period">Cloning &amp; Grace Period</h2>
+<pre><code>The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)</code></pre>
+</section>
+</section>
+<section id="evaluation-of-target-trial-design" class="level1">
+<h1>Evaluation of Target Trial Design</h1>
+<section id="evaluate-of-grace-period" class="level2">
+<h2 class="anchored" data-anchor-id="evaluate-of-grace-period">Evaluate of Grace Period</h2>
+</section>
+</section>
+<section id="evaluation-of-weighting" class="level1">
+<h1>Evaluation of Weighting</h1>
+<section id="weighting-distributions" class="level2">
+<h2 class="anchored" data-anchor-id="weighting-distributions">Weighting distributions</h2>
+</section>
+<section id="covariate-balance-across-pre--post-weighting-during-follow-up" class="level2">
+<h2 class="anchored" data-anchor-id="covariate-balance-across-pre--post-weighting-during-follow-up">Covariate balance across pre-, post-weighting during follow-up</h2>
+</section>
+</section>
+<section id="computational-issues" class="level1">
+<h1>Computational issues</h1>
+<section id="speed-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="speed-considerations">Speed considerations</h2>
 
 
 </section>

@@ -12,11 +12,11 @@ website:
       - href: 02_est.qmd
         text: Estimators  
       - href: 03_inference.qmd
-        text: Data
+        text: Inference
       - href: 04_advanced.qmd
-        text: Data
+        text: Additional Topics
       - href: 05_appendix.qmd
-        text: Data
+        text: Appendix
       - href: 01_syndata.v2.qmd
         text: Data
       - href: about.qmd

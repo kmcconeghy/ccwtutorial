@@ -31,5 +31,14 @@
   },
   "04_wtnotes.qmd": {
     "04_wtnotes.html": "e80ef0be"
+  },
+  "03_inference.qmd": {
+    "03_inference.html": "5dba4c87"
+  },
+  "04_advanced.qmd": {
+    "04_advanced.html": "0ab07f86"
+  },
+  "05_appendix.qmd": {
+    "05_appendix.html": "0d6728f2"
   }
 }

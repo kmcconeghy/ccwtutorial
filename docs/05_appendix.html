@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Reporting Results – Tutorial on Clone-Censor-Weight</title>
+<title>Appendix – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -97,6 +97,18 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Estimators</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./03_inference.html"> 
+<span class="menu-text">Inference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./04_advanced.html"> 
+<span class="menu-text">Additional Topics</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./05_appendix.html" aria-current="page"> 
+<span class="menu-text">Appendix</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./01_syndata.v2.html"> 
 <span class="menu-text">Data</span></a>
   </li>  
@@ -115,15 +127,22 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#grace-windows" id="toc-grace-windows" class="nav-link active" data-scroll-target="#grace-windows">Grace windows</a></li>
+  <li><a href="#weight-assignments-in-ccw-design" id="toc-weight-assignments-in-ccw-design" class="nav-link" data-scroll-target="#weight-assignments-in-ccw-design">Weight assignments in CCW design</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Reporting Results</h1>
+<h1 class="title">Appendix</h1>
 </div>
 
 
@@ -140,56 +159,14 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Application of inverse-probability weighting:</p>
-<p>Consider a target trial emulation assigning those eligible for vaccination with Shingrix (RZV) in a nursing home to one of two treatment strategies:</p>
-<p>Vaccination with a RZV within 6 months; No vaccination through follow-up</p>
-<p>The outcome is an incident dementia diagnosis, and individuals censor for non-adherence to treatment strategy, or death</p>
-<p>For practicality, we use month units of time, and we assume censoring due to death is non-informative and unaccounted for in the analysis.</p>
-<p>Each person is cloned and assigned to both strategies. For example, consider three persons again:</p>
-<p>Person A Person B Person C Vaccinated in month 3 Unvaccinated through follow-up Vaccinated in month 6</p>
-<p>Artificial censoring: abbrev. HZV (vaccination within 9 months), no HZV (none ever)</p>
-<p>Person A Person B Person C</p>
-<p>Vaccinated in month 3 Unvaccinated through follow-up Vaccinated in month 6</p>
-<p>Censoring Censoring Censoring Period HZV No HZV HZV No HZV HZV No HZV 1 0 0 0 0 0 0 2 0 0 0 0 0 0 3 0 1 0 0 0 0 4 0 - 0 0 0 0 5 0 - 0 0 0 0 6 0 - 1 0 0 1</p>
-<p>The probability of censoring is intrinsically tied to the probability of initiating treatment because we censor based on adherence to treatment strategy, it might be more appropriate to think of the weighting as “adherence weighting”.</p>
-<p>No HZV strategy:</p>
-<p>For the No HZV strategy, the probability of censoring is equal to the probability of initiating treatment (because you are censored if you get the vaccine!). Where V is vaccination, Pr(C) = Pr(Vt=i=1|Vt=i-1=0). Of course, 1 - Pr(C) is the probability of not censoring. The inverse probability of remaining uncensored is 1 / (1 - Pr[C]) at each timepoint.</p>
-<p>Time periods i, from 1 to end of followup, the IPW is 1 / (1 - Pr[C]) = 1 / (1 -Pr[Vt=i=1|Vt=i-1=0])</p>
-<p>Period Probability of censoring Probability of not censoring IPW i = 1,…I, where I is end of follow-up Pr(C) = Pr(Vt=i=1|Vt=i-1=0) 1 - Pr(C) 1 / (1 - Pr[C])</p>
-<p>HZV strategy:</p>
-<p>When assigned to vaccination within 6 months, the probability of censoring is 0 for each period up until the end of the grace period (G).</p>
-<p>Period Probability of censoring Probability of not censoring IPW i= 1, …, 1-G 0 1 1 / 1</p>
-<p>This is because we have explicitly stated we are allowing a grace period of time (6 months) before people must be vaccinated.</p>
-<p>At the end of the grace period, the probability of censoring is the probability of not being vaccinated, conditional on not yet receiving the vaccine.</p>
-<p>Period Probability of censoring Probability of not censoring IPW I = 1, …, 1-G 0 1 1 / 1 I = G Pr(C) = Pr(Vt = G=0|, Vt=G-1=0) 1 - Pr(C) 1 / (Pr[C])</p>
-<p>So individuals who are vaccinated in the last period of the grace window are very important, because they are going to be assigned a weight according to the likelihood of receiving vaccination in that period. If the probability of vaccination in the last period given no prior vaccination is very small, 1 - Pr(Vt = G=0|, Vt=G-1=0), then those persons will be assigned very large weights. E.g. if 1% of the sample gets the vaccine at month 6, then the mean of the weights computed for them will be approximately 100 because 1/0.01 = 100. A key consideration is whether folks getting vaccinated in the last period meet causal assumptions of consistency, positivity etc. and you have good data to model the probability of initiation in this later period (time-varying confounders).</p>
-<p>Note: Conceptually, what we are doing here is emulating a trial where there is perfect adherence to vaccine strategy, but we allow a period of time (grace) before people must be vaccinated. If anyone doesn’t get the vaccine then we essentially force them to receive it at the end of the grace period. This is a somewhat extreme hypothetical, that is commented on by Jamie Robins in the appendix of the Cain article. There is some speculation that alternative weighting strategies could be applied which spread out “forced” vaccination across the grace period, but I have yet to see them in practice.</p>
-<p>If a person receives the vaccine prior to month 6, they cannot be censored because they are fully adherent to treatment no matter what happens from that period forward. So if vaccinated prior to the grace period, the weight is 1.</p>
-<p>In both cases however, the key estimand is the probability of vaccination at each point of follow-up. This is estimated in the full sample prior to cloning.</p>
-<p>So a model must be fit which estimates probability of vaccination at time period i, given no vaccination in prior time period, baseline covariates (X), time-varying covariates (L), for each point of follow-up.</p>
-<p>Pr(Vt=i=1 | Vt=i-1=0, X, Lt=i-1)</p>
-<p>Once you have that basic probability is it easy to compute the weighting at each timepoint:</p>
-<p>Back to our cloned panel:</p>
-<p>Person A Person B Person C</p>
-<p>Vaccinated in month 3 Unvaccinated through follow-up Vaccinated in month 6</p>
-<p>IPW IPW IPW Period HZV No HZV HZV No HZV HZV No HZV 1 1 1 / Pr(Vt=i=0) 1 1 / Pr(Vt=i=0) 0 1 / Pr(Vt=i=0) 2 1 1 / Pr(Vt=i=0) 1 1 / Pr(Vt=i=0) 0 1 / Pr(Vt=i=0) 3 1 - 1 1 / Pr(Vt=i=0) 0 1 / Pr(Vt=i=0) 4 1 - 1 1 / Pr(Vt=i=0) 0 1 / Pr(Vt=i=0) 5 1 - 1 1 / Pr(Vt=i=0) 0 1 / Pr(Vt=i=0) 6 1* - - 1 / Pr(Vt=i=0) 1 / (1 - Pr[Vt=i=0])** -</p>
-<p>*Person A is vaccinated at month 3, so their probability of censoring is now 0, 1 - 0 = 1, 1/1 = IPW=1</p>
-<p>**Person C is vaccinated in the last period, so their probability of censoring is the conditional probability of not being vaccinated in the 6th period, given no vaccination up to that point. In other words their probability of remaining uncensored, is the probability of initiating treatment in that last period. So 1 / (1 - Pr[C]) is their IPW for this period. They are being weighted to estimate causal effects in a pseudopopulation where person B (who had been censored due to no vaccination) had also been vaccinated at timepoint 6 (a perfectly adherent, “per-procol” estimand).</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>These variables are generated independently, but in real-life would be correlated…</p>
-</div>
-</div>
+<section id="grace-windows" class="level1">
+<h1>Grace windows</h1>
+</section>
+<section id="weight-assignments-in-ccw-design" class="level1">
+<h1>Weight assignments in CCW design</h1>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
