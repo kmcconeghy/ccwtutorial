@@ -1,1 +1,1 @@
-{"entries":[{"caption":"Sections","key":"sec-sections","order":{"number":1,"section":[1,0,0,0,0,0,0]}},{"caption":"Background reading","key":"sec-background","order":{"number":2,"section":[2,0,0,0,0,0,0]}}],"headings":["sec-sections","sec-background","acknowledgements"]}
+{"entries":[{"order":{"number":2,"section":[2,0,0,0,0,0,0]},"caption":"Background reading","key":"sec-background"},{"order":{"number":1,"section":[1,0,0,0,0,0,0]},"caption":"Sections","key":"sec-sections"}],"headings":["sec-sections","sec-background","acknowledgements"]}
