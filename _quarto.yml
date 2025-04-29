@@ -7,15 +7,14 @@ website:
   navbar:
     title: "Section"
     left:
-      - href: 02_est.qmd
-        text: Estimators      
       - href: index.qmd
         text: Home
+      - href: 02_est.qmd
+        text: Estimators  
       - href: 01_syndata.v2.qmd
         text: Data
       - href: about.qmd
         text: About
-
 format:
   html:
     theme: cosmo
