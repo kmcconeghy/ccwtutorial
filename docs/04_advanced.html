@@ -225,7 +225,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Some special considerations are needed when presenting target trial emulations.</p>
 <section id="cloning-grace-period" class="level2">
 <h2 class="anchored" data-anchor-id="cloning-grace-period">Cloning &amp; Grace Period</h2>
-<pre><code>The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)</code></pre>
+<p>The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)</p>
 </section>
 </section>
 <section id="evaluation-of-target-trial-design" class="level1">
@@ -249,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="benchmarked-estimation-step" class="level2">
 <h2 class="anchored" data-anchor-id="benchmarked-estimation-step">Benchmarked Estimation Step</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="speeding-up-glm-ml-procedure" class="level3">
 <h3 class="anchored" data-anchor-id="speeding-up-glm-ml-procedure">Speeding up GLM ML procedure</h3>
@@ -258,18 +258,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="initialization-hack">Initialization hack</h4>
 <p>This is a simple trick, either 1) run the GLM once and store est, or 2) run the GLM on a 10% sample.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>d_fit <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-3" class="code-annotation-target"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>d_fit_2 <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">start =</span> d_fit<span class="sc">$</span>coefficients)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-1" class="code-annotation-target"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>d_fit <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-3" class="code-annotation-target"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a>d_fit_2 <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">start =</span> d_fit<span class="sc">$</span>coefficients)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="1" data-code-annotation="1">GLM procedure with automatic initialization step.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="1" data-code-annotation="1">GLM procedure with automatic initialization step.</span>
 </dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="3" data-code-annotation="2">GLM with <code>start=</code> option using coefficients from prior step.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="3" data-code-annotation="2">GLM with <code>start=</code> option using coefficients from prior step.</span>
 </dd>
 </dl>
 </div>
@@ -279,16 +279,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="anchored" data-anchor-id="blaslapack-and-parallel-computation">BLAS/LAPACK and Parallel computation</h4>
 <p>The <code>parglm</code> package provides much faster computations (but somewhat more unstable).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-4-1"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parglm)</span>
-<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>d_fit_3 <span class="ot">=</span> <span class="fu">parglm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, </span>
-<span id="annotated-cell-4-4"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">binomial</span>(), d_panel_outc, <span class="at">start =</span> d_fit<span class="sc">$</span>coefficients,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-5" class="code-annotation-target"><a href="#annotated-cell-4-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">control =</span> <span class="fu">parglm.control</span>(<span class="at">method =</span> <span class="st">"FAST"</span>, <span class="at">nthreads =</span> <span class="dv">8</span>L))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parglm)</span>
+<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>d_fit_3 <span class="ot">=</span> <span class="fu">parglm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, </span>
+<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">binomial</span>(), d_panel_outc, <span class="at">start =</span> d_fit<span class="sc">$</span>coefficients,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-5" class="code-annotation-target"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">control =</span> <span class="fu">parglm.control</span>(<span class="at">method =</span> <span class="st">"FAST"</span>, <span class="at">nthreads =</span> <span class="dv">8</span>L))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="5" data-code-annotation="1"><code>parglm()</code> function works mostly as <code>glm()</code>, the <code>parglm.control()</code> allows some additional options for parallel computing and QR decomposition.</span>
+<span data-code-cell="annotated-cell-3" data-code-lines="5" data-code-annotation="1"><code>parglm()</code> function works mostly as <code>glm()</code>, the <code>parglm.control()</code> allows some additional options for parallel computing and QR decomposition.</span>
 </dd>
 </dl>
 </div>
@@ -299,11 +299,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="benchmarking-glm-methods">Benchmarking GLM methods</h3>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Unit: relative
-           expr      min       lq     mean   median       uq      max neval
-       base GLM 4.204140 3.446631 3.661384 3.777228 3.624852 3.429754     5
- GLM with inits 1.591378 1.324031 1.421485 1.394143 1.463806 1.378018     5
-         PARGLM 1.000000 1.000000 1.000000 1.000000 1.000000 1.000000     5</code></pre>
+<pre><code>Unit: seconds
+           expr       min        lq      mean    median        uq       max
+       base GLM 1.8419517 1.8824418 1.9851234 1.9830593 2.0768729 2.1995625
+ GLM with inits 0.7031452 0.7291941 0.7963292 0.7742657 0.8507597 0.9436622
+         PARGLM 0.4154275 0.4863892 0.5507288 0.5480763 0.5627855 0.8229343
+ neval
+    10
+    10
+    10</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.</p>
@@ -329,47 +333,47 @@ Note
 <section id="inefficient-bootstrap" class="level3">
 <h3 class="anchored" data-anchor-id="inefficient-bootstrap">Inefficient Bootstrap</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>boot_it_1 <span class="ot">=</span> <span class="cf">function</span>() {</span>
-<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-3" class="code-annotation-target"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  d_ids <span class="ot">=</span> <span class="fu">distinct</span>(d_panel_outc, id)</span>
-<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  d_boot <span class="ot">=</span> <span class="fu">slice_sample</span>(d_ids, <span class="at">prop=</span><span class="dv">1</span>, <span class="at">replace=</span>T)</span>
-<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-7" class="code-annotation-target"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2 <span class="ot">=</span> <span class="fu">left_join</span>(d_boot,</span>
-<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>                             d_panel_outc, <span class="at">by =</span> <span class="fu">join_by</span>(id),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-9" class="code-annotation-target"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>                             <span class="at">relationship =</span> <span class="st">"many-to-many"</span>)</span>
-<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc_2, <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values </span>
-<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
-<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> d_panel_outc_2 <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),  </span>
-<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,  </span>
-<span id="annotated-cell-5-21"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, </span>
-<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev </span>
-<span id="annotated-cell-5-23"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-5-24"><a href="#annotated-cell-5-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,  </span>
-<span id="annotated-cell-5-25"><a href="#annotated-cell-5-25" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
-<span id="annotated-cell-5-26"><a href="#annotated-cell-5-26" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-5-27"><a href="#annotated-cell-5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res<span class="sc">$</span>cid[d_res<span class="sc">$</span>time<span class="sc">==</span><span class="dv">60</span>])</span>
-<span id="annotated-cell-5-28"><a href="#annotated-cell-5-28" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-4-1"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>boot_it_1 <span class="ot">=</span> <span class="cf">function</span>() {</span>
+<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-3" class="code-annotation-target"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>  d_ids <span class="ot">=</span> <span class="fu">distinct</span>(d_panel_outc, id)</span>
+<span id="annotated-cell-4-4"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-4-5"><a href="#annotated-cell-4-5" aria-hidden="true" tabindex="-1"></a>  d_boot <span class="ot">=</span> <span class="fu">slice_sample</span>(d_ids, <span class="at">prop=</span><span class="dv">1</span>, <span class="at">replace=</span>T)</span>
+<span id="annotated-cell-4-6"><a href="#annotated-cell-4-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-4-7" class="code-annotation-target"><a href="#annotated-cell-4-7" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2 <span class="ot">=</span> <span class="fu">left_join</span>(d_boot,</span>
+<span id="annotated-cell-4-8"><a href="#annotated-cell-4-8" aria-hidden="true" tabindex="-1"></a>                             d_panel_outc, <span class="at">by =</span> <span class="fu">join_by</span>(id),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-4-9" class="code-annotation-target"><a href="#annotated-cell-4-9" aria-hidden="true" tabindex="-1"></a>                             <span class="at">relationship =</span> <span class="st">"many-to-many"</span>)</span>
+<span id="annotated-cell-4-10"><a href="#annotated-cell-4-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-4-11"><a href="#annotated-cell-4-11" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc_2, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-4-12"><a href="#annotated-cell-4-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-4-13"><a href="#annotated-cell-4-13" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values </span>
+<span id="annotated-cell-4-14"><a href="#annotated-cell-4-14" aria-hidden="true" tabindex="-1"></a>  d_panel_outc_2[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-4-15"><a href="#annotated-cell-4-15" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> d_panel_outc_2 <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-4-16"><a href="#annotated-cell-4-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-4-17"><a href="#annotated-cell-4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-4-18"><a href="#annotated-cell-4-18" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-4-19"><a href="#annotated-cell-4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),  </span>
+<span id="annotated-cell-4-20"><a href="#annotated-cell-4-20" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,  </span>
+<span id="annotated-cell-4-21"><a href="#annotated-cell-4-21" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, </span>
+<span id="annotated-cell-4-22"><a href="#annotated-cell-4-22" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev </span>
+<span id="annotated-cell-4-23"><a href="#annotated-cell-4-23" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-4-24"><a href="#annotated-cell-4-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,  </span>
+<span id="annotated-cell-4-25"><a href="#annotated-cell-4-25" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
+<span id="annotated-cell-4-26"><a href="#annotated-cell-4-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-4-27"><a href="#annotated-cell-4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res<span class="sc">$</span>cid[d_res<span class="sc">$</span>time<span class="sc">==</span><span class="dv">60</span>])</span>
+<span id="annotated-cell-4-28"><a href="#annotated-cell-4-28" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="3" data-code-annotation="1">Generate a list of unique person IDs</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="3" data-code-annotation="1">Generate a list of unique person IDs</span>
 </dd>
-<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="7" data-code-annotation="2">Sample from list with replacement</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="7" data-code-annotation="2">Sample from list with replacement</span>
 </dd>
-<dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="9" data-code-annotation="3">Perform left-join on resampled list back to dataset</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="9" data-code-annotation="3">Perform left-join on resampled list back to dataset</span>
 </dd>
 </dl>
 </div>
@@ -378,34 +382,34 @@ Note
 <section id="more-efficient-bootstrap" class="level3">
 <h3 class="anchored" data-anchor-id="more-efficient-bootstrap">More efficient bootstrap</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a>boot_it_2 <span class="ot">=</span> <span class="cf">function</span>() {</span>
-<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-3" class="code-annotation-target"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, freqwt<span class="sc">:</span><span class="er">=</span><span class="fu">rpois</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">lambda=</span><span class="dv">1</span>), by <span class="ot">=</span> <span class="fu">factor</span>(id)]</span>
-<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-6-5"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(),</span>
-<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
-<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values </span>
-<span id="annotated-cell-6-9"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
-<span id="annotated-cell-6-10"><a href="#annotated-cell-6-10" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-11"><a href="#annotated-cell-6-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-12"><a href="#annotated-cell-6-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-6-13"><a href="#annotated-cell-6-13" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-6-14"><a href="#annotated-cell-6-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),  </span>
-<span id="annotated-cell-6-15"><a href="#annotated-cell-6-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,  </span>
-<span id="annotated-cell-6-16"><a href="#annotated-cell-6-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, </span>
-<span id="annotated-cell-6-17"><a href="#annotated-cell-6-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev </span>
-<span id="annotated-cell-6-18"><a href="#annotated-cell-6-18" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-6-19"><a href="#annotated-cell-6-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,  </span>
-<span id="annotated-cell-6-20"><a href="#annotated-cell-6-20" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
-<span id="annotated-cell-6-21"><a href="#annotated-cell-6-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-6-22"><a href="#annotated-cell-6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res<span class="sc">$</span>cid[d_res<span class="sc">$</span>time<span class="sc">==</span><span class="dv">60</span>])</span>
-<span id="annotated-cell-6-23"><a href="#annotated-cell-6-23" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>boot_it_2 <span class="ot">=</span> <span class="cf">function</span>() {</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-3" class="code-annotation-target"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, freqwt<span class="sc">:</span><span class="er">=</span><span class="fu">rpois</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">lambda=</span><span class="dv">1</span>), by <span class="ot">=</span> <span class="fu">factor</span>(id)]</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(),</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
+<span id="annotated-cell-5-7"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values </span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),  </span>
+<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,  </span>
+<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, </span>
+<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev </span>
+<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,  </span>
+<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
+<span id="annotated-cell-5-21"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res<span class="sc">$</span>cid[d_res<span class="sc">$</span>time<span class="sc">==</span><span class="dv">60</span>])</span>
+<span id="annotated-cell-5-23"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="3" data-code-annotation="1">Generate a frequency weight by group ID from a Poisson distribution with mean 1</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="3" data-code-annotation="1">Generate a frequency weight by group ID from a Poisson distribution with mean 1</span>
 </dd>
 </dl>
 </div>
@@ -415,10 +419,13 @@ Note
 <h3 class="anchored" data-anchor-id="benchmarking-glm-methods-1">Benchmarking GLM methods</h3>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Unit: relative
-                 expr      min       lq     mean median       uq      max neval
- Resampling bootstrap 1.119461 1.196804 1.186944 1.2635 1.286184 1.093623     5
-    Poisson bootstrap 1.000000 1.000000 1.000000 1.0000 1.000000 1.000000     5</code></pre>
+<pre><code>Unit: seconds
+                 expr      min       lq     mean   median       uq      max
+ Resampling bootstrap 2.339367 2.581152 4.080112 4.806784 4.849076 4.890626
+    Poisson bootstrap 2.049479 3.215894 3.631980 3.617532 4.625406 4.818278
+ neval
+    10
+    10</code></pre>
 </div>
 </div>
 <p>The Poisson bootstrap procedure is 20-30%, but critically this performance will scale much better for large datasets.</p>
@@ -429,14 +436,14 @@ Note
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- -0.092  -0.057  -0.052  -0.053  -0.046  -0.029 </code></pre>
+ -0.091  -0.057  -0.050  -0.052  -0.046  -0.026 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Poisson method:</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- -0.079  -0.057  -0.052  -0.050  -0.043  -0.027 </code></pre>
+ -0.069  -0.057  -0.048  -0.048  -0.041  -0.017 </code></pre>
 </div>
 </div>
 

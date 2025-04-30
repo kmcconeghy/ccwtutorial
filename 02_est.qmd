@@ -334,7 +334,7 @@ I think there is some controversy in this procedure. Others have not modeled the
 
 ## Calculation of weights  
 
-This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to [Weighting](04_wtnotes.qmd) for further discussion. 
+This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to [Weighting](05_appendix.qmd) for further discussion. 
 
 ```{r }
 #| label: cpt-weights

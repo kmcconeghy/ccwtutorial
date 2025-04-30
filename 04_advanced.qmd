@@ -113,8 +113,8 @@ microbenchmark(
   `PARGLM` = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
        binomial(), d_panel_outc, start = d_fit$coefficients,
        control = parglm.control(method = "FAST", nthreads = 8L)),
-  times = 5,
-  unit = "relative"
+  times = 10,
+  unit = "seconds"
 )
 ```
 
@@ -207,8 +207,8 @@ boot_it_2 = function() {
 microbenchmark(
   `Resampling bootstrap` = boot_it_1(),
   `Poisson bootstrap` = boot_it_2(),
-  times = 5,
-  unit = "relative"
+  times = 10,
+  unit = "seconds"
 )
 ```
 
