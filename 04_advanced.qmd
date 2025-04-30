@@ -10,10 +10,29 @@ bibliography: references.bib
 #| message: false
 #| 
 library(here())
+library(microbenchmark)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
 set.seed(42)
+
+#increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+  
+d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
+
+setDT(d_cloned) 
+d_panel = d_cloned[rep(seq(.N), t_clone)] 
+d_panel[, exit := (seq_len(.N)), by = list(id, assign)] 
+d_panel[, enter := exit-1] 
+d_panel[, time := seq_len(.N), by = list(id, assign)] 
+d_panel[, event_outc := if_else( t_clone <= time, event_outc, 0L), by = list(id, assign)] 
+d_panel_outc = select(d_panel, id, time, event_outc, t_treat, assign, enter, exit) 
+    
 ```
 
 # Description of cohort, “Table 1” 
@@ -37,6 +56,80 @@ Some special considerations are needed when presenting target trial emulations.
 ## Covariate balance across pre-, post-weighting during follow-up  
 
 # Computational issues  
+
+Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.  
+
+## Benchmarked Estimation Step  
+
+```{r }
+#| label: compare-glm
+#| eval: False 
+glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial())
+```
+
+### Speeding up GLM ML procedure  
+
+There are two main things that can be done to speed up GLM, 1) initialize parameters based on prior estimation procedure. 2) Use efficient matrix functions and parallel computation.  
+
+#### Initialization hack  
+
+This is a simple trick, either 1) run the GLM once and store est, or 2) run the GLM on a 10% sample.  
+
+```{r }
+#| label: init-glm
+
+d_fit = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial()) # <1>
+
+d_fit_2 = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), start = d_fit$coefficients) # <2>
+
+```
+
+1. GLM procedure with automatic initialization step.
+2. GLM with `start=` option using coefficients from prior step.  
+
+#### BLAS/LAPACK and Parallel computation  
+
+The `parglm` package provides much faster computations (but somewhat more unstable).  
+
+```{r }
+#| label: par-glm
+library(parglm)
+
+d_fit_3 = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
+       binomial(), d_panel_outc, start = d_fit$coefficients,
+       control = parglm.control(method = "FAST", nthreads = 8L)) # <1>
+```
+
+1. `parglm()` function works mostly as `glm()`, the `parglm.control()` allows some additional options for parallel computing and QR decomposition.  
+
+### Benchmarking GLM methods  
+
+```{r }
+#| label: benchmark-glm
+#| echo: false
+microbenchmark(
+  `base GLM` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial()),
+  `GLM with inits` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), start = d_fit$coefficients),
+  `PARGLM` = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
+       binomial(), d_panel_outc, start = d_fit$coefficients,
+       control = parglm.control(method = "FAST", nthreads = 8L)),
+  times = 5,
+  unit = "relative"
+)
+```
+Even in a small example, `parglm()` outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.  
+
+## Bootstrapping procedure  
+
+The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of weighting can work around this.  
+
+### Inefficient Bootstrap  
+
+```{r }
+#| label: bad-bootstrap-ex
+
+```
+
 
 ## Speed considerations  
 
