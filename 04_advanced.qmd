@@ -35,31 +35,31 @@ d_panel_outc = select(d_panel, id, time, event_outc, t_treat, assign, enter, exi
     
 ```
 
-# Description of cohort, “Table 1” 
+# Description of cohort, “Table 1”
 
-In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e. no p-values or confidence intervals) but will provide a standardized mean difference. 
+In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e. no p-values or confidence intervals) but will provide a standardized mean difference.
 
-Some special considerations are needed when presenting target trial emulations. 
+Some special considerations are needed when presenting target trial emulations.
 
-## Cloning & Grace Period  
+## Cloning & Grace Period
 
-	The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
-	
-# Evaluation of Target Trial Design  
+The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
 
-## Evaluate of Grace Period  
+# Evaluation of Target Trial Design
 
-# Evaluation of Weighting  
+## Evaluate of Grace Period
 
-## Weighting distributions  
+# Evaluation of Weighting
 
-## Covariate balance across pre-, post-weighting during follow-up  
+## Weighting distributions
 
-# Computational issues  
+## Covariate balance across pre-, post-weighting during follow-up
 
-Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.  
+# Computational issues
 
-## Benchmarked Estimation Step  
+Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.
+
+## Benchmarked Estimation Step
 
 ```{r }
 #| label: compare-glm
@@ -67,13 +67,13 @@ Because the pooled logistic regression models a person-time dataset, for large s
 glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial())
 ```
 
-### Speeding up GLM ML procedure  
+### Speeding up GLM ML procedure
 
-There are two main things that can be done to speed up GLM, 1) initialize parameters based on prior estimation procedure. 2) Use efficient matrix functions and parallel computation.  
+There are two main things that can be done to speed up GLM, 1) initialize parameters based on prior estimation procedure. 2) Use efficient matrix functions and parallel computation.
 
-#### Initialization hack  
+#### Initialization hack
 
-This is a simple trick, either 1) run the GLM once and store est, or 2) run the GLM on a 10% sample.  
+This is a simple trick, either 1) run the GLM once and store est, or 2) run the GLM on a 10% sample.
 
 ```{r }
 #| label: init-glm
@@ -84,12 +84,12 @@ d_fit_2 = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, famil
 
 ```
 
-1. GLM procedure with automatic initialization step.
-2. GLM with `start=` option using coefficients from prior step.  
+1.  GLM procedure with automatic initialization step.
+2.  GLM with `start=` option using coefficients from prior step.
 
-#### BLAS/LAPACK and Parallel computation  
+#### BLAS/LAPACK and Parallel computation
 
-The `parglm` package provides much faster computations (but somewhat more unstable).  
+The `parglm` package provides much faster computations (but somewhat more unstable).
 
 ```{r }
 #| label: par-glm
@@ -100,9 +100,9 @@ d_fit_3 = parglm(event_outc ~ poly(time, 2, raw=T)*assign,
        control = parglm.control(method = "FAST", nthreads = 8L)) # <1>
 ```
 
-1. `parglm()` function works mostly as `glm()`, the `parglm.control()` allows some additional options for parallel computing and QR decomposition.  
+1.  `parglm()` function works mostly as `glm()`, the `parglm.control()` allows some additional options for parallel computing and QR decomposition.
 
-### Benchmarking GLM methods  
+### Benchmarking GLM methods
 
 ```{r }
 #| label: benchmark-glm
@@ -117,20 +117,113 @@ microbenchmark(
   unit = "relative"
 )
 ```
-Even in a small example, `parglm()` outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.  
 
-## Bootstrapping procedure  
+Even in a small example, `parglm()` outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.
 
-The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of weighting can work around this.  
+## Bootstrapping procedure
 
-### Inefficient Bootstrap  
+I consider bootstrapping to be the standard for this type of analysis, the statistical properties are not well-described, but some use influence-based statistics.
+
+The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of weighting can work around this.
+
+::: callout-note
+In any case, the bootstrap procedure must sample at the person level to account for the cloning.
+:::
+
+### Inefficient Bootstrap
 
 ```{r }
 #| label: bad-bootstrap-ex
-
+boot_it_1 = function() {
+  
+  d_ids = distinct(d_panel_outc, id) # <1>
+  
+  d_boot = slice_sample(d_ids, prop=1, replace=T)
+  
+  d_panel_outc_2 = left_join(d_boot, #<2>
+                             d_panel_outc, by = join_by(id),
+                             relationship = "many-to-many") # <3>
+  
+  d_glm_pe = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc_2, family=binomial())
+  
+  d_panel_outc_2$pr_ev = d_glm_pe$fitted.values 
+  d_panel_outc_2[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] 
+  d_res = d_panel_outc_2 %>% 
+    group_by(assign, time) %>% 
+    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% 
+    ungroup %>% 
+    pivot_wider(., id_cols =c('time'),  
+                names_from = assign,  
+                names_prefix = 'pr_ev_', 
+                values_from = pr_ev 
+    ) %>% 
+    mutate(cid = pr_ev_1 - pr_ev_0,  
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res$cid[d_res$time==60])
+}
 ```
 
+1.  Generate a list of unique person IDs
+2.  Sample from list with replacement
+3.  Perform left-join on resampled list back to dataset
 
-## Speed considerations  
+### More efficient bootstrap
 
+```{r }
+#| label: goodbootstrap-ex
+boot_it_2 = function() {
+  
+  d_panel_outc[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
 
+  d_glm_pe = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(),
+                 weights = freqwt)
+  
+  d_panel_outc$pr_ev = d_glm_pe$fitted.values 
+  d_panel_outc[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] 
+  d_res = d_panel_outc %>%
+    group_by(assign, time) %>%
+    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% 
+    ungroup %>% 
+    pivot_wider(., id_cols =c('time'),  
+                names_from = assign,  
+                names_prefix = 'pr_ev_', 
+                values_from = pr_ev 
+    ) %>% 
+    mutate(cid = pr_ev_1 - pr_ev_0,  
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res$cid[d_res$time==60])
+}
+```
+
+1.  Generate a frequency weight by group ID from a Poisson distribution with mean 1
+
+### Benchmarking GLM methods
+
+```{r }
+#| label: benchmark-bs
+#| echo: false
+microbenchmark(
+  `Resampling bootstrap` = boot_it_1(),
+  `Poisson bootstrap` = boot_it_2(),
+  times = 5,
+  unit = "relative"
+)
+```
+
+The Poisson bootstrap procedure is 20-30%, but critically this performance will scale much better for large datasets.
+
+If you don't believe this provides similar coverage estimates, here are the intervals from 50 bootstraps with both procedures:
+
+```{r }
+#| label: bootproc-compare
+#| echo: FALSE
+resampling_res = sapply(1:50, function(x) boot_it_1()) 
+poisson_res = sapply(1:50, function(x) boot_it_2()) 
+
+cat('Resampling method: ') 
+summary(resampling_res, digits=2)
+cat('Poisson method:')
+summary(poisson_res, digits=2)
+```
