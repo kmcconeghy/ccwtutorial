@@ -28,14 +28,18 @@ d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
 
 I recommend the following stepwise procedure in estimation: 
 
-(PLR = pooled logistic regression; KM = Kaplan-Meier estimator).
+PLR
+: Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.  
+
+KM
+: Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR. 
 
 1.  Estimate unweighted/unadjusted cumulative incidences with KM method
 2.  Estimate a PLR model without weights\
 
 <!-- -->
 
-  i)  Compare KM vs PLR, estimates should be similar
+  i)  Compare KM vs PLR
 
 <!-- -->
 
@@ -45,8 +49,10 @@ I recommend the following stepwise procedure in estimation:
 
   i)  Estimate KM model for treatment initiation
   ii) Estimate PLR for treatment initiation
-  iii) compare estimates, should be similar
-  iv) estimate full weighted model, compute IPCW
+    A. compare KM / PLR estimates
+  iv) estimate final treatment model 
+    A. Join treatment probabilities to outcome data
+    B. compute IPCW
   v)  examine IPCW weights for extreme values, non-sensical values
   vi) examine balance in covariates across time
   vii) generate "table 1" with some weighted difference statistic (e.g. wSMD)
@@ -62,7 +68,7 @@ I recommend the following stepwise procedure in estimation:
 
 <!-- -->
 
-5.  Once satisfied with steps 1-4, execute bootstraps
+5.  Once satisfied with stability from steps 1-4, execute bootstraps
 6.  In report, provide KM, unweighted, PLR estimates in an appendix; main results reported should be the IPCW-weighted PLR analysis with or without covariate adjustment in the outcome model (project specific decision).
 
 ::: callout-note
@@ -71,13 +77,13 @@ Pooled logistic regression is an important statistical model for target trial em
 
 # Kaplan-Meier Estimator
 
-A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is "naive" in that the artificial censoring is not considered, it is very useful for the following reasons:
+A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is "naive" in that the artificial censoring is not considered, it is useful for the following reasons:
 
 1)  It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low.
 
-2)  The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) across which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).
+2)  The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).
 
-## Data
+## Data  
 
 We continue the below using the cloned dataset generated in [Data](01_syndata.v2.qmd).
 
@@ -90,31 +96,32 @@ glimpse(d_cloned)
 
 ```{r }
 #| label: KM-est
-  d_surv_pe = broom::tidy(
+  d_km_est = broom::tidy(
     survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned)) %>% # <1>
     mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
     ) %>%
     arrange(time) %>%
     select(-strata) %>%
-    mutate(pr_e = 1-estimate) %>% # <2>
+    mutate(pr_ev = 1-estimate) %>% # <2>
     rename(pr_s = estimate) %>% # <2>
     pivot_wider(id_cols = c(time), # <3>
                 names_from = assign, # <3>
-                values_from = c(pr_e, pr_s, # <3>
+                values_from = c(pr_ev, pr_s, # <3>
                                 n.risk, n.event)) %>% # <3>
-    mutate(cir = pr_e_1 / pr_e_0, # <4>
-           cid = (pr_e_1 - pr_e_0)) # <4>
+    mutate(cir = pr_ev_1 / pr_ev_0, # <4>
+           cid = (pr_ev_1 - pr_ev_0)) # <4>
 ```
 
-1.  Naive estimator, K-M estimator, assign is by clone (not person). `t_clone` is the follow-up time for each clone, taking into account artificial censoring.
+1.  Naive estimator, K-M estimator, assignment is by clone (not person). `t_clone` is the follow-up time for each clone, taking into account artificial censoring.
 2.  `estimate` from the model is the survival probability, so probability of event is 1 - estimate
-3.  Data is in long form, reshape so one colum per group with cumulative incidence/survival
+3.  Data is in long form, so one colum per group with cumulative incidence/survival
 4.  Estimands, `cir` is ratio analogous to relative risk, and `cid` is analogous to risk difference
 
 ## Summarize KM estimator
 
 ```{r }
 #| label: gg-km
+#| echo: false
 ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned),
                             data=d_cloned,
                             fun = 'event',
@@ -180,7 +187,7 @@ The PLR model requires specification of a function of time. This choice is infor
   d_panel_outc$pr_ev = d_glm$fitted.values # <2>
   d_panel_outc[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] # <3>
   
-  d_res = d_panel_outc %>% # <4>
+  d_plr_naive_est = d_panel_outc %>% # <4>
     group_by(assign, time) %>% # <4>
     summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% # <4>
     ungroup %>% # <4>
@@ -200,7 +207,7 @@ The PLR model requires specification of a function of time. This choice is infor
 
 ```{r }
 #| label: gg-plr-naive
-    d_gg_ci = d_res %>%
+    d_gg_ci = d_plr_naive_est %>%
       ggplot(aes(x=time)) +
       geom_line(aes(y = pr_ev_0), color='red') +
       geom_line(aes(y = pr_ev_1), color='blue') + 
@@ -218,10 +225,10 @@ At first glance, plot looks reasonable. We now directly compare PLR to the KM es
 #| label: gg-cmp-naive-models
 #| echo: FALSE
 d_ci_cmp = inner_join(
-  select(d_res, time, pr_ev_0, pr_ev_1, cid) %>%
+  select(d_plr_naive_est, time, pr_ev_0, pr_ev_1, cid) %>%
     rename(plr_0 = pr_ev_0, plr_1 = pr_ev_1, plr_cid = cid),
-  select(d_surv_pe, time, pr_e_1, pr_e_0, cid) %>%
-    rename(km_0 = pr_e_0, km_1 = pr_e_1, km_cid = cid),
+  select(d_km_est, time, pr_ev_1, pr_ev_0, cid) %>%
+    rename(km_0 = pr_ev_0, km_1 = pr_ev_1, km_cid = cid),
   by = join_by(time)
 )
 
@@ -314,7 +321,8 @@ We fit a model with the outcome of censoring, including the variables which are 
 
 ```{r }
 #| label: est-censor-prob
-  d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T) + poly(age, 2) + female + dx_1 + dx_2, data=d_panel_treat, family=binomial()) # <1>
+  d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T) + poly(age, 2) + female + 
+                   dx_1 + dx_2, data=d_panel_treat, family=binomial()) # <1>
   d_panel_treat$pr_treat = d_glm_wt$fitted.values # <2>
   setDT(d_panel_treat)
   d_panel_treat[, cumpr_notreat := cumprod(1-pr_treat), by = .(id)] # <3>
@@ -372,7 +380,7 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
   
   d_panel_outc$pr_ev = d_glm_pe$fitted.values # <2>
   d_panel_outc[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] # <2>
-  d_res = d_panel_outc %>% # <2>
+  d_lprwt_est = d_panel_outc %>% # <2>
     group_by(assign, time) %>% # <2>
     summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% # <2>
     ungroup %>% # <2>
@@ -392,29 +400,72 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 #| echo: false
 
   ### Plot ----
-    d_gg_ci = d_res %>%
+    d_gg_ci = d_lprwt_est %>%
       ggplot(aes(x=time)) +
-      geom_line(aes(y = pr_ev_0), color='red') +
-      geom_line(aes(y = pr_ev_1), color='blue') + 
+      geom_line(aes(y = pr_ev_0), color='red', linewidth = 1) +
+      geom_line(aes(y = pr_ev_1), color='blue', linewidth = 1, linetype=2) + 
+      geom_vline(aes(xintercept = 12), color='black', linewidth = 0.5, linetype=3) + 
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
+      scale_y_continuous(limits = c(0, 1)) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Cumulative incidence')
 
-    d_gg_rr = d_res %>%
+    d_gg_rr = d_lprwt_est %>%
       ggplot(aes(x=time)) +
-      geom_line(aes(y = cir), color='green') + 
-      scale_y_continuous(limits = c(0.5, 1.1)) + 
+      geom_line(aes(y = cir), color='#228b22', linewidth = 1, linetype=4) + 
+      geom_hline(aes(yintercept = 1), color='black', linewidth = 0.5, linetype=3) + 
+      scale_y_continuous(limits = c(0.5, 1.5)) + 
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
       theme_bw() +
-      labs(x = 'Follow-up', y = 'Relative Risk')
+      labs(x = 'Follow-up', y = 'Relative Risk', caption = '12-month grace period')
     
     d_gg_1 = ggarrange(d_gg_ci, d_gg_rr,
-                       nrow=2)
+                       nrow=2) 
     
     d_gg_1
 ```
+
+# Final Comparison  
+
+```{r }
+#| label: tbl-compare-est
+#| tbl-cap-location: top
+#| tbl-cap: 'Comparison of estimates by model, PLR = Pooled Logistic Regression, Wtd = with censoring weights'
+#| echo: false
+#| 
+ d_all_est = 
+  bind_rows(
+    select(d_km_est, time, pr_ev_0, pr_ev_1, cid) %>%
+        mutate(Model = 'Kaplan-Meier'),
+    select(d_plr_naive_est, time, pr_ev_1, pr_ev_0, cid) %>%
+      mutate(Model = 'PLR-Naive'),
+    select(d_lprwt_est, time, pr_ev_1, pr_ev_0, cid) %>%
+      mutate(Model = 'PLR-Wtd')
+  ) %>%
+  dplyr::filter(time %in% c(6, 12, 24, 36, 48, 60))
+
+kables(
+  list(d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_0) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("No treatment initiation ever" = 4)),
+       d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_1) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Treatment initiation at 12 months" = 4)),
+       d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Risk Differences" = 4))
+)) 
+```
+
+# References  
 
 ::: {#refs}
 
