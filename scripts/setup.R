@@ -4,7 +4,7 @@
                   'lubridate', 'here', 'knitr', 'kableExtra', 'quarto',
                   'survival', 'future', 'progressr', 
                   'ggpubr', 'survminer', 'furrr',
-                  'data.table', 'parglm')
+                  'data.table', 'parglm', 'gtsummary')
   
   hold_del <- sapply(pkg_toload, require, 
                      warn.conflicts=F, quietly=T,

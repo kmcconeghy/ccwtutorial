@@ -22,29 +22,40 @@ set.seed(42)
     n = 10000 # <1>
     age = round(rnorm(n, mean = 75, sd = 10), 1) # <2>
     female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)) # <3>
-    treat <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.2, 0.8)) # <4>
-    dx_1 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.05, 0.95)) # <5>
-    dx_2 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.4, 0.6)) # <6>
-    ef_treat = 0.8 # <7>
-    ef_gender = 0.9 # <7>
-    ef_age = 0.98 # <7>
-    ef_dx_1 = 1.2 # <7>
-    ef_dx_2 = 0.8 # <7>
+    dx_1 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.05, 0.95)) # <4>
+    dx_2 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.4, 0.6)) # <5>
+    
+y_treat = 1.0 # <6>
+y_gender = 3 # <6>
+y_age = 0.98 # <6>
+y_dx_1 = 1.1 # <6>
+y_dx_2 = 0.8 # <6>
 ```
 
 1.  Use a starting sample size of a 1000 (i.e. persons) Generate covariates:
 2.  Generate age (normal distribution with mean=75, std=10)
 3.  Female, 66%/34%
-4.  Treatment, 20%/80%
-5.  A rare chronic condition `dx_1` 5%/95%
-6.  A prevalent chronic condition `dx_2` 40%/60%
-7.  Assign relative effect sizes for each
-  *  ef_treat = 0.8
-  * ef_gender = 0.9
-  * ef_age = 0.98 (per unit of age)
-  * ef_dx_1 = 1.2
-  *  ef_dx_2 = 0.8
-  
+4.  A rare chronic condition `dx_1` 5%/95%
+5.  A prevalent chronic condition `dx_2` 40%/60%
+6.  Assign  effect sizes for each covariate on the outcome
+
+Treatment initiation is modeled as a function of covariates, to simulate confounding.  
+
+```{r }
+#| label: sim-treatprob
+x_gender = 3 # <1>
+x_dx_1 = 1.5 # <1>
+x_dx_2 = 1.0 # <1>
+
+lp_treat <- 1 / (1 + exp(- (-1.7 + log(x_gender) * female + log(x_dx_1)*dx_1 + log(x_dx_2)*dx_2))) # <1>
+
+treat <- sapply(lp_treat, function(x) rbinom(1, 1, x)) # <2>
+
+mean(treat)
+```
+1. Assign effect sizes for each covariate on treatment
+2. Compute a probability of treatment for each person, and draw random binary treatment based on individual probability.
+
 ::: callout-note
 These variables are generated independently, but in real-life would be correlated...
 :::
@@ -54,12 +65,12 @@ These variables are generated independently, but in real-life would be correlate
 ```{r }
 #| label: base-hazard
 # log-hazard
-    lp_outc <- log(ef_treat) * treat +
-      log(ef_gender) * female +
-      log(ef_age) * age + log(ef_dx_1)*dx_1 + log(ef_dx_2)*dx_2 # <1>
+    lp_outc <- log(y_treat) * treat +
+      log(y_gender) * female +
+      log(y_age) * age + log(y_dx_1)*dx_1 + log(y_dx_2)*dx_2 # <1>
   
   # Simulate baseline survival times (exponential distribution)
-    baseline_hazard <- 0.05 # <2>
+    baseline_hazard <- 0.01 # <2>
 ```
 
 1. Compute the linear predictor, 
@@ -78,17 +89,37 @@ These variables are generated independently, but in real-life would be correlate
 1.  Simulate survival times using exponential distribution
 2.  Adjust the times with linear predictor and round to nearest whole number.
 
+```{r }
+#| label: gg-eventtimes
+#| message: false
+#| warning: false
+
+ggplot(data = tibble(time = t_outc)) + 
+  geom_histogram(aes(x = time), color = 'blue', fill = 'blue') +
+  theme_bw() +
+  labs(x = 'Event Times', y= 'Count')
+
+```
+
 # Simulate Treatment Start {#sec-ttimes}
 
 ```{r }
 #| label: treat-hazard
-    lp_treat = log(0.7) * female + log(1.02) * age # <1>
-    baseline_hazard = 0.1 # <2>
-    t_treat = if_else(treat==1, round(rexp(n, rate = baseline_hazard)* exp(-lp_treat)), Inf) # <3>
+    t_treat = if_else(treat==0, Inf, round(rweibull(n, shape = 0.8, scale = 10)))  # <1>
 ```
-1. Simulate treatment start times based on female and age. (for weighting model); assumed dx_1 and dx_2 unrelated to treatment.
-2. Used a different rate, so treatment happens early relative to outcome.
-3. Generate treatment times and adjust for linear predictor.  
+1. Simulate treatment start times.  
+
+```{r }
+#| label: gg-inittimes
+#| message: false
+#| warning: false
+
+ggplot(data = tibble(time = t_treat)) + 
+  geom_histogram(aes(x = time), color = 'blue', fill = 'blue') +
+  theme_bw() +
+  labs(x = 'Treatment Initation Time', y= 'Count')
+
+```
 
 # Finalize dataset {#sec-dta}
 
@@ -113,18 +144,49 @@ These variables are generated independently, but in real-life would be correlate
 
 ```{r }
 #| label: glimpse-survdta
+#| echo: false
 glimpse(data)
 ```
 
 ```{r }
 #| label: summ-survdta
-summary(survfit(Surv(time, event_outc) ~ treat, data = data), times = c(0, 12, 30, 60))
+#| echo: false
+tbl_survfit(survfit(Surv(time, event_outc) ~ treat, data = data), 
+            times = c(0, 12, 30, 60),
+            statistic = '{estimate}')
 ```
 
 ::: callout-note
 Treat=1 means they EVER received treatment, so additional work needed to describe a treatment window etc.
 :::
 
+```{r }
+#| fig-label: KM-est
+#| echo: false
+#| fig-cap: Unadjusted Kaplan-Meier Plot
+ggsurvplot(survfit(Surv(time, event_outc) ~ treat, data = data),
+                            data=data,
+                            fun = 'event',
+                            xlim = c(0, 60),
+                            xlab = 'Follow-up',
+                            break.time.by=6,
+                            palette = c('red', 'blue'),
+                            linetype = 'strata',
+                            censor=F,
+                            cumevents=T,
+                            conf.int=F, pval=F,
+                            risk.table=T, risk.table.col = 'strata',
+                            risk.table.height=0.25, 
+                            ggtheme = theme_classic())
+```
+
+The unadjusted model observes differences in incidence between treatment groups. A proportional hazards model adjusting for confounders finds a different result.  
+
+```{r }
+#| label: fit-cox
+d_cox = coxph(Surv(time, event_outc) ~ treat + female + age + dx_1 + dx_2, data = data) 
+tbl_regression(d_cox, exponentiate=T)
+```
 ```{r }
 #| label: save-dta
 #| echo: false
@@ -160,6 +222,7 @@ data_cloned = bind_rows( # <1>
   mutate(t_clone = pmin(time, t_artcens), # <3>
          event_outc = if_else(t_clone<time, 0, event_outc)) # <3>
 ```
+
 1. Clones assigned to strategy 1 (No treatment)
 2. Clones assigned to strategy 2 (grace window for treatment)
 3. Update failure times and events counting  artificial censoring
@@ -167,6 +230,34 @@ data_cloned = bind_rows( # <1>
 ::: callout-note
 I set failure times to Infinite when the event is unobserved, e.g. if no treatment, time to treatment is INF
 :::
+
+```{r }
+#| label: KM-est
+#| echo: false
+ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=data_cloned),
+                            data=data_cloned,
+                            fun = 'event',
+                            xlim = c(0, 60),
+                            xlab = 'Follow-up',
+                            break.time.by=6,
+                            palette = c('red', 'blue'),
+                            linetype = 'strata',
+                            censor=F,
+                            cumevents=T,
+                            conf.int=F, pval=F,
+                            risk.table=T, risk.table.col = 'strata',
+                            risk.table.height=0.25, 
+                            ggtheme = theme_classic())
+```
+The cloned dataset finds a similar answer (unadjusted), except the differences do not reveal until the end of the grace period.  
+
+An adjusted Cox model on the cloned dataset finds similar results between the `treat` and `assign` variables.
+
+```{r }
+#| label: fit-cox2
+d_cox = coxph(Surv(t_clone, event_outc) ~ assign + female + age + dx_1 + dx_2, data = data_cloned) 
+tbl_regression(d_cox, exponentiate = T)
+```
 
 ```{r }
 #| label: save-clone-dta

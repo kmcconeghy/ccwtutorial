@@ -200,6 +200,7 @@ div.csl-indent {
   </ul></li>
   <li><a href="#ipcw-pooled-logistic-regression" id="toc-ipcw-pooled-logistic-regression" class="nav-link" data-scroll-target="#ipcw-pooled-logistic-regression">IPCW Pooled Logistic Regression</a>
   <ul class="collapse">
+  <li><a href="#cox-proportional-hazards" id="toc-cox-proportional-hazards" class="nav-link" data-scroll-target="#cox-proportional-hazards">Cox Proportional Hazards</a></li>
   <li><a href="#build-a-longitudinal-panel-1" id="toc-build-a-longitudinal-panel-1" class="nav-link" data-scroll-target="#build-a-longitudinal-panel-1">Build a longitudinal panel</a>
   <ul class="collapse">
   <li><a href="#censoring-dataset" id="toc-censoring-dataset" class="nav-link" data-scroll-target="#censoring-dataset">Censoring dataset</a></li>
@@ -240,10 +241,11 @@ div.csl-indent {
 <dl>
 <dt>PLR</dt>
 <dd>
-Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time. KM
+Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.
 </dd>
+<dt>KM</dt>
 <dd>
-Kaplan-Meier, Product-Limit, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
+Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
 </dd>
 </dl>
 <ol type="1">
@@ -313,16 +315,16 @@ Note
 Columns: 12
 $ id         &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
 $ assign     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ t_clone    &lt;dbl&gt; 60, 60, 60, 28, 47, 49, 60, 57, 4, 60, 2, 60, 0, 2, 60, 6, …
-$ event_outc &lt;dbl&gt; 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ time       &lt;dbl&gt; 60, 60, 60, 28, 47, 49, 60, 57, 60, 60, 60, 60, 60, 30, 60,…
-$ t_artcens  &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 4, Inf, 2, Inf, 0, …
-$ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, 4, Inf, 2, Inf, 0, …
-$ treat      &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1,…
+$ t_clone    &lt;dbl&gt; 60, 60, 60, 60, 60, 60, 60, 9, 60, 60, 60, 60, 60, 60, 0, 1…
+$ event_outc &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,…
+$ time       &lt;dbl&gt; 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,…
+$ t_artcens  &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, 9, Inf, Inf, Inf, Inf, I…
+$ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, 9, Inf, Inf, Inf, Inf, I…
+$ treat      &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0,…
 $ age        &lt;dbl&gt; 88.7, 69.4, 78.6, 81.3, 79.0, 73.9, 90.1, 74.1, 95.2, 74.4,…
 $ female     &lt;dbl&gt; 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1,…
-$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,…
-$ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0,…</code></pre>
+$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1,…
+$ dx_2       &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0,…</code></pre>
 </div>
 </div>
 </section>
@@ -392,7 +394,7 @@ $ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0
 <span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-3-5" class="code-annotation-target"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-3-6" class="code-annotation-target"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>    d_panel[, event_outc <span class="sc">:</span><span class="er">=</span> <span class="fu">if_else</span>( t_clone <span class="sc">&lt;=</span> time, event_outc, <span class="dv">0</span>L), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    d_panel_outc <span class="ot">=</span> <span class="fu">select</span>(d_panel, id, time, event_outc, t_treat, assign, enter, exit) </span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    d_panel_outc <span class="ot">=</span> <span class="fu">select</span>(d_panel, id, time, event_outc, t_treat, assign, enter, exit, female, dx_1, dx_2, age) </span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
@@ -421,15 +423,19 @@ $ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(d_panel_outc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 554,458
-Columns: 7
+<pre><code>Rows: 599,976
+Columns: 11
 $ id         &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
 $ time       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
 $ event_outc &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
 $ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf,…
 $ assign     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
 $ enter      &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1…
-$ exit       &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …</code></pre>
+$ exit       &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
+$ female     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ age        &lt;dbl&gt; 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7,…</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -541,6 +547,513 @@ Note
 <p>There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.</p>
 </div>
 </div>
+<section id="cox-proportional-hazards" class="level2">
+<h2 class="anchored" data-anchor-id="cox-proportional-hazards">Cox Proportional Hazards</h2>
+<p>The effect of covariates on treatment can be modeled in the non-expanded dataset for reference. These estimates should be consistent with the data parameters outlined in <a href="./01_syndata.v2.html">Data</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="kovzhddvrm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kovzhddvrm table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#kovzhddvrm thead, #kovzhddvrm tbody, #kovzhddvrm tfoot, #kovzhddvrm tr, #kovzhddvrm td, #kovzhddvrm th {
+  border-style: none;
+}
+
+#kovzhddvrm p {
+  margin: 0;
+  padding: 0;
+}
+
+#kovzhddvrm .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#kovzhddvrm .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#kovzhddvrm .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#kovzhddvrm .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#kovzhddvrm .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#kovzhddvrm .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#kovzhddvrm .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#kovzhddvrm .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#kovzhddvrm .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#kovzhddvrm .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#kovzhddvrm .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kovzhddvrm .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#kovzhddvrm .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#kovzhddvrm .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#kovzhddvrm .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kovzhddvrm .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#kovzhddvrm .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#kovzhddvrm .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#kovzhddvrm .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kovzhddvrm .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#kovzhddvrm .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kovzhddvrm .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#kovzhddvrm .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kovzhddvrm .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kovzhddvrm .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kovzhddvrm .gt_left {
+  text-align: left;
+}
+
+#kovzhddvrm .gt_center {
+  text-align: center;
+}
+
+#kovzhddvrm .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#kovzhddvrm .gt_font_normal {
+  font-weight: normal;
+}
+
+#kovzhddvrm .gt_font_bold {
+  font-weight: bold;
+}
+
+#kovzhddvrm .gt_font_italic {
+  font-style: italic;
+}
+
+#kovzhddvrm .gt_super {
+  font-size: 65%;
+}
+
+#kovzhddvrm .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#kovzhddvrm .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#kovzhddvrm .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#kovzhddvrm .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#kovzhddvrm .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#kovzhddvrm .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#kovzhddvrm .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#kovzhddvrm .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#kovzhddvrm div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="header gt_col_headings">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="estimate" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>HR</strong></th>
+<th id="conf.low" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">assign</td>
+<td class="gt_row gt_center" headers="estimate">1.01</td>
+<td class="gt_row gt_center" headers="conf.low">0.93, 1.09</td>
+<td class="gt_row gt_center" headers="p.value">0.9</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">female</td>
+<td class="gt_row gt_center" headers="estimate">3.08</td>
+<td class="gt_row gt_center" headers="conf.low">2.79, 3.41</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">age</td>
+<td class="gt_row gt_center" headers="estimate">0.98</td>
+<td class="gt_row gt_center" headers="conf.low">0.98, 0.99</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">dx_1</td>
+<td class="gt_row gt_center" headers="estimate">1.12</td>
+<td class="gt_row gt_center" headers="conf.low">0.96, 1.31</td>
+<td class="gt_row gt_center" headers="p.value">0.2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">dx_2</td>
+<td class="gt_row gt_center" headers="estimate">0.78</td>
+<td class="gt_row gt_center" headers="conf.low">0.72, 0.84</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot class="gt_sourcenotes">
+<tr class="even">
+<td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+</section>
 <section id="build-a-longitudinal-panel-1" class="level2">
 <h2 class="anchored" data-anchor-id="build-a-longitudinal-panel-1">Build a longitudinal panel</h2>
 <p>As before the person- or clone-level data must be expanded to a longitudinal panel by time. Here, two datasets must be constructed, one for estimation of censoring probabilities and one for estimation of outcome probabilities.</p>
@@ -582,7 +1095,7 @@ Note
 <span id="annotated-cell-8-3"><a href="#annotated-cell-8-3" aria-hidden="true" tabindex="-1"></a>  d_panel[, exit <span class="sc">:</span><span class="er">=</span> (<span class="fu">seq_len</span>(.N)), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
 <span id="annotated-cell-8-4"><a href="#annotated-cell-8-4" aria-hidden="true" tabindex="-1"></a>  d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
 <span id="annotated-cell-8-5"><a href="#annotated-cell-8-5" aria-hidden="true" tabindex="-1"></a>  d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
-<span id="annotated-cell-8-6"><a href="#annotated-cell-8-6" aria-hidden="true" tabindex="-1"></a>  d_panel[, event_treat <span class="sc">:</span><span class="er">=</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;=</span> time, treat, <span class="dv">0</span>L), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
+<span id="annotated-cell-8-6"><a href="#annotated-cell-8-6" aria-hidden="true" tabindex="-1"></a>  d_panel[, event_treat <span class="sc">:</span><span class="er">=</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;=</span> time, <span class="dv">1</span>L, <span class="dv">0</span>L), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-8-7" class="code-annotation-target"><a href="#annotated-cell-8-7" aria-hidden="true" tabindex="-1"></a>  d_panel_treat <span class="ot">=</span> <span class="fu">select</span>(d_panel, id, time, event_treat, t_treat, enter, exit, end, age, female, dx_1, dx_2)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
@@ -599,14 +1112,12 @@ Note
 <h2 class="anchored" data-anchor-id="estimation-2">Estimation</h2>
 <p>We fit a model with the outcome of censoring, including the variables which are key. Then we add fitted probabilities back to the dataset, calculate cumulative probabilities of remaining uncensoring, and join those estimated probabilities to the outcome dataset.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(event_treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> female <span class="sc">+</span> </span>
+<div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(event_treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> age <span class="sc">+</span> female <span class="sc">+</span> </span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-9-2" class="code-annotation-target"><a href="#annotated-cell-9-2" aria-hidden="true" tabindex="-1"></a>                   dx_1 <span class="sc">+</span> dx_2, <span class="at">data=</span>d_panel_treat, <span class="at">family=</span><span class="fu">binomial</span>())</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-9-3" class="code-annotation-target"><a href="#annotated-cell-9-3" aria-hidden="true" tabindex="-1"></a>  d_panel_treat<span class="sc">$</span>pr_treat <span class="ot">=</span> d_glm_wt<span class="sc">$</span>fitted.values</span>
 <span id="annotated-cell-9-4"><a href="#annotated-cell-9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setDT</span>(d_panel_treat)</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-9-5" class="code-annotation-target"><a href="#annotated-cell-9-5" aria-hidden="true" tabindex="-1"></a>  d_panel_treat[, cumpr_notreat <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(<span class="dv">1</span><span class="sc">-</span>pr_treat), by <span class="ot">=</span> .(id)]</span>
-<span id="annotated-cell-9-6"><a href="#annotated-cell-9-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-9-7" class="code-annotation-target"><a href="#annotated-cell-9-7" aria-hidden="true" tabindex="-1"></a>  d_panel_treat <span class="ot">=</span> <span class="fu">select</span>(d_panel_treat, id, time, cumpr_notreat)</span>
-<span id="annotated-cell-9-8"><a href="#annotated-cell-9-8" aria-hidden="true" tabindex="-1"></a>  d_panel_outc <span class="ot">=</span> <span class="fu">left_join</span>(d_panel_outc, d_panel_treat, <span class="at">by=</span><span class="fu">c</span>(<span class="st">'id'</span>, <span class="st">'time'</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-9-6" class="code-annotation-target"><a href="#annotated-cell-9-6" aria-hidden="true" tabindex="-1"></a>  d_panel_outc <span class="ot">=</span> <span class="fu">left_join</span>(d_panel_outc, <span class="fu">select</span>(d_panel_treat, id, time, cumpr_notreat), <span class="at">by=</span><span class="fu">c</span>(<span class="st">'id'</span>, <span class="st">'time'</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-9" data-target-annotation="1">1</dt>
@@ -623,7 +1134,7 @@ Note
 </dd>
 <dt data-target-cell="annotated-cell-9" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-cell="annotated-cell-9" data-code-lines="7,8" data-code-annotation="4">Join probabilities back to outcome dataset</span>
+<span data-code-cell="annotated-cell-9" data-code-lines="6" data-code-annotation="4">Join probabilities back to outcome dataset</span>
 </dd>
 </dl>
 </div>
@@ -656,7 +1167,7 @@ Note
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-10-8" class="code-annotation-target"><a href="#annotated-cell-10-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time<span class="sc">==</span><span class="dv">12</span>   <span class="sc">&amp;</span> t_treat    <span class="sc">&gt;</span><span class="dv">12</span>, <span class="dv">0</span>,</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="6" onclick="event.preventDefault();">6</a><span id="annotated-cell-10-9" class="code-annotation-target"><a href="#annotated-cell-10-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span></span>
 <span id="annotated-cell-10-10"><a href="#annotated-cell-10-10" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="7" onclick="event.preventDefault();">7</a><span id="annotated-cell-10-11" class="code-annotation-target"><a href="#annotated-cell-10-11" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[assign<span class="sc">==</span><span class="dv">1</span>, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(ipw), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="7" onclick="event.preventDefault();">7</a><span id="annotated-cell-10-11" class="code-annotation-target"><a href="#annotated-cell-10-11" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[,ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(ipw), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-10" data-target-annotation="1">1</dt>
@@ -692,13 +1203,13 @@ Note
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  0.000   1.000   1.201   1.125   1.219   6.019 </code></pre>
+<pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.000e+00 1.000e+00 4.000e+00 2.548e+08 4.060e+02 2.768e+12 </code></pre>
 </div>
 </div>
 <p>Now with the estimated weights, it is simple to generate weighted cumulative incidences:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-11"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-11-1" class="code-annotation-target"><a href="#annotated-cell-11-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
+<div class="sourceCode cell-code" id="annotated-cell-11"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-11-1" class="code-annotation-target"><a href="#annotated-cell-11-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign <span class="sc">+</span> female <span class="sc">+</span> dx_2 , <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
 <span id="annotated-cell-11-2"><a href="#annotated-cell-11-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-11-3" class="code-annotation-target"><a href="#annotated-cell-11-3" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values</span>
 <span id="annotated-cell-11-4"><a href="#annotated-cell-11-4" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
@@ -727,6 +1238,10 @@ Note
 </div>
 </div>
 <div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 60 rows containing missing values or values outside the scale range
+(`geom_line()`).</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -781,13 +1296,13 @@ PLR-Wtd
 6
 </td>
 <td style="text-align:center;">
-0.060
+0.030
 </td>
 <td style="text-align:center;">
-0.056
+0.028
 </td>
 <td style="text-align:center;">
-0.056
+1
 </td>
 </tr>
 <tr>
@@ -795,13 +1310,13 @@ PLR-Wtd
 12
 </td>
 <td style="text-align:center;">
-0.109
+0.057
 </td>
 <td style="text-align:center;">
-0.109
+0.054
 </td>
 <td style="text-align:center;">
-0.109
+1
 </td>
 </tr>
 <tr>
@@ -809,13 +1324,13 @@ PLR-Wtd
 24
 </td>
 <td style="text-align:center;">
-0.208
+0.107
 </td>
 <td style="text-align:center;">
-0.205
+0.104
 </td>
 <td style="text-align:center;">
-0.205
+1
 </td>
 </tr>
 <tr>
@@ -823,13 +1338,13 @@ PLR-Wtd
 36
 </td>
 <td style="text-align:center;">
-0.294
+0.153
 </td>
 <td style="text-align:center;">
-0.291
+0.151
 </td>
 <td style="text-align:center;">
-0.291
+1
 </td>
 </tr>
 <tr>
@@ -837,13 +1352,13 @@ PLR-Wtd
 48
 </td>
 <td style="text-align:center;">
-0.369
+0.195
 </td>
 <td style="text-align:center;">
-0.368
+0.194
 </td>
 <td style="text-align:center;">
-0.368
+1
 </td>
 </tr>
 <tr>
@@ -851,13 +1366,13 @@ PLR-Wtd
 60
 </td>
 <td style="text-align:center;">
-0.440
+0.236
 </td>
 <td style="text-align:center;">
-0.438
+0.234
 </td>
 <td style="text-align:center;">
-0.439
+1
 </td>
 </tr>
 </tbody>
@@ -894,13 +1409,13 @@ PLR-Wtd
 6
 </td>
 <td style="text-align:center;">
-0.060
+0.031
 </td>
 <td style="text-align:center;">
-0.055
+0.027
 </td>
 <td style="text-align:center;">
-0.054
+0
 </td>
 </tr>
 <tr>
@@ -908,13 +1423,13 @@ PLR-Wtd
 12
 </td>
 <td style="text-align:center;">
-0.108
+0.058
 </td>
 <td style="text-align:center;">
-0.105
+0.056
 </td>
 <td style="text-align:center;">
-0.104
+0
 </td>
 </tr>
 <tr>
@@ -922,13 +1437,13 @@ PLR-Wtd
 24
 </td>
 <td style="text-align:center;">
-0.193
+0.108
 </td>
 <td style="text-align:center;">
-0.192
+0.113
 </td>
 <td style="text-align:center;">
-0.191
+0
 </td>
 </tr>
 <tr>
@@ -936,13 +1451,13 @@ PLR-Wtd
 36
 </td>
 <td style="text-align:center;">
-0.267
+0.171
 </td>
 <td style="text-align:center;">
-0.267
+0.170
 </td>
 <td style="text-align:center;">
-0.265
+0
 </td>
 </tr>
 <tr>
@@ -950,13 +1465,13 @@ PLR-Wtd
 48
 </td>
 <td style="text-align:center;">
-0.335
+0.232
 </td>
 <td style="text-align:center;">
-0.331
+0.224
 </td>
 <td style="text-align:center;">
-0.331
+0
 </td>
 </tr>
 <tr>
@@ -964,13 +1479,13 @@ PLR-Wtd
 60
 </td>
 <td style="text-align:center;">
-0.391
+0.277
 </td>
 <td style="text-align:center;">
-0.389
+0.275
 </td>
 <td style="text-align:center;">
-0.389
+0
 </td>
 </tr>
 </tbody>
@@ -1007,13 +1522,13 @@ PLR-Wtd
 6
 </td>
 <td style="text-align:center;">
+0.002
+</td>
+<td style="text-align:center;">
 0.000
 </td>
 <td style="text-align:center;">
--0.001
-</td>
-<td style="text-align:center;">
--0.002
+-1
 </td>
 </tr>
 <tr>
@@ -1021,13 +1536,13 @@ PLR-Wtd
 12
 </td>
 <td style="text-align:center;">
--0.001
+0.001
 </td>
 <td style="text-align:center;">
--0.004
+0.001
 </td>
 <td style="text-align:center;">
--0.005
+-1
 </td>
 </tr>
 <tr>
@@ -1035,13 +1550,13 @@ PLR-Wtd
 24
 </td>
 <td style="text-align:center;">
--0.015
+0.001
 </td>
 <td style="text-align:center;">
--0.013
+0.009
 </td>
 <td style="text-align:center;">
--0.014
+-1
 </td>
 </tr>
 <tr>
@@ -1049,13 +1564,13 @@ PLR-Wtd
 36
 </td>
 <td style="text-align:center;">
--0.027
+0.018
 </td>
 <td style="text-align:center;">
--0.024
+0.019
 </td>
 <td style="text-align:center;">
--0.025
+-1
 </td>
 </tr>
 <tr>
@@ -1063,13 +1578,13 @@ PLR-Wtd
 48
 </td>
 <td style="text-align:center;">
--0.033
+0.037
 </td>
 <td style="text-align:center;">
--0.037
+0.030
 </td>
 <td style="text-align:center;">
--0.037
+-1
 </td>
 </tr>
 <tr>
@@ -1077,13 +1592,126 @@ PLR-Wtd
 60
 </td>
 <td style="text-align:center;">
--0.049
+0.041
 </td>
 <td style="text-align:center;">
--0.049
+0.041
 </td>
 <td style="text-align:center;">
--0.049
+-1
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="4">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Relative Risks
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+time
+</th>
+<th style="text-align:center;">
+Kaplan-Meier
+</th>
+<th style="text-align:center;">
+PLR-Naive
+</th>
+<th style="text-align:center;">
+PLR-Wtd
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+6
+</td>
+<td style="text-align:center;">
+1.055
+</td>
+<td style="text-align:center;">
+0.991
+</td>
+<td style="text-align:center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+12
+</td>
+<td style="text-align:center;">
+1.010
+</td>
+<td style="text-align:center;">
+1.024
+</td>
+<td style="text-align:center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+24
+</td>
+<td style="text-align:center;">
+1.013
+</td>
+<td style="text-align:center;">
+1.082
+</td>
+<td style="text-align:center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+36
+</td>
+<td style="text-align:center;">
+1.114
+</td>
+<td style="text-align:center;">
+1.126
+</td>
+<td style="text-align:center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+48
+</td>
+<td style="text-align:center;">
+1.190
+</td>
+<td style="text-align:center;">
+1.157
+</td>
+<td style="text-align:center;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+60
+</td>
+<td style="text-align:center;">
+1.173
+</td>
+<td style="text-align:center;">
+1.173
+</td>
+<td style="text-align:center;">
+0
 </td>
 </tr>
 </tbody>
