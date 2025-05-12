@@ -26,20 +26,22 @@ d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
 
 # Introduction
 
-I recommend the following stepwise procedure in estimation: 
+I recommend the following stepwise procedure in estimation:
 
 PLR
-: Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.  
+
+:   Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.
 
 KM
-: Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR. 
+
+:   Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
 
 1.  Estimate unweighted/unadjusted cumulative incidences with KM method
 2.  Estimate a PLR model without weights\
 
 <!-- -->
 
-  i)  Compare KM vs PLR
+i)  Compare KM vs PLR
 
 <!-- -->
 
@@ -47,15 +49,12 @@ KM
 
 <!-- -->
 
-  i)  Estimate KM model for treatment initiation
-  ii) Estimate PLR for treatment initiation
-    A. compare KM / PLR estimates
-  iv) estimate final treatment model 
-    A. Join treatment probabilities to outcome data
-    B. compute IPCW
-  v)  examine IPCW weights for extreme values, non-sensical values
-  vi) examine balance in covariates across time
-  vii) generate "table 1" with some weighted difference statistic (e.g. wSMD)
+i)  Estimate KM model for treatment initiation
+ii) Estimate PLR for treatment initiation A. compare KM / PLR estimates
+iii) estimate final treatment model A. Join treatment probabilities to outcome data B. compute IPCW
+iv) examine IPCW weights for extreme values, non-sensical values
+v)  examine balance in covariates across time
+vi) generate "table 1" with some weighted difference statistic (e.g. wSMD)
 
 <!-- -->
 
@@ -63,8 +62,8 @@ KM
 
 <!-- -->
 
-  i)  Estimate a weighted outcome model, no covariate adjustment
-  ii) Estimate a weighted outcome + covariates (main estimate)
+i)  Estimate a weighted outcome model, no covariate adjustment
+ii) Estimate a weighted outcome + covariates (main estimate)
 
 <!-- -->
 
@@ -83,7 +82,7 @@ A reasonable starting point is to evaluate the cloned dataset without probabilit
 
 2)  The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).
 
-## Data  
+## Data
 
 We continue the below using the cloned dataset generated in [Data](01_syndata.v2.qmd).
 
@@ -92,7 +91,7 @@ We continue the below using the cloned dataset generated in [Data](01_syndata.v2
 glimpse(d_cloned)
 ```
 
-## Estimation  
+## Estimation
 
 ```{r }
 #| label: KM-est
@@ -117,7 +116,7 @@ glimpse(d_cloned)
 3.  Data is in long form, so one colum per group with cumulative incidence/survival
 4.  Estimands, `cir` is ratio analogous to relative risk, and `cid` is analogous to risk difference
 
-## Summarize KM estimator  
+## Summarize KM estimator
 
 ```{r }
 #| label: gg-km
@@ -138,7 +137,7 @@ ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=d_cloned),
                             ggtheme = theme_classic())
 ```
 
-## Cox Proportional Hazards  
+## Cox Proportional Hazards
 
 The data was designed so treatment has no causal effect on outcome, but confounding is present [Data](01_syndata.v2.qmd). When you adjust for the confounders the risks are similar in both groups.
 
@@ -246,6 +245,7 @@ At first glance, plot looks reasonable. We now directly compare PLR to the KM es
 
 ```{r }
 #| label: gg-cmp-naive-models
+#| fig-cap: "Naive PLR versus K-M estimator"
 #| echo: FALSE
 d_ci_cmp = inner_join(
   select(d_plr_naive_est, time, pr_ev_0, pr_ev_1, cid) %>%
@@ -290,31 +290,70 @@ So the PLR model using a simple polynomial can approximate our KM estimate reaso
 
 3.  These initial steps will not guarantee a good fit after weighting is applied, it is only a beginning.
 
-## Comparison of covariate adjusted PLR with Cox model  
+## Comparison of covariate adjusted PLR with Cox model
+
+```{r }
+#| label: glm-plr-covadj
+#| echo: FALSE
+ 
+# defined above
+  d_glm = glm(event_outc ~ poly(time, 2, raw=T)*assign + female + age + dx_1 + dx_2, 
+              data=d_panel_outc, family=binomial()) # <1>
+
+  d_panel_outc$p.event0 <- predict(d_glm, mutate(d_panel_outc, assign=0), type="response") # <2>
+  d_panel_outc$p.event1 <- predict(d_glm, mutate(d_panel_outc, assign=1), type="response") # <2>
+  
+  d_panel_outc[, `:=`(pr_surv_1 = cumprod(1 - p.event1)), by=list(id, assign)] # <3>
+  d_panel_outc[, `:=`(pr_surv_0 = cumprod(1 - p.event0)), by=list(id, assign)] # <3>
+  
+  d_plr_adj_est = d_panel_outc %>% # <4>
+    group_by(time) %>% # <4>
+    summarize(pr_ev_1 = mean(1-pr_surv_1),
+              pr_ev_0 = mean(1-pr_surv_0), 
+              .groups = 'drop') %>% # <4>
+    ungroup %>% # <4>
+    mutate(cid = pr_ev_1 - pr_ev_0, # <4>
+           cir = pr_ev_1 / pr_ev_0) # <4>
+```
+
+1.  PLR model with some covariates for adjustment. (model fit for each treatment group)
+2.  Predict outcome from each PLR.
+3.  Estimatie cumulative survival using cumulative product, within person-clone
+4.  Summarize mean survival rates by time-period
+
+::: callout-note
+Note the outcome regression without covariates is just for comparison and understanding, the final analysis must include probability weights for artificial censoring even if no confounding.
+:::
+
+```{r }
+#| label: time-dependent cox model
+#| message: FALSE
+#| warning: FALSE
+  d_cox = coxph(Surv(enter, exit, event_outc) ~ assign + female + age + dx_1 + dx_2, data = d_panel_outc) # <1>
+
+  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign") %>% # <2>
+      group_by(variable, time) %>% # <3>
+        dplyr::filter(row_number()==1) %>% # <3>
+      ungroup %>% # <3>
+      mutate(pr_ev = 1 - surv) %>% # <3>
+      pivot_wider(., id_cols =c('time'), # <3>
+                  names_from = variable, # <3> 
+                  names_prefix = 'pr_ev_', # <3>
+                  values_from = pr_ev # <3> 
+      ) %>% # <3>
+      mutate(cid = pr_ev_1 - pr_ev_0, # <3> 
+             cir = pr_ev_1 / pr_ev_0) # <3> 
+```
+
+For comparison, A time-dependent Cox model is fit.
+
+1.  Cox model, with time1, time2 parameters
+2.  Estimation of adjusted survival curves by treatment group, with subpopulations balanced using `conditional` method.[@acompar]
+3.  Summarizing survival probabilities by time
 
 ```{r }
 #| label: gg-cmp-outcadj-models
 #| echo: FALSE
-#| 
-# defined above
-  d_glm = glm(event_outc ~ poly(time, 2, raw=T)*assign + female + age + dx_1 + dx_2, 
-              data=d_panel_outc, family=binomial()) # 
-
-  d_panel_outc$p.event0 <- predict(d_glm, mutate(d_panel_outc, assign=0), type="response")
-  d_panel_outc$p.event1 <- predict(d_glm, mutate(d_panel_outc, assign=1), type="response")
-  
-  d_panel_outc[, `:=`(pr_surv_1 = cumprod(1 - p.event1)), by=list(id, assign)] # 
-  d_panel_outc[, `:=`(pr_surv_0 = cumprod(1 - p.event0)), by=list(id, assign)] # 
-  
-  d_plr_adj_est = d_panel_outc %>% # 
-    group_by(time) %>% # 
-    summarize(pr_ev_1 = mean(1-pr_surv_1),
-              pr_ev_0 = mean(1-pr_surv_0), 
-              .groups = 'drop') %>% # 
-    ungroup %>%
-    mutate(cid = pr_ev_1 - pr_ev_0, # 
-           cir = pr_ev_1 / pr_ev_0) # 
-
 
 d_ci_cmp = inner_join(
   select(d_plr_adj_est, time, pr_ev_0, pr_ev_1, cid) %>%
@@ -342,6 +381,7 @@ d_gg_ci = d_ci_cmp %>%
       geom_line(aes(y = plr_cid), color='forestgreen', linetype=2) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
+      scale_y_continuous(limits = c(-0.2, 0.2)) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Risk Differences')
     
@@ -359,14 +399,13 @@ Once the basic procedures are setup and there is some confidence in the ability 
 There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.
 :::
 
-
 ## Build a longitudinal panel
 
 As before the person- or clone-level data must be expanded to a longitudinal panel by time. Here, two datasets must be constructed, one for estimation of censoring probabilities and one for estimation of outcome probabilities.
 
 ### Censoring dataset
 
-In our example, artificial censoring is tied to whether treatment is initiated within a grace window or not. This is very specific to a project's definitions of treatment so proceed with caution. The basic idea is that since clones censor according to whether treatments starts (or not), the probability of censoring is essentially the probability of initiating treatment. So we generate a dataset that is at the person-level (no cloning):
+In our example, artificial censoring is tied to whether treatment is initiated within a grace window or not. This is very specific to a project's definitions of treatment so proceed with caution. The basic idea is that since clones censor according to whether treatments starts (or not), the probability of censoring is essentially the probability of initiating treatment. So we generate a dataset that is at the person-level with time to treatment as the outcome (no cloning):
 
 ```{r }
 #| label: dta-censor
@@ -401,22 +440,43 @@ Then we expand the dataset as described above:
 
 1.  Note we keep covariates for estimation of censoring weights.
 
-## Estimation
+## Estimation of weights
+
+The probability weight, AKA inverse probability censoring weight (IPCW) or inverse probability of no loss to follow-up is estimated in this way:  
+
+$$
+W^C_i = \prod^{T}_{t_0} \frac{P(C_t = 0| \overline{C}_{t-1} = 0)}{P(C_t=0 | X=x, \overline{L}_{t-1}=l_{i, t-1}, \overline{C}_{t-1}=0)}
+$$
+
+C in this case means censoring, but censoring occurs according to treatment strategy, so it really is the probability of adhering to the treatment you were assigned to. Stabilized weights are tricky, here we are using the marginal stabilized weight which is the probability of no censoring at each timepoint, and the denominator is the conditional probability accounting for fixed, i.e. baseline, (X) and time-varying (L) covariates.   
 
 We fit a model with the outcome of censoring, including the variables which are key. Then we add fitted probabilities back to the dataset, calculate cumulative probabilities of remaining uncensoring, and join those estimated probabilities to the outcome dataset.
 
 ```{r }
 #| label: est-censor-prob
+#| warning: FALSE
+
+  # Numerator (margin probability)
+  d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T), data=d_panel_treat, family=binomial()) # <1>
+  d_panel_outc$pr_censnum = predict(d_glm_wt, newdata = d_panel_outc, type='response') # <1>
+
+  # Denominator 
   d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T) + female + 
-                   dx_1, data=d_panel_treat, family=binomial()) # <1>
-  d_panel_treat$pr_treat = d_glm_wt$fitted.values # <2>
-  setDT(d_panel_treat)
-  d_panel_treat[, cumpr_notreat := cumprod(1-pr_treat), by = .(id)] # <3>
-  d_panel_outc = left_join(d_panel_outc, select(d_panel_treat, id, time, pr_treat, cumpr_notreat), by=c('id', 'time')) # <4>
+                   dx_1 + age + dx_2, data=d_panel_treat, family=binomial()) # <2>
+  
+  d_panel_outc$pr_censdenom = predict(d_glm_wt, newdata = d_panel_outc, type='response') # <2>
+
+  #d_panel_treat$pr_treat = d_glm_wt$fitted.values # <2>
+  #setDT(d_panel_treat)
+  #d_panel_treat[, cumpr_notreat := cumprod(1-pr_treat), by = .(id)] # <3>
+  #d_panel_outc = left_join(d_panel_outc, 
+  #                         select(d_panel_treat, id, time, pr_treat, 
+  #                                cumpr_notreat), by=c('id', 'time')) # <4>
 ```
 
-1.  Estimation of probability of censoring in PLR
-2.  Add fitted probabilities to dataset
+1. Marginal probability of no censoring
+2. Conditional probability (covariates) for no censoring
+2.  Add fitted probabilities to outcome dataset
 3.  Calculate cumulative probability of non-treatment (treatment-free survival)
 4.  Join probabilities back to outcome dataset
 
@@ -424,48 +484,81 @@ We fit a model with the outcome of censoring, including the variables which are 
 I think there is some controversy in this procedure. Others have not modeled the censoring probability off of a person-unique (no clones) dataset with treatment times, but rather directly in the cloned dataset with the outcome of "censoring" where that may mean treatment initiation or some other thing.[@gaber2024]
 :::
 
-## Calculation of weights  
+## Calculation of weights
 
-This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to [Weighting](05_appendix.qmd) for further discussion. 
+This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to [Weighting](05_appendix.qmd) for further discussion.
 
 ```{r }
 #| label: cpt-weights
   setDT(d_panel_outc)
   
   d_panel_outc[, ipw := fcase(
-    assign==0, 1 / cumpr_notreat, # <1>
+    assign==0, (1-pr_censnum) / (1-pr_censdenom), # <1>
+    assign==0 & t_treat==time, 0,
     assign==1 & time < 12, 1, # <2>
     assign==1 & time == 12  & t_treat   < 12, 1, # <3> 
-    assign==1 & time ==12   & t_treat   ==12, 1 / (pr_treat), # <4> 
-    assign==1 & time ==12   & t_treat    >12, 0, # <5> 
+    assign==1 & time == 12  & t_treat   ==12, pr_censnum / (pr_censdenom), # <4> 
+    assign==1 & time == 12  & t_treat    >12, 0, # <5> 
     assign==1 & time > 12, 1 # <6>
   )]
-  d_panel_outc[assign==1, ipw := cumprod(ipw), by=list(id, assign)] # <7>
+  d_panel_outc[, ipw := cumprod(ipw), by=list(id, assign)] # <7>
   
 ```
-1. (assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored
-2. (assign=1) Clones cannot artifically censor prior to grace
-3. (assign=1) If treatment started prior to grace window ending, the clone cannot censor 
-4. (assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window). 
-5. (assign=1) If a clone is not treated they censor at the end of the window
-6. (assign=1) In periods greater than the end of the grace window, no artificial censoring occurs (they either are treated or already censored at this point). 
-7. After setting these conditions, we compute the cumulative product of the weights.
+
+1.  (assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored
+2.  (assign=1) Clones cannot artifically censor prior to grace
+3.  (assign=1) If treatment started prior to grace window ending, the clone cannot censor
+4.  (assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window).
+5.  (assign=1) If a clone is not treated they censor at the end of the window
+6.  (assign=1) In periods greater than the end of the grace window, no artificial censoring occurs (they either are treated or already censored at this point).
+7.  After setting these conditions, we compute the cumulative product of the weights.
 
 ```{r }
 #| label: desc-ipw
 #| echo: false
-  summary(d_panel_outc$ipw)
+  summary(d_panel_outc$ipw[d_panel_outc$ipw!=0])
 ```
 
-Now with the estimated weights, it is simple to generate weighted cumulative incidences:  
+```{r }
+#| label: weight-table
+#| tbl-cap: Unweighted and Weighted Counts, N at risk (cumulative events)
+#| 
+d_panel_outc %>%
+  group_by(time, assign) %>%
+  summarize(n = sum(ipw!=0), 
+            n_wt = sum(ipw),
+            ev = sum(event_outc),
+            ev_wt = sum(event_outc*ipw),
+            .groups = 'drop') %>%
+  mutate(unwt_evn = paste0(n, ' (', ev, ')'),
+         wt_evn = paste0(round(n_wt, 0), ' (', round(ev_wt, 0), ')')) %>%
+  pivot_wider(id_cols = time, names_from = assign, values_from = c(unwt_evn, wt_evn)) %>%
+  dplyr::filter(time %in% c(1, 12, 30, 60)) %>%
+  rename(`Time` = time,
+         `Unweighted, assign=0` = unwt_evn_0,
+         `Unweighted, assign=1` = unwt_evn_1,
+         `Weighted, assign=0` = wt_evn_0,
+         `Weighted, assign=1` = wt_evn_1,
+         ) %>%
+  kable(align='c', digits =0) %>%
+  kable_styling()
+
+
+```
+
+Like most applications of probability weights, the distribution of weights should be examined and compared to the unweighted population (size and event counts) to identify any problems.  
+
+Now with the estimated weights, it is simple to generate weighted cumulative incidences:
 
 ```{r }
 #| label: est-plr-wt
-  d_glm_pe_1 = glm(event_outc==0 ~ poly(time, 2, raw=T), 
+  d_glm_pe_1 = glm(event_outc==0 ~ poly(time, 2, raw=T) + female + 
+                   dx_1 + age + dx_2, 
                    data=d_panel_outc[assign==1, ], 
                    family=binomial(), weights = ipw) # <1>
 
-  d_glm_pe_0 = glm(event_outc==0 ~ poly(time, 2, raw=T), 
+  d_glm_pe_0 = glm(event_outc==0 ~ poly(time, 2, raw=T) + female + 
+                   dx_1 + age + dx_2, 
                    data=d_panel_outc[assign==0, ], 
                      family=binomial(), weights = ipw) # <1>
   
@@ -473,8 +566,9 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
   d_panel_outc$pr_0 = predict(d_glm_pe_0, newdata = d_panel_outc, type='response') # <2>
 
 ```
-1. Estimate for each assignment group separately. Note the `weights = ipw` argument, everything else is same as PLR model above.  R `glm()` will generate a warning message because the weighted counts are "non-integer", but this is expected and not a problem. 
-2. Fitted probabilities from each model
+
+1.  Estimate for each assignment group separately. Note the `weights = ipw` argument, everything else is same as PLR model above. R `glm()` will generate a warning message because the weighted counts are "non-integer", but this is expected and not a problem.
+2.  Fitted probabilities from each model
 
 ```{r }
 #| label: survprob
@@ -491,9 +585,10 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
     mutate(cid = pr_ev_1 - pr_ev_0,  # <2>
            cir = pr_ev_1 / pr_ev_0) # <2>
 ```
-1. Cumulative product
 
-2. Summarize across group, time as before.  
+1.  Cumulative product
+
+2.  Summarize across group, time as before.
 
 ```{r }
 #| label: plot-plr-weighted
@@ -527,7 +622,7 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
     d_gg_1
 ```
 
-# Final Comparison  
+# Final Comparison
 
 ```{r }
 #| label: tbl-compare-est
@@ -541,37 +636,40 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
         mutate(Model = 'Kaplan-Meier'),
     select(d_plr_naive_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
       mutate(Model = 'PLR-Naive'),
+    select(d_cox_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Cox'),
     select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
       mutate(Model = 'PLR-Wtd')
   ) %>%
-  dplyr::filter(time %in% c(6, 12, 24, 36, 48, 60))
+  dplyr::filter(time %in% c(6, 12, 36, 60))
 
 kables(
   list(d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_0) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("No treatment initiation ever" = 4)),
+         add_header_above(., c("No treatment initiation ever" = 5)),
        d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_1) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("Treatment initiation at 12 months" = 4)),
+         add_header_above(., c("Treatment initiation at 12 months" = 5)),
        d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("Risk Differences" = 4)),
+         add_header_above(., c("Risk Differences" = 5)),
        d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = cir) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("Relative Risks" = 4))
+         add_header_above(., c("Relative Risks" = 5))
 )) 
 ```
 
-# References  
+The weighted analysis observes a similar effects to time-dependent cox model.
+
+# References
 
 ::: {#refs}
-
 :::
