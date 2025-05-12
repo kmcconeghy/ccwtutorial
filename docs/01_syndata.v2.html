@@ -1513,6 +1513,7 @@ Note
 </div>
 </div>
 <p>The cloned dataset finds a similar answer (unadjusted), except the differences do not reveal until the end of the grace period.</p>
+<p>An adjusted Cox model on the cloned dataset finds similar results between the <code>treat</code> and <code>assign</code> variables.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(t_clone, event_outc) <span class="sc">~</span> assign <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> dx_1 <span class="sc">+</span> dx_2, <span class="at">data =</span> data_cloned) </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

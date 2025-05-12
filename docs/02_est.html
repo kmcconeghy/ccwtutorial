@@ -192,15 +192,16 @@ div.csl-indent {
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
   <li><a href="#summarize-km-estimator" id="toc-summarize-km-estimator" class="nav-link" data-scroll-target="#summarize-km-estimator">Summarize KM estimator</a></li>
+  <li><a href="#cox-proportional-hazards" id="toc-cox-proportional-hazards" class="nav-link" data-scroll-target="#cox-proportional-hazards">Cox Proportional Hazards</a></li>
   </ul></li>
   <li><a href="#pooled-logistic-regression" id="toc-pooled-logistic-regression" class="nav-link" data-scroll-target="#pooled-logistic-regression">Pooled logistic regression</a>
   <ul class="collapse">
   <li><a href="#build-a-longitudinal-panel" id="toc-build-a-longitudinal-panel" class="nav-link" data-scroll-target="#build-a-longitudinal-panel">Build a longitudinal panel</a></li>
   <li><a href="#estimation-1" id="toc-estimation-1" class="nav-link" data-scroll-target="#estimation-1">Estimation</a></li>
+  <li><a href="#comparison-of-covariate-adjusted-plr-with-cox-model" id="toc-comparison-of-covariate-adjusted-plr-with-cox-model" class="nav-link" data-scroll-target="#comparison-of-covariate-adjusted-plr-with-cox-model">Comparison of covariate adjusted PLR with Cox model</a></li>
   </ul></li>
   <li><a href="#ipcw-pooled-logistic-regression" id="toc-ipcw-pooled-logistic-regression" class="nav-link" data-scroll-target="#ipcw-pooled-logistic-regression">IPCW Pooled Logistic Regression</a>
   <ul class="collapse">
-  <li><a href="#cox-proportional-hazards" id="toc-cox-proportional-hazards" class="nav-link" data-scroll-target="#cox-proportional-hazards">Cox Proportional Hazards</a></li>
   <li><a href="#build-a-longitudinal-panel-1" id="toc-build-a-longitudinal-panel-1" class="nav-link" data-scroll-target="#build-a-longitudinal-panel-1">Build a longitudinal panel</a>
   <ul class="collapse">
   <li><a href="#censoring-dataset" id="toc-censoring-dataset" class="nav-link" data-scroll-target="#censoring-dataset">Censoring dataset</a></li>
@@ -378,179 +379,15 @@ $ dx_2       &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0
 </div>
 </div>
 </div>
-<p>Later I will show how to summarize point estimates and confidence intervals with bootstrapping.</p>
 </section>
-</section>
-<section id="pooled-logistic-regression" class="level1">
-<h1>Pooled logistic regression</h1>
-<p>Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate adjustment yet. I think this step is important to test your code, and make sure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. This PLR model should be able to closely approximate the KM curves, if it doesn’t then something is wrong.</p>
-<section id="build-a-longitudinal-panel" class="level2">
-<h2 class="anchored" data-anchor-id="build-a-longitudinal-panel">Build a longitudinal panel</h2>
-<p>The PLR model is a person-time procedure, modeling the probability of the event where the observation is person at follow-up time <em>k</em>. The KM estimator is a person-level dataset, so the dataset much first be expanded to person-time units. If there are many persons, or many observations (timepoints) per person the dataset can become quite large. I personally use the <code>data.table</code> package to help with computation. It is blazingly fast, so the code reflects that approach which may not be needed for your project.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setDT</span>(d_cloned)</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-2" class="code-annotation-target"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>    d_panel <span class="ot">=</span> d_cloned[<span class="fu">rep</span>(<span class="fu">seq</span>(.N), t_clone)]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-3-3" class="code-annotation-target"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>    d_panel[, exit <span class="sc">:</span><span class="er">=</span> (<span class="fu">seq_len</span>(.N)), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-3-5" class="code-annotation-target"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-3-6" class="code-annotation-target"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>    d_panel[, event_outc <span class="sc">:</span><span class="er">=</span> <span class="fu">if_else</span>( t_clone <span class="sc">&lt;=</span> time, event_outc, <span class="dv">0</span>L), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    d_panel_outc <span class="ot">=</span> <span class="fu">select</span>(d_panel, id, time, event_outc, t_treat, assign, enter, exit, female, dx_1, dx_2, age) </span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="1" data-code-annotation="1">Convert data to a <code>DT</code> object for faster computations</span>
-</dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="2" data-code-annotation="2">Generate rows along the sequence of <code>.N</code> (number of time-points) up to the last follow-up point</span>
-</dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="3,4" data-code-annotation="3">For each row, compute the starting (<code>enter</code>) and ending time-point (<code>exit</code>). This isn’t really necessary for our toy example, but could be important depending on how you are setting up the longitudinal panel and planning to model the time-trend.</span>
-</dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="5" data-code-annotation="4">This <code>time</code> is the key variable, a count from 1 to the last observed follow-up point by person, clone</span>
-</dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="5">5</dt>
-<dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="6" data-code-annotation="5">Outcome is = 1 in row where event occurred, so in the data a person-clone should have values of zero for <code>event_outc</code> up until the last observed time-point where <code>event_outc</code>=1 IF the event occurred at that time.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(d_panel_outc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 599,976
-Columns: 11
-$ id         &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
-$ time       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
-$ event_outc &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf,…
-$ assign     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ enter      &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1…
-$ exit       &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
-$ female     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ age        &lt;dbl&gt; 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7,…</code></pre>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Note how the dataset has expanded from N=20000 to N=554k! This method is very memory hungry…</p>
-</div>
-</div>
-</section>
-<section id="estimation-1" class="level2">
-<h2 class="anchored" data-anchor-id="estimation-1">Estimation</h2>
-<p>The PLR model requires specification of a function of time. This choice is informed by the KM estimator plot of the cumulative incidences, but a polynomial is a good starting point (i.e.&nbsp;time + time^2). You can choose to either estimate the outcome in a model with both clones combined in one dataset OR you can estimate cumulative incidences separately (two models with data limited to assign==1 &amp; assign==0 respectively). In the combined data, you must specify an interaction between treatment (clone assignment) and time, e.g.&nbsp;<code>time + time^2 + treat + treat*time + treat*time^2</code>, shorthand below is <code>poly(time, 2, raw=T)*assign</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># defined above</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-2" class="code-annotation-target"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  d_glm <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-4" class="code-annotation-target"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm<span class="sc">$</span>fitted.values</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-5" class="code-annotation-target"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-5-7" class="code-annotation-target"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  d_plr_naive_est <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),</span>
-<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,</span>
-<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>,</span>
-<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev</span>
-<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="2" data-code-annotation="1">PLR model, with time*treat interaction. Binomial family for logistic regression.</span>
-</dd>
-<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="4" data-code-annotation="2">If event_outc = 1 when event occurs, the fitted values are the probability of the outcome at time k.</span>
-</dd>
-<dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="5" data-code-annotation="3">To describe cumulative probabilities, you take the cumulative product of the fitted probabilities <code>pr_ev</code>, making sure to only compute within group and clone.</span>
-</dd>
-<dt data-target-cell="annotated-cell-5" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="7,8,9,10,11,12,13,14,16,17" data-code-annotation="4">After you have cumulative event-free survival probability, then you can summarize by group/time as described above for the KM estimator.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> d_plr_naive_est <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time)) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev_0), <span class="at">color=</span><span class="st">'red'</span>) <span class="sc">+</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev_1), <span class="at">color=</span><span class="st">'blue'</span>) <span class="sc">+</span> </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    d_gg_ci</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="02_est_files/figure-html/gg-plr-naive-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>At first glance, plot looks reasonable. We now directly compare PLR to the KM estimator by plotting together to see if the modeling appears to be working:</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="02_est_files/figure-html/gg-cmp-naive-models-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>So the PLR model using a simple polynomial can approximate our KM estimate reasonably well (This should work because we used synthetic data generated with an exponential distribution for time, but real-world data will not play so nicely). There is some noise between the KM estimator risk differences across certain time-points. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider following points:</p>
-<ol type="1">
-<li><p>It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.</p></li>
-<li><p>The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the random noise of the KM estimator.</p></li>
-<li><p>These initial steps will not guarantee a good fit after weighting is applied, it is only a beginning.</p></li>
-</ol>
-</section>
-</section>
-<section id="ipcw-pooled-logistic-regression" class="level1">
-<h1>IPCW Pooled Logistic Regression</h1>
-<p>Once the basic procedures are setup and there is some confidence in the ability to model the cumulative incidences, weighting can begin.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.</p>
-</div>
-</div>
 <section id="cox-proportional-hazards" class="level2">
 <h2 class="anchored" data-anchor-id="cox-proportional-hazards">Cox Proportional Hazards</h2>
-<p>The effect of covariates on treatment can be modeled in the non-expanded dataset for reference. These estimates should be consistent with the data parameters outlined in <a href="./01_syndata.v2.html">Data</a>.</p>
+<p>The data was designed so treatment has no causal effect on outcome, but confounding is present <a href="./01_syndata.v2.html">Data</a>. When you adjust for the confounders the risks are similar in both groups.</p>
 <div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in .get_data(fit, data): The `data` argument is not provided. Data will
+be extracted from model fit.</code></pre>
+</div>
 <div class="cell-output-display">
 <div id="kovzhddvrm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#kovzhddvrm table {
@@ -1054,6 +891,185 @@ Note
 </div>
 </div>
 </section>
+</section>
+<section id="pooled-logistic-regression" class="level1">
+<h1>Pooled logistic regression</h1>
+<p>Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate adjustment yet. I think this step is important to test your code, and make sure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. This PLR model should be able to closely approximate the KM curves, if it doesn’t then something is wrong.</p>
+<section id="build-a-longitudinal-panel" class="level2">
+<h2 class="anchored" data-anchor-id="build-a-longitudinal-panel">Build a longitudinal panel</h2>
+<p>The PLR model is a person-time procedure, modeling the probability of the event where the observation is person at follow-up time <em>k</em>. The KM estimator is a person-level dataset, so the dataset much first be expanded to person-time units. If there are many persons, or many observations (timepoints) per person the dataset can become quite large. I personally use the <code>data.table</code> package to help with computation. It is blazingly fast, so the code reflects that approach which may not be needed for your project.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setDT</span>(d_cloned)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-2" class="code-annotation-target"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>    d_panel <span class="ot">=</span> d_cloned[<span class="fu">rep</span>(<span class="fu">seq</span>(.N), t_clone)]</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-3-3" class="code-annotation-target"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>    d_panel[, exit <span class="sc">:</span><span class="er">=</span> (<span class="fu">seq_len</span>(.N)), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-3-5" class="code-annotation-target"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-3-6" class="code-annotation-target"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>    d_panel[, event_outc <span class="sc">:</span><span class="er">=</span> <span class="fu">if_else</span>( t_clone <span class="sc">&lt;=</span> time, event_outc, <span class="dv">0</span>L), by <span class="ot">=</span> <span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    d_panel_outc <span class="ot">=</span> <span class="fu">select</span>(d_panel, id, time, event_outc, t_treat, assign, enter, exit, female, dx_1, dx_2, age) </span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="1" data-code-annotation="1">Convert data to a <code>DT</code> object for faster computations</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="2" data-code-annotation="2">Generate rows along the sequence of <code>.N</code> (number of time-points) up to the last follow-up point</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="3,4" data-code-annotation="3">For each row, compute the starting (<code>enter</code>) and ending time-point (<code>exit</code>). This isn’t really necessary for our toy example, but could be important depending on how you are setting up the longitudinal panel and planning to model the time-trend.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="5" data-code-annotation="4">This <code>time</code> is the key variable, a count from 1 to the last observed follow-up point by person, clone</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="6" data-code-annotation="5">Outcome is = 1 in row where event occurred, so in the data a person-clone should have values of zero for <code>event_outc</code> up until the last observed time-point where <code>event_outc</code>=1 IF the event occurred at that time.</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(d_panel_outc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 599,976
+Columns: 11
+$ id         &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
+$ time       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
+$ event_outc &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf,…
+$ assign     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ enter      &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1…
+$ exit       &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
+$ female     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ dx_2       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ age        &lt;dbl&gt; 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7, 88.7,…</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note how the dataset has expanded from N=20000 to N=554k! This method is very memory hungry…</p>
+</div>
+</div>
+</section>
+<section id="estimation-1" class="level2">
+<h2 class="anchored" data-anchor-id="estimation-1">Estimation</h2>
+<p>The PLR model requires specification of a function of time. This choice is informed by the KM estimator plot of the cumulative incidences, but a polynomial is a good starting point (i.e.&nbsp;time + time^2). You can choose to either estimate the outcome in a model with both clones combined in one dataset OR you can estimate cumulative incidences separately (two models with data limited to assign==1 &amp; assign==0 respectively). In the combined data, you must specify an interaction between treatment (clone assignment) and time, e.g.&nbsp;<code>time + time^2 + treat + treat*time + treat*time^2</code>, shorthand below is <code>poly(time, 2, raw=T)*assign</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># defined above</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-2" class="code-annotation-target"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  d_glm <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-4" class="code-annotation-target"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm<span class="sc">$</span>fitted.values</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-5" class="code-annotation-target"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-5-7" class="code-annotation-target"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  d_plr_naive_est <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),</span>
+<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,</span>
+<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>,</span>
+<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev</span>
+<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
+<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="2" data-code-annotation="1">PLR model, with time*treat interaction. Binomial family for logistic regression.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="4" data-code-annotation="2">If event_outc = 1 when event occurs, the fitted values are the probability of the outcome at time k.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="5" data-code-annotation="3">To describe cumulative probabilities, you take the cumulative product of the fitted probabilities <code>pr_ev</code>, making sure to only compute within group and clone.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="7,8,9,10,11,12,13,14,16,17" data-code-annotation="4">After you have cumulative event-free survival probability, then you can summarize by group/time as described above for the KM estimator.</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> d_plr_naive_est <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time)) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev_0), <span class="at">color=</span><span class="st">'red'</span>) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev_1), <span class="at">color=</span><span class="st">'blue'</span>) <span class="sc">+</span> </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    d_gg_ci</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_est_files/figure-html/gg-plr-naive-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>At first glance, plot looks reasonable. We now directly compare PLR to the KM estimator by plotting together to see if the modeling appears to be working:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_est_files/figure-html/gg-cmp-naive-models-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>So the PLR model using a simple polynomial can approximate our KM estimate reasonably well (This should work because we used synthetic data generated with an exponential distribution for time, but real-world data will not play so nicely). There is some noise between the KM estimator risk differences across certain time-points. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider following points:</p>
+<ol type="1">
+<li><p>It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.</p></li>
+<li><p>The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the random noise of the KM estimator.</p></li>
+<li><p>These initial steps will not guarantee a good fit after weighting is applied, it is only a beginning.</p></li>
+</ol>
+</section>
+<section id="comparison-of-covariate-adjusted-plr-with-cox-model" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-of-covariate-adjusted-plr-with-cox-model">Comparison of covariate adjusted PLR with Cox model</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02_est_files/figure-html/gg-cmp-outcadj-models-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="ipcw-pooled-logistic-regression" class="level1">
+<h1>IPCW Pooled Logistic Regression</h1>
+<p>Once the basic procedures are setup and there is some confidence in the ability to model the cumulative incidences, weighting can begin.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.</p>
+</div>
+</div>
 <section id="build-a-longitudinal-panel-1" class="level2">
 <h2 class="anchored" data-anchor-id="build-a-longitudinal-panel-1">Build a longitudinal panel</h2>
 <p>As before the person- or clone-level data must be expanded to a longitudinal panel by time. Here, two datasets must be constructed, one for estimation of censoring probabilities and one for estimation of outcome probabilities.</p>
@@ -1112,12 +1128,12 @@ Note
 <h2 class="anchored" data-anchor-id="estimation-2">Estimation</h2>
 <p>We fit a model with the outcome of censoring, including the variables which are key. Then we add fitted probabilities back to the dataset, calculate cumulative probabilities of remaining uncensoring, and join those estimated probabilities to the outcome dataset.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(event_treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> age <span class="sc">+</span> female <span class="sc">+</span> </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-9-2" class="code-annotation-target"><a href="#annotated-cell-9-2" aria-hidden="true" tabindex="-1"></a>                   dx_1 <span class="sc">+</span> dx_2, <span class="at">data=</span>d_panel_treat, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(event_treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> female <span class="sc">+</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-9-2" class="code-annotation-target"><a href="#annotated-cell-9-2" aria-hidden="true" tabindex="-1"></a>                   dx_1, <span class="at">data=</span>d_panel_treat, <span class="at">family=</span><span class="fu">binomial</span>())</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-9-3" class="code-annotation-target"><a href="#annotated-cell-9-3" aria-hidden="true" tabindex="-1"></a>  d_panel_treat<span class="sc">$</span>pr_treat <span class="ot">=</span> d_glm_wt<span class="sc">$</span>fitted.values</span>
 <span id="annotated-cell-9-4"><a href="#annotated-cell-9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setDT</span>(d_panel_treat)</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-9-5" class="code-annotation-target"><a href="#annotated-cell-9-5" aria-hidden="true" tabindex="-1"></a>  d_panel_treat[, cumpr_notreat <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(<span class="dv">1</span><span class="sc">-</span>pr_treat), by <span class="ot">=</span> .(id)]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-9-6" class="code-annotation-target"><a href="#annotated-cell-9-6" aria-hidden="true" tabindex="-1"></a>  d_panel_outc <span class="ot">=</span> <span class="fu">left_join</span>(d_panel_outc, <span class="fu">select</span>(d_panel_treat, id, time, cumpr_notreat), <span class="at">by=</span><span class="fu">c</span>(<span class="st">'id'</span>, <span class="st">'time'</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-9-6" class="code-annotation-target"><a href="#annotated-cell-9-6" aria-hidden="true" tabindex="-1"></a>  d_panel_outc <span class="ot">=</span> <span class="fu">left_join</span>(d_panel_outc, <span class="fu">select</span>(d_panel_treat, id, time, pr_treat, cumpr_notreat), <span class="at">by=</span><span class="fu">c</span>(<span class="st">'id'</span>, <span class="st">'time'</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-9" data-target-annotation="1">1</dt>
@@ -1162,12 +1178,12 @@ Note
 <span id="annotated-cell-10-3"><a href="#annotated-cell-10-3" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-10-4" class="code-annotation-target"><a href="#annotated-cell-10-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> cumpr_notreat,</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-10-5" class="code-annotation-target"><a href="#annotated-cell-10-5" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-10-6" class="code-annotation-target"><a href="#annotated-cell-10-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span> <span class="sc">&amp;</span> t_treat <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-10-7" class="code-annotation-target"><a href="#annotated-cell-10-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time<span class="sc">==</span><span class="dv">12</span>   <span class="sc">&amp;</span> t_treat   <span class="sc">==</span><span class="dv">12</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>cumpr_notreat),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-10-8" class="code-annotation-target"><a href="#annotated-cell-10-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time<span class="sc">==</span><span class="dv">12</span>   <span class="sc">&amp;</span> t_treat    <span class="sc">&gt;</span><span class="dv">12</span>, <span class="dv">0</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-10-6" class="code-annotation-target"><a href="#annotated-cell-10-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat   <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-10-7" class="code-annotation-target"><a href="#annotated-cell-10-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span><span class="dv">12</span>   <span class="sc">&amp;</span> t_treat   <span class="sc">==</span><span class="dv">12</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_treat),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-10-8" class="code-annotation-target"><a href="#annotated-cell-10-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span><span class="dv">12</span>   <span class="sc">&amp;</span> t_treat    <span class="sc">&gt;</span><span class="dv">12</span>, <span class="dv">0</span>,</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="6" onclick="event.preventDefault();">6</a><span id="annotated-cell-10-9" class="code-annotation-target"><a href="#annotated-cell-10-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span></span>
 <span id="annotated-cell-10-10"><a href="#annotated-cell-10-10" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="7" onclick="event.preventDefault();">7</a><span id="annotated-cell-10-11" class="code-annotation-target"><a href="#annotated-cell-10-11" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[,ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(ipw), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="7" onclick="event.preventDefault();">7</a><span id="annotated-cell-10-11" class="code-annotation-target"><a href="#annotated-cell-10-11" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[assign<span class="sc">==</span><span class="dv">1</span>, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">cumprod</span>(ipw), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-10" data-target-annotation="1">1</dt>
@@ -1203,45 +1219,61 @@ Note
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-0.000e+00 1.000e+00 4.000e+00 2.548e+08 4.060e+02 2.768e+12 </code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0.000   1.000   1.151   1.734   1.369 207.816 </code></pre>
 </div>
 </div>
 <p>Now with the estimated weights, it is simple to generate weighted cumulative incidences:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-11"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-11-1" class="code-annotation-target"><a href="#annotated-cell-11-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe <span class="ot">=</span> <span class="fu">glm</span>(event_outc <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign <span class="sc">+</span> female <span class="sc">+</span> dx_2 , <span class="at">data=</span>d_panel_outc, <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
-<span id="annotated-cell-11-2"><a href="#annotated-cell-11-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-11-3" class="code-annotation-target"><a href="#annotated-cell-11-3" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_ev <span class="ot">=</span> d_glm_pe<span class="sc">$</span>fitted.values</span>
-<span id="annotated-cell-11-4"><a href="#annotated-cell-11-4" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv =</span> <span class="fu">cumprod</span>(<span class="dv">1</span> <span class="sc">-</span> pr_ev)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-11-5"><a href="#annotated-cell-11-5" aria-hidden="true" tabindex="-1"></a>  d_lprwt_est <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-11-6"><a href="#annotated-cell-11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-11-7"><a href="#annotated-cell-11-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-11-8"><a href="#annotated-cell-11-8" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-11-9"><a href="#annotated-cell-11-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),</span>
-<span id="annotated-cell-11-10"><a href="#annotated-cell-11-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,</span>
-<span id="annotated-cell-11-11"><a href="#annotated-cell-11-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>,</span>
-<span id="annotated-cell-11-12"><a href="#annotated-cell-11-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> pr_ev</span>
-<span id="annotated-cell-11-13"><a href="#annotated-cell-11-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-11-14"><a href="#annotated-cell-11-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-11-15"><a href="#annotated-cell-11-15" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-11"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-11-1"><a href="#annotated-cell-11-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event_outc<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-11-2"><a href="#annotated-cell-11-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>d_panel_outc[assign<span class="sc">==</span><span class="dv">1</span>, ], </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-11-3" class="code-annotation-target"><a href="#annotated-cell-11-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
+<span id="annotated-cell-11-4"><a href="#annotated-cell-11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-11-5"><a href="#annotated-cell-11-5" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event_outc<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-11-6"><a href="#annotated-cell-11-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>d_panel_outc[assign<span class="sc">==</span><span class="dv">0</span>, ], </span>
+<span id="annotated-cell-11-7"><a href="#annotated-cell-11-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
+<span id="annotated-cell-11-8"><a href="#annotated-cell-11-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-11-9" class="code-annotation-target"><a href="#annotated-cell-11-9" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> d_panel_outc, <span class="at">type=</span><span class="st">'response'</span>)</span>
+<span id="annotated-cell-11-10"><a href="#annotated-cell-11-10" aria-hidden="true" tabindex="-1"></a>  d_panel_outc<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> d_panel_outc, <span class="at">type=</span><span class="st">'response'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-11" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-11" data-code-lines="1" data-code-annotation="1">Note the <code>weights = ipw</code> argument, everything else is same as PLR model above. R <code>glm()</code> will generate a warning message because the weighted counts are “non-integer”, but this is expected and not a problem.</span>
+<span data-code-cell="annotated-cell-11" data-code-lines="3,7" data-code-annotation="1">Estimate for each assignment group separately. Note the <code>weights = ipw</code> argument, everything else is same as PLR model above. R <code>glm()</code> will generate a warning message because the weighted counts are “non-integer”, but this is expected and not a problem.</span>
 </dd>
 <dt data-target-cell="annotated-cell-11" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-11" data-code-lines="3,4,5,6,7,8,9,10,11,12,13,14,15" data-code-annotation="2">Summarize across group, time as before.</span>
+<span data-code-cell="annotated-cell-11" data-code-lines="9,10" data-code-annotation="2">Fitted probabilities from each model</span>
 </dd>
 </dl>
 </div>
 </div>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 60 rows containing missing values or values outside the scale range
-(`geom_line()`).</code></pre>
+<div class="sourceCode cell-code" id="annotated-cell-12"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-12" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-12-1" class="code-annotation-target"><a href="#annotated-cell-12-1" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-12-2"><a href="#annotated-cell-12-2" aria-hidden="true" tabindex="-1"></a>  d_panel_outc[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-12-3"><a href="#annotated-cell-12-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-12" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-12-4" class="code-annotation-target"><a href="#annotated-cell-12-4" aria-hidden="true" tabindex="-1"></a>  d_plrwt_est <span class="ot">=</span> d_panel_outc <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-12-5"><a href="#annotated-cell-12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-12-6"><a href="#annotated-cell-12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1), </span>
+<span id="annotated-cell-12-7"><a href="#annotated-cell-12-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0),</span>
+<span id="annotated-cell-12-8"><a href="#annotated-cell-12-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-12-9"><a href="#annotated-cell-12-9" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-12-10"><a href="#annotated-cell-12-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
+<span id="annotated-cell-12-11"><a href="#annotated-cell-12-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-12" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-12" data-code-lines="1,2" data-code-annotation="1">Cumulative product</span>
+</dd>
+<dt data-target-cell="annotated-cell-12" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-12" data-code-lines="4,5,8,9,10,11" data-code-annotation="2">Summarize across group, time as before.</span>
+</dd>
+</dl>
 </div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1302,7 +1334,7 @@ PLR-Wtd
 0.028
 </td>
 <td style="text-align:center;">
-1
+0.028
 </td>
 </tr>
 <tr>
@@ -1316,7 +1348,7 @@ PLR-Wtd
 0.054
 </td>
 <td style="text-align:center;">
-1
+0.055
 </td>
 </tr>
 <tr>
@@ -1330,7 +1362,7 @@ PLR-Wtd
 0.104
 </td>
 <td style="text-align:center;">
-1
+0.107
 </td>
 </tr>
 <tr>
@@ -1344,7 +1376,7 @@ PLR-Wtd
 0.151
 </td>
 <td style="text-align:center;">
-1
+0.156
 </td>
 </tr>
 <tr>
@@ -1358,7 +1390,7 @@ PLR-Wtd
 0.194
 </td>
 <td style="text-align:center;">
-1
+0.201
 </td>
 </tr>
 <tr>
@@ -1372,7 +1404,7 @@ PLR-Wtd
 0.234
 </td>
 <td style="text-align:center;">
-1
+0.243
 </td>
 </tr>
 </tbody>
@@ -1415,7 +1447,7 @@ PLR-Wtd
 0.027
 </td>
 <td style="text-align:center;">
-0
+0.031
 </td>
 </tr>
 <tr>
@@ -1429,7 +1461,7 @@ PLR-Wtd
 0.056
 </td>
 <td style="text-align:center;">
-0
+0.060
 </td>
 </tr>
 <tr>
@@ -1443,7 +1475,7 @@ PLR-Wtd
 0.113
 </td>
 <td style="text-align:center;">
-0
+0.115
 </td>
 </tr>
 <tr>
@@ -1457,7 +1489,7 @@ PLR-Wtd
 0.170
 </td>
 <td style="text-align:center;">
-0
+0.170
 </td>
 </tr>
 <tr>
@@ -1471,7 +1503,7 @@ PLR-Wtd
 0.224
 </td>
 <td style="text-align:center;">
-0
+0.229
 </td>
 </tr>
 <tr>
@@ -1485,7 +1517,7 @@ PLR-Wtd
 0.275
 </td>
 <td style="text-align:center;">
-0
+0.294
 </td>
 </tr>
 </tbody>
@@ -1528,7 +1560,7 @@ PLR-Wtd
 0.000
 </td>
 <td style="text-align:center;">
--1
+0.003
 </td>
 </tr>
 <tr>
@@ -1542,7 +1574,7 @@ PLR-Wtd
 0.001
 </td>
 <td style="text-align:center;">
--1
+0.005
 </td>
 </tr>
 <tr>
@@ -1556,7 +1588,7 @@ PLR-Wtd
 0.009
 </td>
 <td style="text-align:center;">
--1
+0.008
 </td>
 </tr>
 <tr>
@@ -1570,7 +1602,7 @@ PLR-Wtd
 0.019
 </td>
 <td style="text-align:center;">
--1
+0.015
 </td>
 </tr>
 <tr>
@@ -1584,7 +1616,7 @@ PLR-Wtd
 0.030
 </td>
 <td style="text-align:center;">
--1
+0.028
 </td>
 </tr>
 <tr>
@@ -1598,7 +1630,7 @@ PLR-Wtd
 0.041
 </td>
 <td style="text-align:center;">
--1
+0.051
 </td>
 </tr>
 </tbody>
@@ -1641,7 +1673,7 @@ PLR-Wtd
 0.991
 </td>
 <td style="text-align:center;">
-0
+1.099
 </td>
 </tr>
 <tr>
@@ -1655,7 +1687,7 @@ PLR-Wtd
 1.024
 </td>
 <td style="text-align:center;">
-0
+1.085
 </td>
 </tr>
 <tr>
@@ -1669,7 +1701,7 @@ PLR-Wtd
 1.082
 </td>
 <td style="text-align:center;">
-0
+1.077
 </td>
 </tr>
 <tr>
@@ -1683,7 +1715,7 @@ PLR-Wtd
 1.126
 </td>
 <td style="text-align:center;">
-0
+1.095
 </td>
 </tr>
 <tr>
@@ -1697,7 +1729,7 @@ PLR-Wtd
 1.157
 </td>
 <td style="text-align:center;">
-0
+1.139
 </td>
 </tr>
 <tr>
@@ -1711,7 +1743,7 @@ PLR-Wtd
 1.173
 </td>
 <td style="text-align:center;">
-0
+1.211
 </td>
 </tr>
 </tbody>
