@@ -300,10 +300,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-           expr       min        lq      mean    median       uq      max neval
-       base GLM 2.3952071 2.7912650 2.8322525 2.8765900 2.932062 3.044003    10
- GLM with inits 0.9101953 0.9241919 1.0138854 1.0150361 1.093630 1.125555    10
-         PARGLM 0.5165336 0.5342228 0.5707725 0.5590979 0.588241 0.722435    10</code></pre>
+           expr       min        lq      mean    median        uq       max
+       base GLM 1.9867529 1.9918349 2.0611095 2.0626501 2.1217501 2.1440192
+ GLM with inits 0.7198157 0.7506603 0.8213738 0.8581228 0.8615436 0.8715868
+         PARGLM 0.4125067 0.4242921 0.4575521 0.4320603 0.4480726 0.5800740
+ neval
+    10
+    10
+    10</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.</p>
@@ -417,8 +421,8 @@ Note
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
                  expr      min       lq     mean   median       uq      max
- Resampling bootstrap 2.713781 2.919065 3.035800 3.009314 3.075016 3.532928
-    Poisson bootstrap 2.397084 2.414969 2.464067 2.456579 2.463584 2.642866
+ Resampling bootstrap 2.054433 2.135479 2.229983 2.253796 2.303932 2.413930
+    Poisson bootstrap 1.819071 1.832511 1.887559 1.865874 1.936573 2.008826
  neval
     10
     10</code></pre>
