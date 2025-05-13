@@ -47,7 +47,7 @@ The cloning presents an interesting problem for a “Table 1” because the grou
 
 # Evaluation of Target Trial Design
 
-## Evaluate of Grace Period
+## Evaluation of Grace Period
 
 # Evaluation of Weighting
 
@@ -107,27 +107,29 @@ d_fit_3 = parglm(event_outc ~ poly(time, 2, raw=T)*assign,
 ```{r }
 #| label: benchmark-glm
 #| echo: false
-microbenchmark(
+d_summ = microbenchmark(
   `base GLM` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial()),
   `GLM with inits` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), start = d_fit$coefficients),
   `PARGLM` = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
        binomial(), d_panel_outc, start = d_fit$coefficients,
        control = parglm.control(method = "FAST", nthreads = 8L)),
-  times = 10,
+  times = 5,
   unit = "seconds"
-)
+) 
+
+print(d_summ, signif=4)
 ```
 
-Even in a small example, `parglm()` outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.
+Even in a small example, `parglm()` significantly outperforms base `glm()`. This will scale considerably with multiple cores and larger datasets as well.
 
 ## Bootstrapping procedure
 
 I consider bootstrapping to be the standard for this type of analysis, the statistical properties are not well-described, but some use influence-based statistics.
 
-The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of weighting can work around this.
+The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of matrices and shortcuts can work around this.
 
 ::: callout-note
-In any case, the bootstrap procedure must sample at the person level to account for the cloning.
+The bootstrap procedure must sample at the person level to account for the cloning.
 :::
 
 ### Inefficient Bootstrap
@@ -170,6 +172,8 @@ boot_it_1 = function() {
 
 ### More efficient bootstrap
 
+Rather than sampling rows of the matrix with replacement, an alternative is to approximate the sampling with a frequency weight. If you randomly assign every observation a value drawn from a Poisson distribution with mean 1, and use this value as a frequency weight in estimators you will closely approximate the full bootstrap procedure as long as the overall sample size is \>100.[@hanley2006] This is very computationally efficient because you do not need to know the dataset size prior to assigning the frequency weight, and do not join or work with multiple large matrices.
+
 ```{r }
 #| label: goodbootstrap-ex
 boot_it_2 = function() {
@@ -204,26 +208,63 @@ boot_it_2 = function() {
 ```{r }
 #| label: benchmark-bs
 #| echo: false
-microbenchmark(
+d_summ = microbenchmark(
   `Resampling bootstrap` = boot_it_1(),
   `Poisson bootstrap` = boot_it_2(),
-  times = 10,
+  times = 5,
   unit = "seconds"
-)
+) 
+
+print(d_summ, signif=4)
 ```
 
-The Poisson bootstrap procedure is 20-30%, but critically this performance will scale much better for large datasets.
+The Poisson bootstrap procedure is faster even in a small sample, but critically this performance will scale much better for large datasets.
+
+### Parallel computation  
+
+The next thing to work on is parallel computation steps. The efficiency depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each. 
 
 If you don't believe this provides similar coverage estimates, here are the intervals from 50 bootstraps with both procedures:
+
+Here is a simple example for a Dell Laptop using the `Furrr` package with 10 workers: 
+
+```{r }
+#| label: bootproc-futureplan
+library(furrr)
+plan(multisession, workers = 10) # <1>
+
+resampling_res = future_map_dbl(1:100, 
+                                function(x) boot_it_1(), 
+                                .options = furrr_options(seed=T)) # <2>
+
+poisson_res = future_map_dbl(1:100, 
+                                function(x) boot_it_2(), 
+                                .options = furrr_options(seed=T)) # <2>
+
+```
+
+1. Assign number of CPU workers to job
+2. The `seed=T` option is important because the bootstrap function uses RNG. 
 
 ```{r }
 #| label: bootproc-compare
 #| echo: FALSE
-resampling_res = sapply(1:50, function(x) boot_it_1()) 
-poisson_res = sapply(1:50, function(x) boot_it_2()) 
+#| tbl-cap: "Comparison of Poisson and Resampling Bootstraps"
+#| tbl-cap-location: top
 
-cat('Resampling method: ') 
-summary(resampling_res, digits=2)
-cat('Poisson method:')
-summary(poisson_res, digits=2)
+tibble(Resampling = resampling_res, Poisson = poisson_res) %>%
+  pivot_longer(cols = c(Resampling, Poisson), names_to = 'Method', values_to = 'CID') %>%
+  group_by(Method) %>%
+  summarize(
+    min = min(CID),
+    `Lower CI` = quantile(CID, 0.025),
+    mean = mean(CID),
+    q50th = median(CID),
+    `Upper CI` = quantile(CID, 0.975),
+    max = max(CID),
+    SD = sd(CID)
+  ) %>%
+  kable(digits = 3, align = 'c') %>%
+  kable_styling()
 ```
+

@@ -10,3 +10,8 @@ Project set-up
   - Advanced file discusses some bootstrap and computation approaches
   - Appendix TBD
   
+# Version 0.2 05-13-2025
+  
+  - Added Parallel computation step to Advanced Topics page
+  - Setup for the inference page (WIP)
+  

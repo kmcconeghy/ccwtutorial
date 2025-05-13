@@ -20,7 +20,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -127,8 +147,28 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description-of-the-cohort" id="toc-description-of-the-cohort" class="nav-link active" data-scroll-target="#description-of-the-cohort">Description of the cohort</a>
+  <ul class="collapse">
+  <li><a href="#table-1" id="toc-table-1" class="nav-link" data-scroll-target="#table-1">Table 1</a></li>
+  <li><a href="#presentation-of-weighted-differences" id="toc-presentation-of-weighted-differences" class="nav-link" data-scroll-target="#presentation-of-weighted-differences">Presentation of weighted differences</a>
+  <ul class="collapse">
+  <li><a href="#computation-of-distances" id="toc-computation-of-distances" class="nav-link" data-scroll-target="#computation-of-distances">Computation of distances</a></li>
+  <li><a href="#table-1-with-differences" id="toc-table-1-with-differences" class="nav-link" data-scroll-target="#table-1-with-differences">Table 1 with differences</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#uncertainty-estimates" id="toc-uncertainty-estimates" class="nav-link" data-scroll-target="#uncertainty-estimates">Uncertainty estimates</a>
+  <ul class="collapse">
+  <li><a href="#bootstrapping" id="toc-bootstrapping" class="nav-link" data-scroll-target="#bootstrapping">Bootstrapping</a></li>
+  <li><a href="#inference-statistics" id="toc-inference-statistics" class="nav-link" data-scroll-target="#inference-statistics">Inference statistics</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -152,8 +192,55 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="description-of-the-cohort" class="level1">
+<h1>Description of the cohort</h1>
+<p>If the design of the study includes a baseline period, “time zero” and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur then the presentation of group characteristics is a little different from the typical trial or cohort study.</p>
+<p>There being two main periods: 1) Baseline time zero, 2) End of the grace period.</p>
+<p>So here is one approach:</p>
+<ol type="1">
+<li>Present the baseline characteristics for everyone (prior to cloning) at time zero.</li>
+<li>Present the characteristics for both treatment groups at the end of the grace period.</li>
+</ol>
+<p>This would lead to a “Table 1” with three columns.</p>
+<section id="table-1" class="level2">
+<h2 class="anchored" data-anchor-id="table-1">Table 1</h2>
+</section>
+<section id="presentation-of-weighted-differences" class="level2">
+<h2 class="anchored" data-anchor-id="presentation-of-weighted-differences">Presentation of weighted differences</h2>
+<p>Most analyses would provide the naive differences between groups, and then present some adjusted difference. Most commonly the standardized mean differences (aSMD) or a P-value from a univariate test (not recommended).</p>
+<p>So you could add one column for the SMD to the “Table 1”, but there are also other approaches such as reporting Mahalanobis distance.</p>
+<section id="computation-of-distances" class="level3">
+<h3 class="anchored" data-anchor-id="computation-of-distances">Computation of distances</h3>
+</section>
+<section id="table-1-with-differences" class="level3">
+<h3 class="anchored" data-anchor-id="table-1-with-differences">Table 1 with differences</h3>
+</section>
+</section>
+</section>
+<section id="uncertainty-estimates" class="level1">
+<h1>Uncertainty estimates</h1>
+<p>Several steps in the analysis makes the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights should be considered.</p>
+<p>Currently, most researchers are using bootstrapping to obtain confidence limits via percentile method. It is critical that: 1. The bootstrapping step occur prior to sequential repeated sampling, cloning or estimation of weights 2. The bootstrap sampling with replacement must be at the cluster-level (person).</p>
+<p>Also consider, bootstrapping may fail to produce valid estimates in cases of matching procedures, or penalized regression procedures.[<span class="citation" data-cites="camponovo2015">Camponovo (<a href="#ref-camponovo2015" role="doc-biblioref">2015</a>)</span>]<span class="citation" data-cites="abadie2008">(<a href="#ref-abadie2008" role="doc-biblioref">Abadie and Imbens 2008</a>)</span> Other bootstrapping failures may arise due to limited sample size or values on the boundary of a parameter space.</p>
+<section id="bootstrapping" class="level2">
+<h2 class="anchored" data-anchor-id="bootstrapping">Bootstrapping</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Poisson bootstrap procedure is used here, see:<a href="./04_advanced.html">Additional Topics</a> for some notes on this.</p>
+</div>
+</div>
+</section>
+<section id="inference-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="inference-statistics">Inference statistics</h2>
 <p>Inferential statistics</p>
-<p>Several steps in the analysis makes the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights should be considered. Currently, most researchers are using bootstrapping to obtain confidence limits via percentile method. It is critical that 1) the bootstrapping step occur prior to sequential repeated sampling, cloning or estimation of weights, 2) the bootstrap sampling with replacement must be at the cluster-level (person). Also consider, bootstrapping may fail to produce valid estimates in cases of matching procedures, or restricted regression procedures (i.e.&nbsp;LASSO or other shrinkage estimators).(Campanovo 2015, Abadie and Imbens 2008) Other bootstrapping failures may arise due to limited sample size or values on the boundary of a parameter space. Note: Poisson Bootstrap procedure Especially for large datasets, the bootstrap procedure can be computationally intensive (requiring holding multiple large matrices in memory simultaneously). Rather than sampling rows of the matrix with replacement, an alternative is to approximate the sampling with a frequency weight. If you randomly assign every observation a value drawn from a Poisson distribution with mean 1, and use this value as a frequency weight in estimators you will closely approximate the full bootstrap procedure as long as the overall sample size is &gt;100. (Hanley and Macgibbon 2006) This is very computationally efficient because you do not need to know the dataset size prior to assigning the frequency weight, and do not need to sample large matrices.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -167,10 +254,23 @@ Note
 <p>These variables are generated independently, but in real-life would be correlated…</p>
 </div>
 </div>
+</section>
+</section>
+<section id="references" class="level1">
 
 
 
-</main> <!-- /main -->
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-abadie2008" class="csl-entry" role="listitem">
+Abadie, Alberto, and Guido W. Imbens. 2008. <span>“On the Failure of the Bootstrap for Matching Estimators.”</span> <em>Econometrica</em> 76 (6): 1537–57. https://doi.org/<a href="https://doi.org/10.3982/ECTA6474">https://doi.org/10.3982/ECTA6474</a>.
+</div>
+<div id="ref-camponovo2015" class="csl-entry" role="listitem">
+Camponovo, L. 2015. <span>“On the Validity of the Pairs Bootstrap for Lasso Estimators.”</span> <em>Biometrika</em> 102 (4): 981–87. <a href="https://doi.org/10.1093/biomet/asv039">https://doi.org/10.1093/biomet/asv039</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

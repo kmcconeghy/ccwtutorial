@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -100,6 +120,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 
 
 <link rel="stylesheet" href="styles.css">
@@ -172,7 +196,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#evaluation-of-target-trial-design" id="toc-evaluation-of-target-trial-design" class="nav-link" data-scroll-target="#evaluation-of-target-trial-design">Evaluation of Target Trial Design</a>
   <ul class="collapse">
-  <li><a href="#evaluate-of-grace-period" id="toc-evaluate-of-grace-period" class="nav-link" data-scroll-target="#evaluate-of-grace-period">Evaluate of Grace Period</a></li>
+  <li><a href="#evaluation-of-grace-period" id="toc-evaluation-of-grace-period" class="nav-link" data-scroll-target="#evaluation-of-grace-period">Evaluation of Grace Period</a></li>
   </ul></li>
   <li><a href="#evaluation-of-weighting" id="toc-evaluation-of-weighting" class="nav-link" data-scroll-target="#evaluation-of-weighting">Evaluation of Weighting</a>
   <ul class="collapse">
@@ -191,6 +215,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#inefficient-bootstrap" id="toc-inefficient-bootstrap" class="nav-link" data-scroll-target="#inefficient-bootstrap">Inefficient Bootstrap</a></li>
   <li><a href="#more-efficient-bootstrap" id="toc-more-efficient-bootstrap" class="nav-link" data-scroll-target="#more-efficient-bootstrap">More efficient bootstrap</a></li>
   <li><a href="#benchmarking-glm-methods-1" id="toc-benchmarking-glm-methods-1" class="nav-link" data-scroll-target="#benchmarking-glm-methods-1">Benchmarking GLM methods</a></li>
+  <li><a href="#parallel-computation" id="toc-parallel-computation" class="nav-link" data-scroll-target="#parallel-computation">Parallel computation</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -230,8 +255,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="evaluation-of-target-trial-design" class="level1">
 <h1>Evaluation of Target Trial Design</h1>
-<section id="evaluate-of-grace-period" class="level2">
-<h2 class="anchored" data-anchor-id="evaluate-of-grace-period">Evaluate of Grace Period</h2>
+<section id="evaluation-of-grace-period" class="level2">
+<h2 class="anchored" data-anchor-id="evaluation-of-grace-period">Evaluation of Grace Period</h2>
 </section>
 </section>
 <section id="evaluation-of-weighting" class="level1">
@@ -300,23 +325,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-           expr       min        lq      mean    median        uq       max
-       base GLM 1.9867529 1.9918349 2.0611095 2.0626501 2.1217501 2.1440192
- GLM with inits 0.7198157 0.7506603 0.8213738 0.8581228 0.8615436 0.8715868
-         PARGLM 0.4125067 0.4242921 0.4575521 0.4320603 0.4480726 0.5800740
- neval
-    10
-    10
-    10</code></pre>
+           expr    min     lq   mean median     uq    max neval
+       base GLM 2.0320 2.1620 2.2200 2.2850 2.2920 2.3310     5
+ GLM with inits 0.7329 0.7662 0.7824 0.7680 0.7819 0.8630     5
+         PARGLM 0.4517 0.4760 0.5361 0.5543 0.5953 0.6034     5</code></pre>
 </div>
 </div>
-<p>Even in a small example, <code>parglm()</code> outperforms 4x from base GLM. This will scale considerably with multiple cores and larger datasets as well.</p>
+<p>Even in a small example, <code>parglm()</code> significantly outperforms base <code>glm()</code>. This will scale considerably with multiple cores and larger datasets as well.</p>
 </section>
 </section>
 <section id="bootstrapping-procedure" class="level2">
 <h2 class="anchored" data-anchor-id="bootstrapping-procedure">Bootstrapping procedure</h2>
 <p>I consider bootstrapping to be the standard for this type of analysis, the statistical properties are not well-described, but some use influence-based statistics.</p>
-<p>The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of weighting can work around this.</p>
+<p>The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset, and another new bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of matrices and shortcuts can work around this.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -327,7 +348,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In any case, the bootstrap procedure must sample at the person level to account for the cloning.</p>
+<p>The bootstrap procedure must sample at the person level to account for the cloning.</p>
 </div>
 </div>
 <section id="inefficient-bootstrap" class="level3">
@@ -381,6 +402,7 @@ Note
 </section>
 <section id="more-efficient-bootstrap" class="level3">
 <h3 class="anchored" data-anchor-id="more-efficient-bootstrap">More efficient bootstrap</h3>
+<p>Rather than sampling rows of the matrix with replacement, an alternative is to approximate the sampling with a frequency weight. If you randomly assign every observation a value drawn from a Poisson distribution with mean 1, and use this value as a frequency weight in estimators you will closely approximate the full bootstrap procedure as long as the overall sample size is &gt;100.<span class="citation" data-cites="hanley2006">(<a href="#ref-hanley2006" role="doc-biblioref">Hanley and MacGibbon 2006</a>)</span> This is very computationally efficient because you do not need to know the dataset size prior to assigning the frequency weight, and do not join or work with multiple large matrices.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>boot_it_2 <span class="ot">=</span> <span class="cf">function</span>() {</span>
 <span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -420,39 +442,97 @@ Note
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-                 expr      min       lq     mean   median       uq      max
- Resampling bootstrap 2.054433 2.135479 2.229983 2.253796 2.303932 2.413930
-    Poisson bootstrap 1.819071 1.832511 1.887559 1.865874 1.936573 2.008826
- neval
-    10
-    10</code></pre>
+                 expr   min    lq  mean median    uq   max neval
+ Resampling bootstrap 2.089 2.282 2.272  2.287 2.295 2.404     5
+    Poisson bootstrap 1.726 1.751 1.812  1.849 1.856 1.878     5</code></pre>
 </div>
 </div>
-<p>The Poisson bootstrap procedure is 20-30%, but critically this performance will scale much better for large datasets.</p>
+<p>The Poisson bootstrap procedure is faster even in a small sample, but critically this performance will scale much better for large datasets.</p>
+</section>
+<section id="parallel-computation" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-computation">Parallel computation</h3>
+<p>The next thing to work on is parallel computation steps. The efficiency depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each.</p>
 <p>If you don’t believe this provides similar coverage estimates, here are the intervals from 50 bootstraps with both procedures:</p>
+<p>Here is a simple example for a Dell Laptop using the <code>Furrr</code> package with 10 workers:</p>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Resampling method: </code></pre>
+<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-2" class="code-annotation-target"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">10</span>)</span>
+<span id="annotated-cell-6-3"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a>resampling_res <span class="ot">=</span> <span class="fu">future_map_dbl</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, </span>
+<span id="annotated-cell-6-5"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>                                <span class="cf">function</span>(x) <span class="fu">boot_it_1</span>(), </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-6-6" class="code-annotation-target"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a>                                <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed=</span>T))</span>
+<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>poisson_res <span class="ot">=</span> <span class="fu">future_map_dbl</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, </span>
+<span id="annotated-cell-6-9"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>                                <span class="cf">function</span>(x) <span class="fu">boot_it_2</span>(), </span>
+<span id="annotated-cell-6-10"><a href="#annotated-cell-6-10" aria-hidden="true" tabindex="-1"></a>                                <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed=</span>T))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="2" data-code-annotation="1">Assign number of CPU workers to job</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="6,10" data-code-annotation="2">The <code>seed=T</code> option is important because the bootstrap function uses RNG.</span>
+</dd>
+</dl>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  0.018   0.040   0.048   0.048   0.056   0.077 </code></pre>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Poisson method:</code></pre>
+<div class="cell tbl-cap-location-top">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Comparison of Poisson and Resampling Bootstraps</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">Method</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">min</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Lower CI</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">mean</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">q50th</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Upper CI</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">max</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">SD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Poisson</td>
+<td style="text-align: center;">0.012</td>
+<td style="text-align: center;">0.021</td>
+<td style="text-align: center;">0.041</td>
+<td style="text-align: center;">0.041</td>
+<td style="text-align: center;">0.063</td>
+<td style="text-align: center;">0.073</td>
+<td style="text-align: center;">0.012</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Resampling</td>
+<td style="text-align: center;">0.020</td>
+<td style="text-align: center;">0.029</td>
+<td style="text-align: center;">0.050</td>
+<td style="text-align: center;">0.050</td>
+<td style="text-align: center;">0.069</td>
+<td style="text-align: center;">0.078</td>
+<td style="text-align: center;">0.011</td>
+</tr>
+</tbody>
+</table>
+
+
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  0.024   0.033   0.039   0.041   0.048   0.059 </code></pre>
 </div>
-</div>
+
 
 
 </section>
 </section>
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-hanley2006" class="csl-entry" role="listitem">
+Hanley, James A., and Brenda MacGibbon. 2006. <span>“Creating Non-Parametric Bootstrap Samples Using Poisson Frequencies.”</span> <em>Computer Methods and Programs in Biomedicine</em> 83 (1): 57–62. <a href="https://doi.org/10.1016/j.cmpb.2006.04.006">https://doi.org/10.1016/j.cmpb.2006.04.006</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
