@@ -326,9 +326,9 @@ div.csl-indent {
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
            expr    min     lq   mean median     uq    max neval
-       base GLM 2.0320 2.1620 2.2200 2.2850 2.2920 2.3310     5
- GLM with inits 0.7329 0.7662 0.7824 0.7680 0.7819 0.8630     5
-         PARGLM 0.4517 0.4760 0.5361 0.5543 0.5953 0.6034     5</code></pre>
+       base GLM 0.9495 0.9650 1.0120 1.0270 1.0540 1.0640     5
+ GLM with inits 0.3323 0.3422 0.3422 0.3429 0.3443 0.3494     5
+         PARGLM 0.1878 0.1975 0.2185 0.2025 0.2038 0.3007     5</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> significantly outperforms base <code>glm()</code>. This will scale considerably with multiple cores and larger datasets as well.</p>
@@ -442,9 +442,9 @@ Note
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-                 expr   min    lq  mean median    uq   max neval
- Resampling bootstrap 2.089 2.282 2.272  2.287 2.295 2.404     5
-    Poisson bootstrap 1.726 1.751 1.812  1.849 1.856 1.878     5</code></pre>
+                 expr    min     lq   mean median     uq    max neval
+ Resampling bootstrap 0.9154 0.9260 1.0270 1.0200 1.1360 1.1360     5
+    Poisson bootstrap 0.7763 0.7842 0.8348 0.8009 0.8876 0.9251     5</code></pre>
 </div>
 </div>
 <p>The Poisson bootstrap procedure is faster even in a small sample, but critically this performance will scale much better for large datasets.</p>
@@ -497,23 +497,23 @@ Note
 <tbody>
 <tr class="odd">
 <td style="text-align: center;">Poisson</td>
-<td style="text-align: center;">0.012</td>
 <td style="text-align: center;">0.021</td>
-<td style="text-align: center;">0.041</td>
-<td style="text-align: center;">0.041</td>
-<td style="text-align: center;">0.063</td>
-<td style="text-align: center;">0.073</td>
-<td style="text-align: center;">0.012</td>
+<td style="text-align: center;">0.040</td>
+<td style="text-align: center;">0.067</td>
+<td style="text-align: center;">0.067</td>
+<td style="text-align: center;">0.094</td>
+<td style="text-align: center;">0.115</td>
+<td style="text-align: center;">0.015</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">Resampling</td>
-<td style="text-align: center;">0.020</td>
-<td style="text-align: center;">0.029</td>
-<td style="text-align: center;">0.050</td>
-<td style="text-align: center;">0.050</td>
-<td style="text-align: center;">0.069</td>
-<td style="text-align: center;">0.078</td>
-<td style="text-align: center;">0.011</td>
+<td style="text-align: center;">0.038</td>
+<td style="text-align: center;">0.046</td>
+<td style="text-align: center;">0.073</td>
+<td style="text-align: center;">0.073</td>
+<td style="text-align: center;">0.101</td>
+<td style="text-align: center;">0.102</td>
+<td style="text-align: center;">0.014</td>
 </tr>
 </tbody>
 </table>

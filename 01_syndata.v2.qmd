@@ -8,132 +8,220 @@ bibliography: references.bib
 #| echo: false
 #| message: false
 #| 
-library(here())
+library(here)
+library(ggdag)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
 set.seed(42)
 ```
 
+# Causal Directed Acyclic Graph  
+
+We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through other random variables. This includes age, two continuous variables, `X1`, `X2`. Gender, defined through a binary variable `M` for male. Finally, a vector of chronic conditions, we collectively refer to as `CC`. `X1` is defined as a cause of A but not Y, and `X2` is a cause of Y but not A. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done. No colliders A -> L <- Y are present.   
+
+```{r }
+#| label: gg-dag
+#| fig-cap: "Figure 1. Causal DAG of treatment and outcome"
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| echo: false
+#| 
+outc_treat_dag <- dagify(
+  A ~ Age,
+  Y ~ Age,
+  A ~ F,
+  Y ~ F,
+  A ~ CC,
+  Y ~ CC,
+  A ~ X1,
+  Y ~ X2,
+  labels = c(
+    "Age" = "Age",
+    "F" = "Female",
+    "CC" = "Comorbid Conditions",
+    "A" = "Treatment",
+    "Y" = "Outcome",
+    "X1" = "Cont. Var. 1",
+    "X2" = "Cont. Var. 2"
+
+  ),
+  exposure = "A",
+  outcome = "Y"
+)
+
+ggdag(outc_treat_dag, text = FALSE, use_labels = "label") +
+  theme_dag()
+```
+
+If a naive analysis (no adjustment) was performed the estimate will be biased, because treamtent and outcome are d-connected.  
+
+```{r }
+#| label: gg-dag-dsep
+#| fig-cap: "Figure 2. D-connected treatment and outcome"
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| echo: false
+#| 
+ggdag_dseparated(outc_treat_dag, text = FALSE, use_labels = "label") +
+  theme_dag()
+```
+
+```{r }
+#| label: gg-dag-dsep-2
+#| fig-cap: "Figure 3. D-separated treatment and outcome after adjustment"
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| echo: false
+
+
+ggdag_dseparated(outc_treat_dag, text = FALSE, use_labels = "label",
+                 controlling_for = c('Age', 'F', 'CC')) +
+  theme_dag()
+
+```
+
+Adjustment for CC, Age and M should lead to identification of a *NULL* effect of treatment on outcome. Adjustment for X1, and X2 are not necessary, but may be done for variance precision. 
+
 # Simulation Parameters {#sec-simparams} 
 
 ```{r }
 #| label: sim-params
-    n = 10000 # <1>
+#| message: false
+#| warning: false
+#| 
+    n = 5000 # <1>
     age = round(rnorm(n, mean = 75, sd = 10), 1) # <2>
-    female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)) # <3>
-    dx_1 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.05, 0.95)) # <4>
-    dx_2 <- sample(c(1, 0), size = n, replace = TRUE, prob = c(0.4, 0.6)) # <5>
     
-y_treat = 1.0 # <6>
-y_gender = 3 # <6>
-y_age = 0.98 # <6>
-y_dx_1 = 1.1 # <6>
-y_dx_2 = 0.8 # <6>
+    # continuous variables  
+    xmat = MASS::mvrnorm(n, mu = c(0, 0), Sigma = rbind(c(1, 0.8), c(0.8, 1))) %>%
+      data.frame(.) # <3>
+    
+    # categorical variables
+    female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)) # <4>
+    
+    # create the variance covariance matrix #<5>
+      sigma <-rbind(
+        c(1, rbeta(4, 5, 15)), 
+        c(rbeta(1, 2, 15), 1, rbeta(3, 2, 15)), 
+        c(rbeta(2, 2, 15), 1, rbeta(2, 2, 15)),
+        c(rbeta(3, 2, 15), 1, rbeta(1, 2, 15)),
+        c(rbeta(4, 2, 15), 1))
+      
+      mu = c(0, 0, 0, 0, 0) 
+    
+      cc_xmat = data.frame(MASS::mvrnorm(n, mu, sigma) ) %>%
+        mutate(across(.cols = 1:5, ~if_else(. >= median(.), 1L, 0L))) %>%
+        rename(CC1 = 1, CC2 = 2, CC3 = 3, CC4 = 4, CC5 = 5) %>%
+        select(starts_with('CC'))
 ```
 
 1.  Use a starting sample size of a 1000 (i.e. persons) Generate covariates:
 2.  Generate age (normal distribution with mean=75, std=10)
-3.  Female, 66%/34%
-4.  A rare chronic condition `dx_1` 5%/95%
-5.  A prevalent chronic condition `dx_2` 40%/60%
-6.  Assign  effect sizes for each covariate on the outcome
+3.  Generate two continuous random variables
+4.  Female, with prevalence 66%/34%
+5.  Generate 5 binary categorical variables with positive correlations, representing chronic conditions
 
-Treatment initiation is modeled as a function of covariates, to simulate confounding.  
+Treatment initiation is modeled as a function of covariates, to simulate confounding according to DAG above.  
+
+## Simulate initiation of treatment {#sec-treat}  
 
 ```{r }
 #| label: sim-treatprob
-x_gender = 3 # <1>
-x_dx_1 = 1.5 # <1>
-x_dx_2 = 1.0 # <1>
+x_age = 0.96 # <1>
+x_fem = 1.3  # <1>
+x_1 = c(0.8)
+x_cc = c(0.9, 0.7, 0.8, 0.7, 0.9) # <1>
 
-lp_treat <- 1 / (1 + exp(- (-1.7 + log(x_gender) * female + log(x_dx_1)*dx_1 + log(x_dx_2)*dx_2))) # <1>
+
+lp_treat <- 1 / (1 + exp(- (3.5 + 
+                              log(x_age) * age + 
+                              log(x_fem) * female + 
+                              log(x_1) * xmat[, 1] + 
+                              log(x_cc[1])*cc_xmat[, 1] + 
+                              log(x_cc[2])*cc_xmat[, 2] + 
+                              log(x_cc[3])*cc_xmat[, 3] + 
+                              log(x_cc[4])*cc_xmat[, 4] + 
+                              log(x_cc[5])*cc_xmat[, 5])
+                         )
+                 ) # <2>
 
 treat <- sapply(lp_treat, function(x) rbinom(1, 1, x)) # <2>
 
 mean(treat)
 ```
+
 1. Assign effect sizes for each covariate on treatment
-2. Compute a probability of treatment for each person, and draw random binary treatment based on individual probability.
+2. Compute a probability of treatment for each person, and draw random binary treatment based on individual probability. Intercept tailored so the mean ~ 50%. 
 
 ::: callout-note
-These variables are generated independently, but in real-life would be correlated...
+Age and female are generated independently, but in real-life would be correlated...
 :::
 
-# Linear Predictor {#sec-linpred} 
+## Simulate outcome {#sec-etimes}
 
 ```{r }
 #| label: base-hazard
-# log-hazard
-    lp_outc <- log(y_treat) * treat +
-      log(y_gender) * female +
-      log(y_age) * age + log(y_dx_1)*dx_1 + log(y_dx_2)*dx_2 # <1>
-  
-  # Simulate baseline survival times (exponential distribution)
-    baseline_hazard <- 0.01 # <2>
-```
-
-1. Compute the linear predictor, 
-2. Simulation will use a random exponential distribution with rate of 0.05 (baseline hazard). This was selected based on trial and error.  
-
-# Simulate Event Time {#sec-etimes}
-
-```{r }
-#| label: lp-hazard
-    baseline_survival <- rexp(n, rate = baseline_hazard) # <1>
-    
-  # Adjust survival times based on linear predictor
-    t_outc <- round(baseline_survival * exp(-lp_outc)) # <2>
-```
-
-1.  Simulate survival times using exponential distribution
-2.  Adjust the times with linear predictor and round to nearest whole number.
-
-```{r }
-#| label: gg-eventtimes
 #| message: false
 #| warning: false
+#| 
+y_treat = 1.0 # <1>
+y_gender = 1.2 # <1>
+y_age = 0.98 # <1>
+y_x2 = 0.8 # <1>
+y_cc = c(0.8, 0.9, 1.1, 0.8, 1.2) # <1>
 
-ggplot(data = tibble(time = t_outc)) + 
-  geom_histogram(aes(x = time), color = 'blue', fill = 'blue') +
-  theme_bw() +
-  labs(x = 'Event Times', y= 'Count')
-
+# log-hazard
+  lp_outc <- log(y_treat) * treat +
+    log(y_gender) * female +
+    log(y_age) * age + 
+    log(y_x2) * xmat[, 2] +
+    log(y_cc[1])*cc_xmat[, 1] + 
+    log(y_cc[2])*cc_xmat[, 2] + 
+    log(y_cc[3])*cc_xmat[, 3] + 
+    log(y_cc[4])*cc_xmat[, 4] + 
+    log(y_cc[5])*cc_xmat[, 5] # <2>
+  
+    baseline_survival <- rweibull(n, shape = 2, scale = 20) # <3>
+    
+# Adjust survival times based on linear predictor
+    t_outc <- round(baseline_survival * exp(-lp_outc)) # <4>
+    
+    summary(t_outc)
 ```
+
+1. Set effects
+2. Compute the linear predictor
+3. Simulation will use a random exponential distribution with rate of 0.05 (baseline hazard).
+4. Survival times
 
 # Simulate Treatment Start {#sec-ttimes}
 
 ```{r }
 #| label: treat-hazard
-    t_treat = if_else(treat==0, Inf, round(rweibull(n, shape = 0.8, scale = 10)))  # <1>
+    t_treat = if_else(treat==0, Inf, round(rweibull(n, shape = 1, scale = 9)))  # <1>
+
+  summary(t_treat[treat==1])
 ```
 1. Simulate treatment start times.  
-
-```{r }
-#| label: gg-inittimes
-#| message: false
-#| warning: false
-
-ggplot(data = tibble(time = t_treat)) + 
-  geom_histogram(aes(x = time), color = 'blue', fill = 'blue') +
-  theme_bw() +
-  labs(x = 'Treatment Initation Time', y= 'Count')
-
-```
 
 # Finalize dataset {#sec-dta}
 
 ```{r }
-  # Create dataset
+#| label: mk-dta
+#| message: false
+#| warning: false
     data <- data.frame(
       age = age,
       female = female,
-      dx_1 = dx_1,
-      dx_2 = dx_2,
       treat = treat, 
       t_treat = t_treat, 
       t_outc = t_outc 
     ) %>%
+  bind_cols(., xmat, cc_xmat) %>%
       mutate(id = row_number(),
              time = pmin(60, t_outc), # <1>
              event_outc = if_else(time==t_outc, 1L, 0L))
@@ -180,11 +268,19 @@ ggsurvplot(survfit(Surv(time, event_outc) ~ treat, data = data),
                             ggtheme = theme_classic())
 ```
 
-The unadjusted model observes differences in incidence between treatment groups. A proportional hazards model adjusting for confounders finds a different result.  
+The unadjusted model observes differences in incidence between treatment groups. 
+
+```{r }
+#| label: fit-naive-cox
+d_cox = coxph(Surv(time, event_outc) ~ treat, data = data) 
+tbl_regression(d_cox, exponentiate=T)
+```
+
+A proportional hazards model adjusting for confounders finds a different result.  
 
 ```{r }
 #| label: fit-cox
-d_cox = coxph(Surv(time, event_outc) ~ treat + female + age + dx_1 + dx_2, data = data) 
+d_cox = coxph(Surv(time, event_outc) ~ treat + female + age + CC1 + CC2 + CC3 + CC4 + CC5, data = data) 
 tbl_regression(d_cox, exponentiate=T)
 ```
 ```{r }
@@ -251,11 +347,17 @@ ggsurvplot(survfit(Surv(t_clone, event_outc) ~ assign, data=data_cloned),
 ```
 The cloned dataset finds a similar answer (unadjusted), except the differences do not reveal until the end of the grace period.  
 
+```{r }
+#| label: fit-naive-cox2
+d_cox = coxph(Surv(t_clone, event_outc) ~ assign, data = data_cloned) 
+tbl_regression(d_cox, exponentiate = T)
+```
+
 An adjusted Cox model on the cloned dataset finds similar results between the `treat` and `assign` variables.
 
 ```{r }
 #| label: fit-cox2
-d_cox = coxph(Surv(t_clone, event_outc) ~ assign + female + age + dx_1 + dx_2, data = data_cloned) 
+d_cox = coxph(Surv(t_clone, event_outc) ~ assign + female + age + CC1 + CC2 + CC3 + CC4 + CC5, data = data_cloned) 
 tbl_regression(d_cox, exponentiate = T)
 ```
 
@@ -263,6 +365,6 @@ tbl_regression(d_cox, exponentiate = T)
 #| label: save-clone-dta
 #| echo: false
 saveRDS(select(data_cloned, id, assign, t_clone, event_outc, time, t_artcens, t_treat, treat, 
-               age, female, dx_1, dx_2),
+               age, female, CC1:CC5, X1, X2),
                here('dta', 'survdta_cloned.R'))
 ```

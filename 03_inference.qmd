@@ -9,7 +9,7 @@ bibliography: references.bib
 #| echo: false
 #| message: false
 #| 
-library(here())
+library(here)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility

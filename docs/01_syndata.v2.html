@@ -166,9 +166,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#sec-simparams" id="toc-sec-simparams" class="nav-link active" data-scroll-target="#sec-simparams">Simulation Parameters</a></li>
-  <li><a href="#sec-linpred" id="toc-sec-linpred" class="nav-link" data-scroll-target="#sec-linpred">Linear Predictor</a></li>
-  <li><a href="#sec-etimes" id="toc-sec-etimes" class="nav-link" data-scroll-target="#sec-etimes">Simulate Event Time</a></li>
+  <li><a href="#causal-directed-acyclic-graph" id="toc-causal-directed-acyclic-graph" class="nav-link active" data-scroll-target="#causal-directed-acyclic-graph">Causal Directed Acyclic Graph</a></li>
+  <li><a href="#sec-simparams" id="toc-sec-simparams" class="nav-link" data-scroll-target="#sec-simparams">Simulation Parameters</a>
+  <ul class="collapse">
+  <li><a href="#sec-treat" id="toc-sec-treat" class="nav-link" data-scroll-target="#sec-treat">Simulate initiation of treatment</a></li>
+  <li><a href="#sec-etimes" id="toc-sec-etimes" class="nav-link" data-scroll-target="#sec-etimes">Simulate outcome</a></li>
+  </ul></li>
   <li><a href="#sec-ttimes" id="toc-sec-ttimes" class="nav-link" data-scroll-target="#sec-ttimes">Simulate Treatment Start</a></li>
   <li><a href="#sec-dta" id="toc-sec-dta" class="nav-link" data-scroll-target="#sec-dta">Finalize dataset</a></li>
   <li><a href="#sec-summdta" id="toc-sec-summdta" class="nav-link" data-scroll-target="#sec-summdta">Summary of survival dataset</a></li>
@@ -198,20 +201,69 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="causal-directed-acyclic-graph" class="level1">
+<h1>Causal Directed Acyclic Graph</h1>
+<p>We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through other random variables. This includes age, two continuous variables, <code>X1</code>, <code>X2</code>. Gender, defined through a binary variable <code>M</code> for male. Finally, a vector of chronic conditions, we collectively refer to as <code>CC</code>. <code>X1</code> is defined as a cause of A but not Y, and <code>X2</code> is a cause of Y but not A. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done. No colliders A -&gt; L &lt;- Y are present.</p>
+<div class="cell fig-cap-location-top">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_syndata.v2_files/figure-html/gg-dag-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Figure 1. Causal DAG of treatment and outcome</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>If a naive analysis (no adjustment) was performed the estimate will be biased, because treamtent and outcome are d-connected.</p>
+<div class="cell fig-cap-location-top">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_syndata.v2_files/figure-html/gg-dag-dsep-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Figure 2. D-connected treatment and outcome</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell fig-cap-location-top">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="01_syndata.v2_files/figure-html/gg-dag-dsep-2-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Figure 3. D-separated treatment and outcome after adjustment</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Adjustment for CC, Age and M should lead to identification of a <em>NULL</em> effect of treatment on outcome. Adjustment for X1, and X2 are not necessary, but may be done for variance precision.</p>
+</section>
 <section id="sec-simparams" class="level1">
 <h1>Simulation Parameters</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-1" class="code-annotation-target"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">=</span> <span class="dv">10000</span></span>
+<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-1" class="code-annotation-target"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">=</span> <span class="dv">5000</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>    age <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">75</span>, <span class="at">sd =</span> <span class="dv">10</span>), <span class="dv">1</span>)</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-3" class="code-annotation-target"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>    female <span class="ot">=</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.34</span>))</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-4" class="code-annotation-target"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>    dx_1 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>))</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-1-5" class="code-annotation-target"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>    dx_2 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>))</span>
-<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="6" onclick="event.preventDefault();">6</a><span id="annotated-cell-1-7" class="code-annotation-target"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>y_treat <span class="ot">=</span> <span class="fl">1.0</span></span>
-<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>y_gender <span class="ot">=</span> <span class="dv">3</span></span>
-<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>y_age <span class="ot">=</span> <span class="fl">0.98</span></span>
-<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>y_dx_1 <span class="ot">=</span> <span class="fl">1.1</span></span>
-<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>y_dx_2 <span class="ot">=</span> <span class="fl">0.8</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># continuous variables  </span></span>
+<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>    xmat <span class="ot">=</span> MASS<span class="sc">::</span><span class="fu">mvrnorm</span>(n, <span class="at">mu =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">Sigma =</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.8</span>), <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="dv">1</span>))) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-6" class="code-annotation-target"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">data.frame</span>(.)</span>
+<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># categorical variables</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-9" class="code-annotation-target"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>    female <span class="ot">=</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.34</span>))</span>
+<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-1-11" class="code-annotation-target"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># create the variance covariance matrix</span></span>
+<span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>      sigma <span class="ot">&lt;-</span><span class="fu">rbind</span>(</span>
+<span id="annotated-cell-1-13"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">rbeta</span>(<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">15</span>)), </span>
+<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="fu">rbeta</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">15</span>), <span class="dv">1</span>, <span class="fu">rbeta</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">15</span>)), </span>
+<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="fu">rbeta</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">15</span>), <span class="dv">1</span>, <span class="fu">rbeta</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">15</span>)),</span>
+<span id="annotated-cell-1-16"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="fu">rbeta</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">15</span>), <span class="dv">1</span>, <span class="fu">rbeta</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">15</span>)),</span>
+<span id="annotated-cell-1-17"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="fu">rbeta</span>(<span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">15</span>), <span class="dv">1</span>))</span>
+<span id="annotated-cell-1-18"><a href="#annotated-cell-1-18" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="annotated-cell-1-19"><a href="#annotated-cell-1-19" aria-hidden="true" tabindex="-1"></a>      mu <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>) </span>
+<span id="annotated-cell-1-20"><a href="#annotated-cell-1-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="annotated-cell-1-21"><a href="#annotated-cell-1-21" aria-hidden="true" tabindex="-1"></a>      cc_xmat <span class="ot">=</span> <span class="fu">data.frame</span>(MASS<span class="sc">::</span><span class="fu">mvrnorm</span>(n, mu, sigma) ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-22"><a href="#annotated-cell-1-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="at">.cols =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="sc">~</span><span class="fu">if_else</span>(. <span class="sc">&gt;=</span> <span class="fu">median</span>(.), <span class="dv">1</span>L, <span class="dv">0</span>L))) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-23"><a href="#annotated-cell-1-23" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rename</span>(<span class="at">CC1 =</span> <span class="dv">1</span>, <span class="at">CC2 =</span> <span class="dv">2</span>, <span class="at">CC3 =</span> <span class="dv">3</span>, <span class="at">CC4 =</span> <span class="dv">4</span>, <span class="at">CC5 =</span> <span class="dv">5</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-24"><a href="#annotated-cell-1-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">'CC'</span>))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
@@ -224,48 +276,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="3" data-code-annotation="3">Female, 66%/34%</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="6" data-code-annotation="3">Generate two continuous random variables</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="4" data-code-annotation="4">A rare chronic condition <code>dx_1</code> 5%/95%</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="9" data-code-annotation="4">Female, with prevalence 66%/34%</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="5">5</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="5" data-code-annotation="5">A prevalent chronic condition <code>dx_2</code> 40%/60%</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="6">6</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="7,8,9,10,11" data-code-annotation="6">Assign effect sizes for each covariate on the outcome</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="11" data-code-annotation="5">Generate 5 binary categorical variables with positive correlations, representing chronic conditions</span>
 </dd>
 </dl>
 </div>
 </div>
-<p>Treatment initiation is modeled as a function of covariates, to simulate confounding.</p>
+<p>Treatment initiation is modeled as a function of covariates, to simulate confounding according to DAG above.</p>
+<section id="sec-treat" class="level2">
+<h2 class="anchored" data-anchor-id="sec-treat">Simulate initiation of treatment</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-1" class="code-annotation-target"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>x_gender <span class="ot">=</span> <span class="dv">3</span></span>
-<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>x_dx_1 <span class="ot">=</span> <span class="fl">1.5</span></span>
-<span id="annotated-cell-2-3"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a>x_dx_2 <span class="ot">=</span> <span class="fl">1.0</span></span>
-<span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>lp_treat <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span> (<span class="sc">-</span><span class="fl">1.7</span> <span class="sc">+</span> <span class="fu">log</span>(x_gender) <span class="sc">*</span> female <span class="sc">+</span> <span class="fu">log</span>(x_dx_1)<span class="sc">*</span>dx_1 <span class="sc">+</span> <span class="fu">log</span>(x_dx_2)<span class="sc">*</span>dx_2)))</span>
+<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-1" class="code-annotation-target"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>x_age <span class="ot">=</span> <span class="fl">0.96</span></span>
+<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>x_fem <span class="ot">=</span> <span class="fl">1.3</span></span>
+<span id="annotated-cell-2-3"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a>x_1 <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.8</span>)</span>
+<span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>x_cc <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.9</span>)</span>
+<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="annotated-cell-2-6"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-7" class="code-annotation-target"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>treat <span class="ot">&lt;-</span> <span class="fu">sapply</span>(lp_treat, <span class="cf">function</span>(x) <span class="fu">rbinom</span>(<span class="dv">1</span>, <span class="dv">1</span>, x))</span>
-<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-2-9"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(treat)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-2-7"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>lp_treat <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span> (<span class="fl">3.5</span> <span class="sc">+</span> </span>
+<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_age) <span class="sc">*</span> age <span class="sc">+</span> </span>
+<span id="annotated-cell-2-9"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_fem) <span class="sc">*</span> female <span class="sc">+</span> </span>
+<span id="annotated-cell-2-10"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_1) <span class="sc">*</span> xmat[, <span class="dv">1</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-2-11"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_cc[<span class="dv">1</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">1</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-2-12"><a href="#annotated-cell-2-12" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_cc[<span class="dv">2</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">2</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-2-13"><a href="#annotated-cell-2-13" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_cc[<span class="dv">3</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">3</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-2-14"><a href="#annotated-cell-2-14" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_cc[<span class="dv">4</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">4</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-2-15"><a href="#annotated-cell-2-15" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">log</span>(x_cc[<span class="dv">5</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">5</span>])</span>
+<span id="annotated-cell-2-16"><a href="#annotated-cell-2-16" aria-hidden="true" tabindex="-1"></a>                         )</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-17" class="code-annotation-target"><a href="#annotated-cell-2-17" aria-hidden="true" tabindex="-1"></a>                 )</span>
+<span id="annotated-cell-2-18"><a href="#annotated-cell-2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-2-19"><a href="#annotated-cell-2-19" aria-hidden="true" tabindex="-1"></a>treat <span class="ot">&lt;-</span> <span class="fu">sapply</span>(lp_treat, <span class="cf">function</span>(x) <span class="fu">rbinom</span>(<span class="dv">1</span>, <span class="dv">1</span>, x))</span>
+<span id="annotated-cell-2-20"><a href="#annotated-cell-2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-2-21"><a href="#annotated-cell-2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(treat)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="1,2,3,5" data-code-annotation="1">Assign effect sizes for each covariate on treatment</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="1,2,4" data-code-annotation="1">Assign effect sizes for each covariate on treatment</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="7" data-code-annotation="2">Compute a probability of treatment for each person, and draw random binary treatment based on individual probability.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="17,19" data-code-annotation="2">Compute a probability of treatment for each person, and draw random binary treatment based on individual probability. Intercept tailored so the mean ~ 50%.</span>
 </dd>
 </dl>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.2915</code></pre>
+<pre><code>[1] 0.5024</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -278,116 +340,102 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>These variables are generated independently, but in real-life would be correlated…</p>
+<p>Age and female are generated independently, but in real-life would be correlated…</p>
 </div>
 </div>
 </section>
-<section id="sec-linpred" class="level1">
-<h1>Linear Predictor</h1>
+<section id="sec-etimes" class="level2">
+<h2 class="anchored" data-anchor-id="sec-etimes">Simulate outcome</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># log-hazard</span></span>
-<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>    lp_outc <span class="ot">&lt;-</span> <span class="fu">log</span>(y_treat) <span class="sc">*</span> treat <span class="sc">+</span></span>
-<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">log</span>(y_gender) <span class="sc">*</span> female <span class="sc">+</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-4" class="code-annotation-target"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">log</span>(y_age) <span class="sc">*</span> age <span class="sc">+</span> <span class="fu">log</span>(y_dx_1)<span class="sc">*</span>dx_1 <span class="sc">+</span> <span class="fu">log</span>(y_dx_2)<span class="sc">*</span>dx_2</span>
-<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Simulate baseline survival times (exponential distribution)</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-7" class="code-annotation-target"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    baseline_hazard <span class="ot">&lt;-</span> <span class="fl">0.01</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>y_treat <span class="ot">=</span> <span class="fl">1.0</span></span>
+<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>y_gender <span class="ot">=</span> <span class="fl">1.2</span></span>
+<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>y_age <span class="ot">=</span> <span class="fl">0.98</span></span>
+<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>y_x2 <span class="ot">=</span> <span class="fl">0.8</span></span>
+<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>y_cc <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">1.1</span>, <span class="fl">0.8</span>, <span class="fl">1.2</span>)</span>
+<span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># log-hazard</span></span>
+<span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>  lp_outc <span class="ot">&lt;-</span> <span class="fu">log</span>(y_treat) <span class="sc">*</span> treat <span class="sc">+</span></span>
+<span id="annotated-cell-3-9"><a href="#annotated-cell-3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_gender) <span class="sc">*</span> female <span class="sc">+</span></span>
+<span id="annotated-cell-3-10"><a href="#annotated-cell-3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_age) <span class="sc">*</span> age <span class="sc">+</span> </span>
+<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_x2) <span class="sc">*</span> xmat[, <span class="dv">2</span>] <span class="sc">+</span></span>
+<span id="annotated-cell-3-12"><a href="#annotated-cell-3-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_cc[<span class="dv">1</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">1</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-3-13"><a href="#annotated-cell-3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_cc[<span class="dv">2</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">2</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-3-14"><a href="#annotated-cell-3-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_cc[<span class="dv">3</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">3</span>] <span class="sc">+</span> </span>
+<span id="annotated-cell-3-15"><a href="#annotated-cell-3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_cc[<span class="dv">4</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">4</span>] <span class="sc">+</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-16" class="code-annotation-target"><a href="#annotated-cell-3-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(y_cc[<span class="dv">5</span>])<span class="sc">*</span>cc_xmat[, <span class="dv">5</span>]</span>
+<span id="annotated-cell-3-17"><a href="#annotated-cell-3-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-3-18" class="code-annotation-target"><a href="#annotated-cell-3-18" aria-hidden="true" tabindex="-1"></a>    baseline_survival <span class="ot">&lt;-</span> <span class="fu">rweibull</span>(n, <span class="at">shape =</span> <span class="dv">2</span>, <span class="at">scale =</span> <span class="dv">20</span>)</span>
+<span id="annotated-cell-3-19"><a href="#annotated-cell-3-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="annotated-cell-3-20"><a href="#annotated-cell-3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust survival times based on linear predictor</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-3-21" class="code-annotation-target"><a href="#annotated-cell-3-21" aria-hidden="true" tabindex="-1"></a>    t_outc <span class="ot">&lt;-</span> <span class="fu">round</span>(baseline_survival <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>lp_outc))</span>
+<span id="annotated-cell-3-22"><a href="#annotated-cell-3-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="annotated-cell-3-23"><a href="#annotated-cell-3-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summary</span>(t_outc)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="4" data-code-annotation="1">Compute the linear predictor,</span>
+<span data-code-cell="annotated-cell-3" data-code-lines="1,2,3,4,5" data-code-annotation="1">Set effects</span>
 </dd>
 <dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="7" data-code-annotation="2">Simulation will use a random exponential distribution with rate of 0.05 (baseline hazard). This was selected based on trial and error.</span>
+<span data-code-cell="annotated-cell-3" data-code-lines="16" data-code-annotation="2">Compute the linear predictor</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="18" data-code-annotation="3">Simulation will use a random exponential distribution with rate of 0.05 (baseline hazard).</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="21" data-code-annotation="4">Survival times</span>
 </dd>
 </dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1.00   44.00   74.00   87.32  116.00  680.00 </code></pre>
 </div>
 </div>
 </section>
-<section id="sec-etimes" class="level1">
-<h1>Simulate Event Time</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-1" class="code-annotation-target"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>    baseline_survival <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="at">rate =</span> baseline_hazard)</span>
-<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjust survival times based on linear predictor</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-4-4" class="code-annotation-target"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>    t_outc <span class="ot">&lt;-</span> <span class="fu">round</span>(baseline_survival <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>lp_outc))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="1" data-code-annotation="1">Simulate survival times using exponential distribution</span>
-</dd>
-<dt data-target-cell="annotated-cell-4" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="4" data-code-annotation="2">Adjust the times with linear predictor and round to nearest whole number.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">time =</span> t_outc)) <span class="sc">+</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> time), <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">fill =</span> <span class="st">'blue'</span>) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Event Times'</span>, <span class="at">y=</span> <span class="st">'Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="01_syndata.v2_files/figure-html/gg-eventtimes-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
 </section>
 <section id="sec-ttimes" class="level1">
 <h1>Simulate Treatment Start</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-1" class="code-annotation-target"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a>    t_treat <span class="ot">=</span> <span class="fu">if_else</span>(treat<span class="sc">==</span><span class="dv">0</span>, <span class="cn">Inf</span>, <span class="fu">round</span>(<span class="fu">rweibull</span>(n, <span class="at">shape =</span> <span class="fl">0.8</span>, <span class="at">scale =</span> <span class="dv">10</span>)))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-1" class="code-annotation-target"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>    t_treat <span class="ot">=</span> <span class="fu">if_else</span>(treat<span class="sc">==</span><span class="dv">0</span>, <span class="cn">Inf</span>, <span class="fu">round</span>(<span class="fu">rweibull</span>(n, <span class="at">shape =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="dv">9</span>)))</span>
+<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>(t_treat[treat<span class="sc">==</span><span class="dv">1</span>])</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="1" data-code-annotation="1">Simulate treatment start times.</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="1" data-code-annotation="1">Simulate treatment start times.</span>
 </dd>
 </dl>
 </div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">time =</span> t_treat)) <span class="sc">+</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">x =</span> time), <span class="at">color =</span> <span class="st">'blue'</span>, <span class="at">fill =</span> <span class="st">'blue'</span>) <span class="sc">+</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Treatment Initation Time'</span>, <span class="at">y=</span> <span class="st">'Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="01_syndata.v2_files/figure-html/gg-inittimes-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0.000   3.000   6.000   9.043  13.000  93.000 </code></pre>
 </div>
 </div>
 </section>
 <section id="sec-dta" class="level1">
 <h1>Finalize dataset</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-8"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-8-1"><a href="#annotated-cell-8-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create dataset</span></span>
-<span id="annotated-cell-8-2"><a href="#annotated-cell-8-2" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="annotated-cell-8-3"><a href="#annotated-cell-8-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">age =</span> age,</span>
-<span id="annotated-cell-8-4"><a href="#annotated-cell-8-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">female =</span> female,</span>
-<span id="annotated-cell-8-5"><a href="#annotated-cell-8-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">dx_1 =</span> dx_1,</span>
-<span id="annotated-cell-8-6"><a href="#annotated-cell-8-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">dx_2 =</span> dx_2,</span>
-<span id="annotated-cell-8-7"><a href="#annotated-cell-8-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">treat =</span> treat, </span>
-<span id="annotated-cell-8-8"><a href="#annotated-cell-8-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">t_treat =</span> t_treat, </span>
-<span id="annotated-cell-8-9"><a href="#annotated-cell-8-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">t_outc =</span> t_outc </span>
-<span id="annotated-cell-8-10"><a href="#annotated-cell-8-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-8-11"><a href="#annotated-cell-8-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">row_number</span>(),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-8-12" class="code-annotation-target"><a href="#annotated-cell-8-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">time =</span> <span class="fu">pmin</span>(<span class="dv">60</span>, t_outc),</span>
-<span id="annotated-cell-8-13"><a href="#annotated-cell-8-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">event_outc =</span> <span class="fu">if_else</span>(time<span class="sc">==</span>t_outc, <span class="dv">1</span>L, <span class="dv">0</span>L))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">age =</span> age,</span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">female =</span> female,</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">treat =</span> treat, </span>
+<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">t_treat =</span> t_treat, </span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">t_outc =</span> t_outc </span>
+<span id="annotated-cell-5-7"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(., xmat, cc_xmat) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">row_number</span>(),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-10" class="code-annotation-target"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">time =</span> <span class="fu">pmin</span>(<span class="dv">60</span>, t_outc),</span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">event_outc =</span> <span class="fu">if_else</span>(time<span class="sc">==</span>t_outc, <span class="dv">1</span>L, <span class="dv">0</span>L))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-8" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-8" data-code-lines="12" data-code-annotation="1">Set administrative end of follow-up at 60. No other censoring mechanism, e.g.&nbsp;lost to follow-up.</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="10" data-code-annotation="1">Set administrative end of follow-up at 60. No other censoring mechanism, e.g.&nbsp;lost to follow-up.</span>
 </dd>
 </dl>
 </div>
@@ -397,39 +445,44 @@ Note
 <h1>Summary of survival dataset</h1>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 10,000
-Columns: 10
-$ age        &lt;dbl&gt; 88.7, 69.4, 78.6, 81.3, 79.0, 73.9, 90.1, 74.1, 95.2, 74.4,…
-$ female     &lt;dbl&gt; 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1,…
-$ dx_1       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1,…
-$ dx_2       &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0,…
-$ treat      &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0,…
-$ t_treat    &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, 9, Inf, Inf, Inf, Inf, I…
-$ t_outc     &lt;dbl&gt; 303, 127, 112, 176, 70, 74, 564, 68, 405, 141, 121, 825, 32…
+<pre><code>Rows: 5,000
+Columns: 15
+$ age        &lt;dbl&gt; 79.6, 91.4, 69.0, 76.9, 91.9, 67.4, 67.7, 70.5, 57.8, 74.5,…
+$ female     &lt;dbl&gt; 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1,…
+$ treat      &lt;int&gt; 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0,…
+$ t_treat    &lt;dbl&gt; Inf, 37, Inf, 14, Inf, Inf, 4, 1, 16, Inf, 7, 1, Inf, 9, In…
+$ t_outc     &lt;dbl&gt; 117, 131, 93, 106, 157, 31, 54, 144, 29, 88, 22, 112, 44, 1…
+$ X1         &lt;dbl&gt; -0.4224136, -0.4307282, -0.1797264, -0.5852888, -0.3290210,…
+$ X2         &lt;dbl&gt; 0.05287660, -0.28058259, -0.27317790, -0.14090988, 0.398000…
+$ CC1        &lt;int&gt; 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0,…
+$ CC2        &lt;int&gt; 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0,…
+$ CC3        &lt;int&gt; 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,…
+$ CC4        &lt;int&gt; 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,…
+$ CC5        &lt;int&gt; 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1,…
 $ id         &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
-$ time       &lt;dbl&gt; 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,…
-$ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,…</code></pre>
+$ time       &lt;dbl&gt; 60, 60, 60, 60, 60, 31, 54, 60, 29, 60, 22, 60, 44, 60, 60,…
+$ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0,…</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
-<div id="tdbrykeycw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#tdbrykeycw table {
+<div id="soqelryfum" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#soqelryfum table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#tdbrykeycw thead, #tdbrykeycw tbody, #tdbrykeycw tfoot, #tdbrykeycw tr, #tdbrykeycw td, #tdbrykeycw th {
+#soqelryfum thead, #soqelryfum tbody, #soqelryfum tfoot, #soqelryfum tr, #soqelryfum td, #soqelryfum th {
   border-style: none;
 }
 
-#tdbrykeycw p {
+#soqelryfum p {
   margin: 0;
   padding: 0;
 }
 
-#tdbrykeycw .gt_table {
+#soqelryfum .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -455,12 +508,12 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-left-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_caption {
+#soqelryfum .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#tdbrykeycw .gt_title {
+#soqelryfum .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -472,7 +525,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-bottom-width: 0;
 }
 
-#tdbrykeycw .gt_subtitle {
+#soqelryfum .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -484,7 +537,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-top-width: 0;
 }
 
-#tdbrykeycw .gt_heading {
+#soqelryfum .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -496,13 +549,13 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-right-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_bottom_border {
+#soqelryfum .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_col_headings {
+#soqelryfum .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -517,7 +570,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-right-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_col_heading {
+#soqelryfum .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -537,7 +590,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   overflow-x: hidden;
 }
 
-#tdbrykeycw .gt_column_spanner_outer {
+#soqelryfum .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -549,15 +602,15 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 4px;
 }
 
-#tdbrykeycw .gt_column_spanner_outer:first-child {
+#soqelryfum .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#tdbrykeycw .gt_column_spanner_outer:last-child {
+#soqelryfum .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#tdbrykeycw .gt_column_spanner {
+#soqelryfum .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -569,11 +622,11 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   width: 100%;
 }
 
-#tdbrykeycw .gt_spanner_row {
+#soqelryfum .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#tdbrykeycw .gt_group_heading {
+#soqelryfum .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -599,7 +652,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   text-align: left;
 }
 
-#tdbrykeycw .gt_empty_group_heading {
+#soqelryfum .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -614,15 +667,15 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   vertical-align: middle;
 }
 
-#tdbrykeycw .gt_from_md > :first-child {
+#soqelryfum .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#tdbrykeycw .gt_from_md > :last-child {
+#soqelryfum .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#tdbrykeycw .gt_row {
+#soqelryfum .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -641,7 +694,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   overflow-x: hidden;
 }
 
-#tdbrykeycw .gt_stub {
+#soqelryfum .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -654,7 +707,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 5px;
 }
 
-#tdbrykeycw .gt_stub_row_group {
+#soqelryfum .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -668,15 +721,15 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   vertical-align: top;
 }
 
-#tdbrykeycw .gt_row_group_first td {
+#soqelryfum .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#tdbrykeycw .gt_row_group_first th {
+#soqelryfum .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#tdbrykeycw .gt_summary_row {
+#soqelryfum .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -686,16 +739,16 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 5px;
 }
 
-#tdbrykeycw .gt_first_summary_row {
+#soqelryfum .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_first_summary_row.thick {
+#soqelryfum .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#tdbrykeycw .gt_last_summary_row {
+#soqelryfum .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -705,7 +758,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-bottom-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_grand_summary_row {
+#soqelryfum .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -715,7 +768,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 5px;
 }
 
-#tdbrykeycw .gt_first_grand_summary_row {
+#soqelryfum .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -725,7 +778,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-top-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_last_grand_summary_row_top {
+#soqelryfum .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -735,11 +788,11 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-bottom-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_striped {
+#soqelryfum .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#tdbrykeycw .gt_table_body {
+#soqelryfum .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -748,7 +801,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-bottom-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_footnotes {
+#soqelryfum .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -762,7 +815,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-right-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_footnote {
+#soqelryfum .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -771,7 +824,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 5px;
 }
 
-#tdbrykeycw .gt_sourcenotes {
+#soqelryfum .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -785,7 +838,7 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   border-right-color: #D3D3D3;
 }
 
-#tdbrykeycw .gt_sourcenote {
+#soqelryfum .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -793,72 +846,72 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   padding-right: 5px;
 }
 
-#tdbrykeycw .gt_left {
+#soqelryfum .gt_left {
   text-align: left;
 }
 
-#tdbrykeycw .gt_center {
+#soqelryfum .gt_center {
   text-align: center;
 }
 
-#tdbrykeycw .gt_right {
+#soqelryfum .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#tdbrykeycw .gt_font_normal {
+#soqelryfum .gt_font_normal {
   font-weight: normal;
 }
 
-#tdbrykeycw .gt_font_bold {
+#soqelryfum .gt_font_bold {
   font-weight: bold;
 }
 
-#tdbrykeycw .gt_font_italic {
+#soqelryfum .gt_font_italic {
   font-style: italic;
 }
 
-#tdbrykeycw .gt_super {
+#soqelryfum .gt_super {
   font-size: 65%;
 }
 
-#tdbrykeycw .gt_footnote_marks {
+#soqelryfum .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#tdbrykeycw .gt_asterisk {
+#soqelryfum .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#tdbrykeycw .gt_indent_1 {
+#soqelryfum .gt_indent_1 {
   text-indent: 5px;
 }
 
-#tdbrykeycw .gt_indent_2 {
+#soqelryfum .gt_indent_2 {
   text-indent: 10px;
 }
 
-#tdbrykeycw .gt_indent_3 {
+#soqelryfum .gt_indent_3 {
   text-indent: 15px;
 }
 
-#tdbrykeycw .gt_indent_4 {
+#soqelryfum .gt_indent_4 {
   text-indent: 20px;
 }
 
-#tdbrykeycw .gt_indent_5 {
+#soqelryfum .gt_indent_5 {
   text-indent: 25px;
 }
 
-#tdbrykeycw .katex-display {
+#soqelryfum .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#tdbrykeycw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#soqelryfum div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -895,16 +948,16 @@ $ event_outc &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 <tr class="even">
 <td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;0</td>
 <td class="gt_row gt_center" headers="stat_1">100%</td>
-<td class="gt_row gt_center" headers="stat_2">94%</td>
-<td class="gt_row gt_center" headers="stat_3">87%</td>
-<td class="gt_row gt_center" headers="stat_4">77%</td>
+<td class="gt_row gt_center" headers="stat_2">98%</td>
+<td class="gt_row gt_center" headers="stat_3">88%</td>
+<td class="gt_row gt_center" headers="stat_4">65%</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;1</td>
 <td class="gt_row gt_center" headers="stat_1">100%</td>
-<td class="gt_row gt_center" headers="stat_2">94%</td>
-<td class="gt_row gt_center" headers="stat_3">86%</td>
-<td class="gt_row gt_center" headers="stat_4">72%</td>
+<td class="gt_row gt_center" headers="stat_2">97%</td>
+<td class="gt_row gt_center" headers="stat_3">83%</td>
+<td class="gt_row gt_center" headers="stat_4">57%</td>
 </tr>
 </tbody>
 </table>
@@ -929,34 +982,34 @@ Note
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="01_syndata.v2_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="01_syndata.v2_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
 <figcaption>Unadjusted Kaplan-Meier Plot</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>The unadjusted model observes differences in incidence between treatment groups. A proportional hazards model adjusting for confounders finds a different result.</p>
+<p>The unadjusted model observes differences in incidence between treatment groups.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, event_outc) <span class="sc">~</span> treat <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> dx_1 <span class="sc">+</span> dx_2, <span class="at">data =</span> data) </span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, event_outc) <span class="sc">~</span> treat, <span class="at">data =</span> data) </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="mnzfvjoquc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#mnzfvjoquc table {
+<div id="koisfvpjou" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#koisfvpjou table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#mnzfvjoquc thead, #mnzfvjoquc tbody, #mnzfvjoquc tfoot, #mnzfvjoquc tr, #mnzfvjoquc td, #mnzfvjoquc th {
+#koisfvpjou thead, #koisfvpjou tbody, #koisfvpjou tfoot, #koisfvpjou tr, #koisfvpjou td, #koisfvpjou th {
   border-style: none;
 }
 
-#mnzfvjoquc p {
+#koisfvpjou p {
   margin: 0;
   padding: 0;
 }
 
-#mnzfvjoquc .gt_table {
+#koisfvpjou .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -982,12 +1035,12 @@ Note
   border-left-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_caption {
+#koisfvpjou .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#mnzfvjoquc .gt_title {
+#koisfvpjou .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -999,7 +1052,7 @@ Note
   border-bottom-width: 0;
 }
 
-#mnzfvjoquc .gt_subtitle {
+#koisfvpjou .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1011,7 +1064,7 @@ Note
   border-top-width: 0;
 }
 
-#mnzfvjoquc .gt_heading {
+#koisfvpjou .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1023,13 +1076,13 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_bottom_border {
+#koisfvpjou .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_col_headings {
+#koisfvpjou .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1044,7 +1097,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_col_heading {
+#koisfvpjou .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1064,7 +1117,7 @@ Note
   overflow-x: hidden;
 }
 
-#mnzfvjoquc .gt_column_spanner_outer {
+#koisfvpjou .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1076,15 +1129,15 @@ Note
   padding-right: 4px;
 }
 
-#mnzfvjoquc .gt_column_spanner_outer:first-child {
+#koisfvpjou .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#mnzfvjoquc .gt_column_spanner_outer:last-child {
+#koisfvpjou .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#mnzfvjoquc .gt_column_spanner {
+#koisfvpjou .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1096,11 +1149,11 @@ Note
   width: 100%;
 }
 
-#mnzfvjoquc .gt_spanner_row {
+#koisfvpjou .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#mnzfvjoquc .gt_group_heading {
+#koisfvpjou .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1126,7 +1179,7 @@ Note
   text-align: left;
 }
 
-#mnzfvjoquc .gt_empty_group_heading {
+#koisfvpjou .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1141,15 +1194,15 @@ Note
   vertical-align: middle;
 }
 
-#mnzfvjoquc .gt_from_md > :first-child {
+#koisfvpjou .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#mnzfvjoquc .gt_from_md > :last-child {
+#koisfvpjou .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#mnzfvjoquc .gt_row {
+#koisfvpjou .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1168,7 +1221,7 @@ Note
   overflow-x: hidden;
 }
 
-#mnzfvjoquc .gt_stub {
+#koisfvpjou .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1181,7 +1234,7 @@ Note
   padding-right: 5px;
 }
 
-#mnzfvjoquc .gt_stub_row_group {
+#koisfvpjou .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1195,15 +1248,15 @@ Note
   vertical-align: top;
 }
 
-#mnzfvjoquc .gt_row_group_first td {
+#koisfvpjou .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#mnzfvjoquc .gt_row_group_first th {
+#koisfvpjou .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#mnzfvjoquc .gt_summary_row {
+#koisfvpjou .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1213,16 +1266,16 @@ Note
   padding-right: 5px;
 }
 
-#mnzfvjoquc .gt_first_summary_row {
+#koisfvpjou .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_first_summary_row.thick {
+#koisfvpjou .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#mnzfvjoquc .gt_last_summary_row {
+#koisfvpjou .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1232,7 +1285,7 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_grand_summary_row {
+#koisfvpjou .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1242,7 +1295,7 @@ Note
   padding-right: 5px;
 }
 
-#mnzfvjoquc .gt_first_grand_summary_row {
+#koisfvpjou .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1252,7 +1305,7 @@ Note
   border-top-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_last_grand_summary_row_top {
+#koisfvpjou .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1262,11 +1315,11 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_striped {
+#koisfvpjou .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#mnzfvjoquc .gt_table_body {
+#koisfvpjou .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1275,7 +1328,7 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_footnotes {
+#koisfvpjou .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1289,7 +1342,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_footnote {
+#koisfvpjou .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1298,7 +1351,7 @@ Note
   padding-right: 5px;
 }
 
-#mnzfvjoquc .gt_sourcenotes {
+#koisfvpjou .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1312,7 +1365,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#mnzfvjoquc .gt_sourcenote {
+#koisfvpjou .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1320,72 +1373,72 @@ Note
   padding-right: 5px;
 }
 
-#mnzfvjoquc .gt_left {
+#koisfvpjou .gt_left {
   text-align: left;
 }
 
-#mnzfvjoquc .gt_center {
+#koisfvpjou .gt_center {
   text-align: center;
 }
 
-#mnzfvjoquc .gt_right {
+#koisfvpjou .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#mnzfvjoquc .gt_font_normal {
+#koisfvpjou .gt_font_normal {
   font-weight: normal;
 }
 
-#mnzfvjoquc .gt_font_bold {
+#koisfvpjou .gt_font_bold {
   font-weight: bold;
 }
 
-#mnzfvjoquc .gt_font_italic {
+#koisfvpjou .gt_font_italic {
   font-style: italic;
 }
 
-#mnzfvjoquc .gt_super {
+#koisfvpjou .gt_super {
   font-size: 65%;
 }
 
-#mnzfvjoquc .gt_footnote_marks {
+#koisfvpjou .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#mnzfvjoquc .gt_asterisk {
+#koisfvpjou .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#mnzfvjoquc .gt_indent_1 {
+#koisfvpjou .gt_indent_1 {
   text-indent: 5px;
 }
 
-#mnzfvjoquc .gt_indent_2 {
+#koisfvpjou .gt_indent_2 {
   text-indent: 10px;
 }
 
-#mnzfvjoquc .gt_indent_3 {
+#koisfvpjou .gt_indent_3 {
   text-indent: 15px;
 }
 
-#mnzfvjoquc .gt_indent_4 {
+#koisfvpjou .gt_indent_4 {
   text-indent: 20px;
 }
 
-#mnzfvjoquc .gt_indent_5 {
+#koisfvpjou .gt_indent_5 {
   text-indent: 25px;
 }
 
-#mnzfvjoquc .katex-display {
+#koisfvpjou .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#mnzfvjoquc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#koisfvpjou div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1402,36 +1455,536 @@ Note
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="label">treat</td>
-<td class="gt_row gt_center" headers="estimate">0.99</td>
-<td class="gt_row gt_center" headers="conf.low">0.91, 1.08</td>
-<td class="gt_row gt_center" headers="p.value">0.9</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="label">female</td>
-<td class="gt_row gt_center" headers="estimate">3.06</td>
-<td class="gt_row gt_center" headers="conf.low">2.74, 3.41</td>
-<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="label">age</td>
-<td class="gt_row gt_center" headers="estimate">0.98</td>
-<td class="gt_row gt_center" headers="conf.low">0.98, 0.99</td>
-<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="label">dx_1</td>
-<td class="gt_row gt_center" headers="estimate">1.15</td>
-<td class="gt_row gt_center" headers="conf.low">0.97, 1.35</td>
-<td class="gt_row gt_center" headers="p.value">0.11</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="label">dx_2</td>
-<td class="gt_row gt_center" headers="estimate">0.78</td>
-<td class="gt_row gt_center" headers="conf.low">0.72, 0.85</td>
+<td class="gt_row gt_center" headers="estimate">1.31</td>
+<td class="gt_row gt_center" headers="conf.low">1.20, 1.43</td>
 <td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
 </tr>
 </tbody><tfoot class="gt_sourcenotes">
 <tr class="even">
+<td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>A proportional hazards model adjusting for confounders finds a different result.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, event_outc) <span class="sc">~</span> treat <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> CC1 <span class="sc">+</span> CC2 <span class="sc">+</span> CC3 <span class="sc">+</span> CC4 <span class="sc">+</span> CC5, <span class="at">data =</span> data) </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="jbrqcksmdl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jbrqcksmdl table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jbrqcksmdl thead, #jbrqcksmdl tbody, #jbrqcksmdl tfoot, #jbrqcksmdl tr, #jbrqcksmdl td, #jbrqcksmdl th {
+  border-style: none;
+}
+
+#jbrqcksmdl p {
+  margin: 0;
+  padding: 0;
+}
+
+#jbrqcksmdl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#jbrqcksmdl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jbrqcksmdl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jbrqcksmdl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jbrqcksmdl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jbrqcksmdl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jbrqcksmdl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jbrqcksmdl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jbrqcksmdl .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#jbrqcksmdl .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#jbrqcksmdl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jbrqcksmdl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jbrqcksmdl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jbrqcksmdl .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jbrqcksmdl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jbrqcksmdl .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jbrqcksmdl .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jbrqcksmdl .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#jbrqcksmdl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jbrqcksmdl .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jbrqcksmdl .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jbrqcksmdl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#jbrqcksmdl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jbrqcksmdl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jbrqcksmdl .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jbrqcksmdl .gt_left {
+  text-align: left;
+}
+
+#jbrqcksmdl .gt_center {
+  text-align: center;
+}
+
+#jbrqcksmdl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jbrqcksmdl .gt_font_normal {
+  font-weight: normal;
+}
+
+#jbrqcksmdl .gt_font_bold {
+  font-weight: bold;
+}
+
+#jbrqcksmdl .gt_font_italic {
+  font-style: italic;
+}
+
+#jbrqcksmdl .gt_super {
+  font-size: 65%;
+}
+
+#jbrqcksmdl .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#jbrqcksmdl .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jbrqcksmdl .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jbrqcksmdl .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jbrqcksmdl .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jbrqcksmdl .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jbrqcksmdl .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#jbrqcksmdl .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#jbrqcksmdl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="header gt_col_headings">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="estimate" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>HR</strong></th>
+<th id="conf.low" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">treat</td>
+<td class="gt_row gt_center" headers="estimate">1.05</td>
+<td class="gt_row gt_center" headers="conf.low">0.96, 1.15</td>
+<td class="gt_row gt_center" headers="p.value">0.3</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">female</td>
+<td class="gt_row gt_center" headers="estimate">1.37</td>
+<td class="gt_row gt_center" headers="conf.low">1.24, 1.50</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">age</td>
+<td class="gt_row gt_center" headers="estimate">0.96</td>
+<td class="gt_row gt_center" headers="conf.low">0.96, 0.96</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC1</td>
+<td class="gt_row gt_center" headers="estimate">0.68</td>
+<td class="gt_row gt_center" headers="conf.low">0.62, 0.75</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">CC2</td>
+<td class="gt_row gt_center" headers="estimate">0.87</td>
+<td class="gt_row gt_center" headers="conf.low">0.80, 0.96</td>
+<td class="gt_row gt_center" headers="p.value">0.003</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC3</td>
+<td class="gt_row gt_center" headers="estimate">1.21</td>
+<td class="gt_row gt_center" headers="conf.low">1.11, 1.32</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">CC4</td>
+<td class="gt_row gt_center" headers="estimate">0.62</td>
+<td class="gt_row gt_center" headers="conf.low">0.57, 0.68</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC5</td>
+<td class="gt_row gt_center" headers="estimate">1.54</td>
+<td class="gt_row gt_center" headers="conf.low">1.41, 1.69</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot class="gt_sourcenotes">
+<tr class="odd">
 <td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
 </tr>
 </tfoot>
@@ -1461,31 +2014,31 @@ Note
 </div>
 <p>To clone, you make two copies of the data, and make a new <code>artifical censoring</code> variable, which is a censoring time for the period when clones observed data are no longer consistent with their assigned strategy.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-10"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-10-1" class="code-annotation-target"><a href="#annotated-cell-10-1" aria-hidden="true" tabindex="-1"></a>data_cloned <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
-<span id="annotated-cell-10-2"><a href="#annotated-cell-10-2" aria-hidden="true" tabindex="-1"></a>                     data <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-10-3"><a href="#annotated-cell-10-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">0</span>,</span>
-<span id="annotated-cell-10-4"><a href="#annotated-cell-10-4" aria-hidden="true" tabindex="-1"></a>                              <span class="at">t_artcens =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;</span> time, t_treat, <span class="cn">Inf</span>)</span>
-<span id="annotated-cell-10-5"><a href="#annotated-cell-10-5" aria-hidden="true" tabindex="-1"></a>                       ),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-10-6" class="code-annotation-target"><a href="#annotated-cell-10-6" aria-hidden="true" tabindex="-1"></a>                     data <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-10-7"><a href="#annotated-cell-10-7" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">1</span>,</span>
-<span id="annotated-cell-10-8"><a href="#annotated-cell-10-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">t_artcens =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">12</span>, <span class="cn">Inf</span>)</span>
-<span id="annotated-cell-10-9"><a href="#annotated-cell-10-9" aria-hidden="true" tabindex="-1"></a>                              )</span>
-<span id="annotated-cell-10-10"><a href="#annotated-cell-10-10" aria-hidden="true" tabindex="-1"></a>                       ) <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-10-11" class="code-annotation-target"><a href="#annotated-cell-10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">t_clone =</span> <span class="fu">pmin</span>(time, t_artcens),</span>
-<span id="annotated-cell-10-12"><a href="#annotated-cell-10-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">event_outc =</span> <span class="fu">if_else</span>(t_clone<span class="sc">&lt;</span>time, <span class="dv">0</span>, event_outc))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-8"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-8-1" class="code-annotation-target"><a href="#annotated-cell-8-1" aria-hidden="true" tabindex="-1"></a>data_cloned <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
+<span id="annotated-cell-8-2"><a href="#annotated-cell-8-2" aria-hidden="true" tabindex="-1"></a>                     data <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-8-3"><a href="#annotated-cell-8-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">0</span>,</span>
+<span id="annotated-cell-8-4"><a href="#annotated-cell-8-4" aria-hidden="true" tabindex="-1"></a>                              <span class="at">t_artcens =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;</span> time, t_treat, <span class="cn">Inf</span>)</span>
+<span id="annotated-cell-8-5"><a href="#annotated-cell-8-5" aria-hidden="true" tabindex="-1"></a>                       ),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-8-6" class="code-annotation-target"><a href="#annotated-cell-8-6" aria-hidden="true" tabindex="-1"></a>                     data <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-8-7"><a href="#annotated-cell-8-7" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">1</span>,</span>
+<span id="annotated-cell-8-8"><a href="#annotated-cell-8-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">t_artcens =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">12</span>, <span class="cn">Inf</span>)</span>
+<span id="annotated-cell-8-9"><a href="#annotated-cell-8-9" aria-hidden="true" tabindex="-1"></a>                              )</span>
+<span id="annotated-cell-8-10"><a href="#annotated-cell-8-10" aria-hidden="true" tabindex="-1"></a>                       ) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-8-11" class="code-annotation-target"><a href="#annotated-cell-8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">t_clone =</span> <span class="fu">pmin</span>(time, t_artcens),</span>
+<span id="annotated-cell-8-12"><a href="#annotated-cell-8-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">event_outc =</span> <span class="fu">if_else</span>(t_clone<span class="sc">&lt;</span>time, <span class="dv">0</span>, event_outc))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-10" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="1,2,3,4,5" data-code-annotation="1">Clones assigned to strategy 1 (No treatment)</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="1,2,3,4,5" data-code-annotation="1">Clones assigned to strategy 1 (No treatment)</span>
 </dd>
-<dt data-target-cell="annotated-cell-10" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="6,7,8,9,10" data-code-annotation="2">Clones assigned to strategy 2 (grace window for treatment)</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="6,7,8,9,10" data-code-annotation="2">Clones assigned to strategy 2 (grace window for treatment)</span>
 </dd>
-<dt data-target-cell="annotated-cell-10" data-target-annotation="3">3</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="11,12" data-code-annotation="3">Update failure times and events counting artificial censoring</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="11,12" data-code-annotation="3">Update failure times and events counting artificial censoring</span>
 </dd>
 </dl>
 </div>
@@ -1513,28 +2066,27 @@ Note
 </div>
 </div>
 <p>The cloned dataset finds a similar answer (unadjusted), except the differences do not reveal until the end of the grace period.</p>
-<p>An adjusted Cox model on the cloned dataset finds similar results between the <code>treat</code> and <code>assign</code> variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(t_clone, event_outc) <span class="sc">~</span> assign <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> dx_1 <span class="sc">+</span> dx_2, <span class="at">data =</span> data_cloned) </span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(t_clone, event_outc) <span class="sc">~</span> assign, <span class="at">data =</span> data_cloned) </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="lbnabmferc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#lbnabmferc table {
+<div id="yjwgjrhakv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yjwgjrhakv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#lbnabmferc thead, #lbnabmferc tbody, #lbnabmferc tfoot, #lbnabmferc tr, #lbnabmferc td, #lbnabmferc th {
+#yjwgjrhakv thead, #yjwgjrhakv tbody, #yjwgjrhakv tfoot, #yjwgjrhakv tr, #yjwgjrhakv td, #yjwgjrhakv th {
   border-style: none;
 }
 
-#lbnabmferc p {
+#yjwgjrhakv p {
   margin: 0;
   padding: 0;
 }
 
-#lbnabmferc .gt_table {
+#yjwgjrhakv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1560,12 +2112,12 @@ Note
   border-left-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_caption {
+#yjwgjrhakv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#lbnabmferc .gt_title {
+#yjwgjrhakv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1577,7 +2129,7 @@ Note
   border-bottom-width: 0;
 }
 
-#lbnabmferc .gt_subtitle {
+#yjwgjrhakv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1589,7 +2141,7 @@ Note
   border-top-width: 0;
 }
 
-#lbnabmferc .gt_heading {
+#yjwgjrhakv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1601,13 +2153,13 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_bottom_border {
+#yjwgjrhakv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_col_headings {
+#yjwgjrhakv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1622,7 +2174,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_col_heading {
+#yjwgjrhakv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1642,7 +2194,7 @@ Note
   overflow-x: hidden;
 }
 
-#lbnabmferc .gt_column_spanner_outer {
+#yjwgjrhakv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1654,15 +2206,15 @@ Note
   padding-right: 4px;
 }
 
-#lbnabmferc .gt_column_spanner_outer:first-child {
+#yjwgjrhakv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#lbnabmferc .gt_column_spanner_outer:last-child {
+#yjwgjrhakv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#lbnabmferc .gt_column_spanner {
+#yjwgjrhakv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1674,11 +2226,11 @@ Note
   width: 100%;
 }
 
-#lbnabmferc .gt_spanner_row {
+#yjwgjrhakv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#lbnabmferc .gt_group_heading {
+#yjwgjrhakv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1704,7 +2256,7 @@ Note
   text-align: left;
 }
 
-#lbnabmferc .gt_empty_group_heading {
+#yjwgjrhakv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1719,15 +2271,15 @@ Note
   vertical-align: middle;
 }
 
-#lbnabmferc .gt_from_md > :first-child {
+#yjwgjrhakv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#lbnabmferc .gt_from_md > :last-child {
+#yjwgjrhakv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#lbnabmferc .gt_row {
+#yjwgjrhakv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1746,7 +2298,7 @@ Note
   overflow-x: hidden;
 }
 
-#lbnabmferc .gt_stub {
+#yjwgjrhakv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1759,7 +2311,7 @@ Note
   padding-right: 5px;
 }
 
-#lbnabmferc .gt_stub_row_group {
+#yjwgjrhakv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1773,15 +2325,15 @@ Note
   vertical-align: top;
 }
 
-#lbnabmferc .gt_row_group_first td {
+#yjwgjrhakv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#lbnabmferc .gt_row_group_first th {
+#yjwgjrhakv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#lbnabmferc .gt_summary_row {
+#yjwgjrhakv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1791,16 +2343,16 @@ Note
   padding-right: 5px;
 }
 
-#lbnabmferc .gt_first_summary_row {
+#yjwgjrhakv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_first_summary_row.thick {
+#yjwgjrhakv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#lbnabmferc .gt_last_summary_row {
+#yjwgjrhakv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1810,7 +2362,7 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_grand_summary_row {
+#yjwgjrhakv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1820,7 +2372,7 @@ Note
   padding-right: 5px;
 }
 
-#lbnabmferc .gt_first_grand_summary_row {
+#yjwgjrhakv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1830,7 +2382,7 @@ Note
   border-top-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_last_grand_summary_row_top {
+#yjwgjrhakv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1840,11 +2392,11 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_striped {
+#yjwgjrhakv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#lbnabmferc .gt_table_body {
+#yjwgjrhakv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1853,7 +2405,7 @@ Note
   border-bottom-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_footnotes {
+#yjwgjrhakv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1867,7 +2419,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_footnote {
+#yjwgjrhakv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1876,7 +2428,7 @@ Note
   padding-right: 5px;
 }
 
-#lbnabmferc .gt_sourcenotes {
+#yjwgjrhakv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1890,7 +2442,7 @@ Note
   border-right-color: #D3D3D3;
 }
 
-#lbnabmferc .gt_sourcenote {
+#yjwgjrhakv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1898,72 +2450,72 @@ Note
   padding-right: 5px;
 }
 
-#lbnabmferc .gt_left {
+#yjwgjrhakv .gt_left {
   text-align: left;
 }
 
-#lbnabmferc .gt_center {
+#yjwgjrhakv .gt_center {
   text-align: center;
 }
 
-#lbnabmferc .gt_right {
+#yjwgjrhakv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#lbnabmferc .gt_font_normal {
+#yjwgjrhakv .gt_font_normal {
   font-weight: normal;
 }
 
-#lbnabmferc .gt_font_bold {
+#yjwgjrhakv .gt_font_bold {
   font-weight: bold;
 }
 
-#lbnabmferc .gt_font_italic {
+#yjwgjrhakv .gt_font_italic {
   font-style: italic;
 }
 
-#lbnabmferc .gt_super {
+#yjwgjrhakv .gt_super {
   font-size: 65%;
 }
 
-#lbnabmferc .gt_footnote_marks {
+#yjwgjrhakv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#lbnabmferc .gt_asterisk {
+#yjwgjrhakv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#lbnabmferc .gt_indent_1 {
+#yjwgjrhakv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#lbnabmferc .gt_indent_2 {
+#yjwgjrhakv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#lbnabmferc .gt_indent_3 {
+#yjwgjrhakv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#lbnabmferc .gt_indent_4 {
+#yjwgjrhakv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#lbnabmferc .gt_indent_5 {
+#yjwgjrhakv .gt_indent_5 {
   text-indent: 25px;
 }
 
-#lbnabmferc .katex-display {
+#yjwgjrhakv .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#lbnabmferc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#yjwgjrhakv div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1980,36 +2532,536 @@ Note
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="label">assign</td>
-<td class="gt_row gt_center" headers="estimate">1.01</td>
-<td class="gt_row gt_center" headers="conf.low">0.93, 1.09</td>
-<td class="gt_row gt_center" headers="p.value">0.9</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="label">female</td>
-<td class="gt_row gt_center" headers="estimate">3.08</td>
-<td class="gt_row gt_center" headers="conf.low">2.79, 3.41</td>
-<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="label">age</td>
-<td class="gt_row gt_center" headers="estimate">0.98</td>
-<td class="gt_row gt_center" headers="conf.low">0.98, 0.99</td>
-<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="label">dx_1</td>
-<td class="gt_row gt_center" headers="estimate">1.12</td>
-<td class="gt_row gt_center" headers="conf.low">0.96, 1.31</td>
-<td class="gt_row gt_center" headers="p.value">0.2</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="label">dx_2</td>
-<td class="gt_row gt_center" headers="estimate">0.78</td>
-<td class="gt_row gt_center" headers="conf.low">0.72, 0.84</td>
+<td class="gt_row gt_center" headers="estimate">1.25</td>
+<td class="gt_row gt_center" headers="conf.low">1.14, 1.37</td>
 <td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
 </tr>
 </tbody><tfoot class="gt_sourcenotes">
 <tr class="even">
+<td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>An adjusted Cox model on the cloned dataset finds similar results between the <code>treat</code> and <code>assign</code> variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(t_clone, event_outc) <span class="sc">~</span> assign <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> CC1 <span class="sc">+</span> CC2 <span class="sc">+</span> CC3 <span class="sc">+</span> CC4 <span class="sc">+</span> CC5, <span class="at">data =</span> data_cloned) </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(d_cox, <span class="at">exponentiate =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="avhsindyin" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#avhsindyin table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#avhsindyin thead, #avhsindyin tbody, #avhsindyin tfoot, #avhsindyin tr, #avhsindyin td, #avhsindyin th {
+  border-style: none;
+}
+
+#avhsindyin p {
+  margin: 0;
+  padding: 0;
+}
+
+#avhsindyin .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#avhsindyin .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#avhsindyin .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#avhsindyin .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#avhsindyin .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#avhsindyin .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#avhsindyin .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#avhsindyin .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#avhsindyin .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#avhsindyin .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#avhsindyin .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#avhsindyin .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#avhsindyin .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#avhsindyin .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#avhsindyin .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#avhsindyin .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#avhsindyin .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#avhsindyin .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#avhsindyin .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#avhsindyin .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#avhsindyin .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#avhsindyin .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#avhsindyin .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#avhsindyin .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#avhsindyin .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#avhsindyin .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#avhsindyin .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#avhsindyin .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#avhsindyin .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#avhsindyin .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#avhsindyin .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#avhsindyin .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#avhsindyin .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#avhsindyin .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#avhsindyin .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#avhsindyin .gt_left {
+  text-align: left;
+}
+
+#avhsindyin .gt_center {
+  text-align: center;
+}
+
+#avhsindyin .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#avhsindyin .gt_font_normal {
+  font-weight: normal;
+}
+
+#avhsindyin .gt_font_bold {
+  font-weight: bold;
+}
+
+#avhsindyin .gt_font_italic {
+  font-style: italic;
+}
+
+#avhsindyin .gt_super {
+  font-size: 65%;
+}
+
+#avhsindyin .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#avhsindyin .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#avhsindyin .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#avhsindyin .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#avhsindyin .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#avhsindyin .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#avhsindyin .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#avhsindyin .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#avhsindyin div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="header gt_col_headings">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="estimate" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>HR</strong></th>
+<th id="conf.low" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">assign</td>
+<td class="gt_row gt_center" headers="estimate">1.04</td>
+<td class="gt_row gt_center" headers="conf.low">0.94, 1.14</td>
+<td class="gt_row gt_center" headers="p.value">0.4</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">female</td>
+<td class="gt_row gt_center" headers="estimate">1.35</td>
+<td class="gt_row gt_center" headers="conf.low">1.22, 1.50</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">age</td>
+<td class="gt_row gt_center" headers="estimate">0.96</td>
+<td class="gt_row gt_center" headers="conf.low">0.95, 0.96</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC1</td>
+<td class="gt_row gt_center" headers="estimate">0.67</td>
+<td class="gt_row gt_center" headers="conf.low">0.61, 0.73</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">CC2</td>
+<td class="gt_row gt_center" headers="estimate">0.89</td>
+<td class="gt_row gt_center" headers="conf.low">0.81, 0.98</td>
+<td class="gt_row gt_center" headers="p.value">0.016</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC3</td>
+<td class="gt_row gt_center" headers="estimate">1.22</td>
+<td class="gt_row gt_center" headers="conf.low">1.11, 1.33</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">CC4</td>
+<td class="gt_row gt_center" headers="estimate">0.60</td>
+<td class="gt_row gt_center" headers="conf.low">0.55, 0.66</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">CC5</td>
+<td class="gt_row gt_center" headers="estimate">1.57</td>
+<td class="gt_row gt_center" headers="conf.low">1.43, 1.72</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot class="gt_sourcenotes">
+<tr class="odd">
 <td colspan="4" class="gt_sourcenote">Abbreviations: CI = Confidence Interval, HR = Hazard Ratio</td>
 </tr>
 </tfoot>
