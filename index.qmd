@@ -4,25 +4,25 @@ bibliography: references.bib
 ---
 # Sections {#sec-sections}
 
-1. [Data](01_syndata.v2.qmd); Demonstrates how to simulate a dataset for use in CCW along with the cloning process. A key process is how to generate a "cloned" dataset, refer [here](01_syndata.v2.qmd#cloning)
-2. [Estimation](02_est.qmd); Main section which walks through each estimation step.
-3. [Inference](03_inference.qmd); Examples on how to obtain confidence intervals.  
-4. [Additional Topics](04_advanced.qmd)
-5. [Appendix](05_appendix.qmd); some notes on causal inference, theory that may be helpful in adapting this tutorial to a specific project.  
+1. [Data](01_syndata.v2.qmd): Discusses creation of synthetic data used in this examples
+2. [Estimation](02_est.qmd): Estimation describes an step-by-step approach for CCW methods.
+3. [Inference](03_inference.qmd); Discussion and practical on obtaining confidence intervals.  
+4. [Additional Topics](04_advanced.qmd): Some various related topics, how to speed up computation etc.
+5. [Appendix](05_appendix.qmd): Some notes on inference and weighting approach,  that may be helpful in adapting this tutorial to a specific project.  
 
-For production notes and future efforts see: [About](about.qmd).
+For production notes and future efforts see [About](about.qmd).
 
 # Background reading {#sec-background}
 
-The "Clone-Censor-Weight" analytical approach is becoming increasingly popular along with its companion target trial emulation (TTE). A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website is a tutorial meant to guide researchers and others in how to execute a CCW analysis.
+The "Clone-Censor-Weight" analytical approach is popular in the target trial emulation (TTE) framework. A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website is a tutorial meant to guide researchers and others in how to execute a CCW analysis.
 
 I provide some personal insight into the process, different approaches that can be done, and mainly focus on the analytical methods. In order to actually emulate a target trial, a researcher needs to understand the fundamentals of randomized, controlled trial (RCT) design, causal inference, probability statistics and their practical application with a statistical programming language. I do not go into detail on this.
 
-The following readings are recommended to shore up that background and prepare for the tutorial guide.
+The following readings are recommended for that background and to prepare for the tutorial guide.
 
-1)  For a full in-depth review of causal inference methods, I recommend Hernan's [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf).
+1)  For a full in-depth review of causal inference methods, I recommend Robins' and Hernan's [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf).
 
-2)  [Randomized Controlled Trials](https://www.sciencedirect.com/science/article/pii/S0012369220304633?via%3Dihub) by Emily Zabor et al. provides a nice summary of RCT design. The key feature is randomization which allows a defensible assumption of no confounding. However, another important but often overlooked advantage of RCTs is a well-defined intervention which allows clear causal contrasts to be made (e.g. enroll eligible persons and then give treatment A versus give treatment B). In observational analyses, a well-defined intervention, and the timing of assignment and assessment of eligibility for that intervention are not always aligned in a logical fashion.
+2)  [Randomized Controlled Trials](https://www.sciencedirect.com/science/article/pii/S0012369220304633?via%3Dihub) by Emily Zabor et al. provides background on RCT design. Randomization is a key feature which allows a defensible assumption of no confounding. However, another important but often overlooked advantage of RCTs is a well-defined intervention which allows clear causal contrasts to be made (e.g. enroll eligible persons and then give treatment A versus give treatment B). In observational analyses, a well-defined intervention, and the timing of assignment and assessment of eligibility for that intervention are not always aligned in a logical fashion.
 
 3)  Miguel Hernan is a leading expert on TTE and provides a short description of it here: [JAMA 2022](https://doi.org/10.1001/jama.2022.21383). It is a two-step process; first defining the ideal RCT and how it can be emulated in the data, the second step is using TTE methods to perform that emulation (the focus of this guide).
 
