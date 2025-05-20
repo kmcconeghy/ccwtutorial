@@ -10,6 +10,7 @@ bibliography: references.bib
 #| 
 library(here)
 library(ggdag)
+library(corrplot)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
@@ -48,7 +49,7 @@ ggdag(outc_treat_dag, text = FALSE, use_labels = "label") +
   theme_dag()
 ```
 
-If a naive analysis (no adjustment) was performed the estimate will be biased, because treamtent and outcome are d-connected.  
+If a naive analysis (no adjustment) was performed the estimate will be biased, because treatment and outcome are d-connected.  
 
 ```{r }
 #| label: gg-dag-dsep
@@ -90,12 +91,12 @@ Adjustment for X, Age and M should lead to identification of a *NULL* effect of 
 n = 1000L # <1>
 fup = 90 # <1>
 
-age = round(rnorm(n, mean = 75, sd = 10), 1) # <2>
-female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)) # <2>
-X = sample(c(1, 0), size = n, replace = T, prob = c(0.1, 0.9))
-X_t = round(rexp(n, rate=0.005)+1)
-
-df = tibble(id = 1:n, age = age, female = female, fup = fup, X, X_t)
+df = tibble(id = 1:n, 
+            age = round(rnorm(n, mean = 75, sd = 10), 1), # <2> 
+            female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)), # <2>
+            fup = fup, 
+            X = rnorm(n, 0, sd=1), 
+            X_shift = rexp(n, rate=0.005))
   
 setDT(df) 
 
@@ -117,7 +118,7 @@ For X, I specify a binary variable representing a diagnosis of a condition which
 #| warning: false
 #| 
 
-d_panel[, X_t := fifelse(X == 0 & X_t <= time, 1L, X), by = list(id)] 
+d_panel[, X_t := fifelse(X_shift <= time, X+rnorm(n=1), X), by = list(id)] 
 
 ```
 
@@ -134,8 +135,7 @@ d_panel %>%
   geom_line() +
   geom_point() +
   geom_hline(aes(yintercept = X), color = 'red', linetype = 2) +
-  scale_y_continuous(limits = c(0, 1)) +
-  labs(x = 'Follow-up', y = 'Proportion with X', caption = 'Red line is baseline prevalence') +
+  labs(x = 'Follow-up', y = 'Mean(X)', caption = 'Red line is baseline prevalence') +
   theme_bw()
 ```
 
@@ -146,7 +146,7 @@ Using a weibull distribution, time to treatment and outcome is simulated. Then t
 #| message: false
 #| warning: false
 
-  d_panel[, log_odds := -5.5 + time*0.008 + time^2*0.0001 + X*0.02 + X_t*0.01]
+  d_panel[, log_odds := -5.5 + time*0.008 + time^2*0.0001 + X*0.5 + X_t*0.7]
   d_panel[, p := exp(log_odds) / (1 + exp(log_odds))]
   d_panel[, c_p0 := cumprod(1-p), by = list(id)]
   d_panel[, treat := rbinom(.N, size = 1, prob = p)]
@@ -154,8 +154,8 @@ Using a weibull distribution, time to treatment and outcome is simulated. Then t
   d_panel[, treat := nafill(treat, type = 'locf'), by=list(id)]
   d_panel[, treat := fifelse(is.na(treat), 0, treat)]
 
-  d_panel[, log_odds := -5 + time*0.0003 + time^2*-0.0002 + 
-                                  0.15*X + 0.05*X_t + 
+  d_panel[, log_odds := -5.5 + time*0.003 + time^2*-0.0002 + 
+                                  0.5*X + 0.7*X_t + 
                                   -0.3 * female + 0.0001 * age + 0.00005 * age^2]
   d_panel[, p := exp(log_odds) / (1 + exp(log_odds))]
   d_panel[, c_p0 := cumprod(1-p), by = list(id)]
@@ -165,7 +165,7 @@ Using a weibull distribution, time to treatment and outcome is simulated. Then t
   d_panel[, outcome := fifelse(is.na(outcome), 0, outcome)]
   
   d_panel[, t_outcome := min(time[outcome==1]), by = list(id)]
-  d_panel[, t_treat := min(time[treat==1]), by = list(id)]
+  d_panel[, t_treat := coalesce(min(time[treat==1]), Inf), by = list(id)]
   d_panel = d_panel[t_outcome >= time, ]
 ```
 
@@ -199,6 +199,17 @@ gg_outc = d_panel %>%
 ggarrange(gg_treat, gg_outc, ncol = 1)
 ```
 
+```{r }
+#| label: gg-treatoutc
+#| fig-cap: "Figure 6. Correlation plot of covariates, treatment, outcome"
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| 
+corrplot(cor(d_panel[, c('age', 'female', 'X', 'X_t', 'treat', 'outcome')]),
+         method = 'number', diag=F, type='upper')
+```
+
 # Summary of survival dataset {#sec-summdta}
 
 ```{r }
@@ -206,12 +217,6 @@ ggarrange(gg_treat, gg_outc, ncol = 1)
 #| echo: false
 
 glimpse(d_panel)
-```
-
-```{r }
-#| label: save-dta
-#| echo: false
-saveRDS(data, here('dta', 'survdta.R'))
 ```
 
 # Cloning procedure {#sec-cloning}
@@ -230,38 +235,53 @@ To clone, you make two copies of the data, and make a new `artifical censoring` 
 
 ```{r }
 #| label: clone-dta
+#| message: false
+#| warning: false
 data_cloned = bind_rows( # <1>
-                     data %>% # <1>
+                     d_panel %>% # <1>
                        mutate(assign = 0, # <1>
-                              censor = if_else(treat==1, 1L, NA_integer_), # <1>
-                              event = if_else(censor==1, 0, outcome)
+                              censor = if_else(t_treat <= time, 1L, 0L), # <1>
+                              event = if_else(censor==0 & t_outcome<=time, 1L, 0L) # <1>
                        ), # <1>
-                     data %>% # <2>
+                     d_panel %>% # <2>
                        mutate(assign = 1, # <2>
-                              censor = if_else(time == 12 & treat !=1, 1L, NA_integer_), # <2>
-                              event = if_else(censor==1, 0, outcome)
+                              censor = if_else(t_treat > 12 & time>=12, 1L, 0L), # <2>
+                              event  = if_else(censor==0 & t_outcome<=time, 1L, 0L)
                               ) # <2>
                        ) %>% # <2>
-  arrange(id, assign, time) %>%
-  group_by(id, assign) %>%
-    mutate(censor = nafill(censor, type = 'locf')) %>%
-    mutate(event = nafill(event, type = 'locf')) %>%
-  ungroup %>%
-  mutate(censor = coalesce(censor, 0L),
-         event = coalesce(event, 0L))
+  arrange(id, assign, time) 
 ```
 
 1. Clones assigned to strategy 1 (No treatment)
 2. Clones assigned to strategy 2 (grace window for treatment)
 3. Update failure times and events counting  artificial censoring
 
-::: callout-note
-I set failure times to Infinite when the event is unobserved, e.g. if no treatment, time to treatment is INF
-:::
+```{r }
+#| label: sv-personlevel
+#| message: false
+#| warning: false
+#| 
+data_cloned_p = data_cloned %>%
+  group_by(id, assign) %>%
+    mutate(t_censor = min(time[censor==1])) %>%
+  ungroup %>%
+  mutate(time = pmin(t_censor, t_outcome, 60),
+         event = case_when(
+           time==t_censor ~ 0, 
+           time==t_outcome ~ 1,
+           T ~ 0)) %>%
+  select(id, assign, t_treat, t_outcome, t_censor, time, event, X, female, age) %>%
+  distinct()
+
+saveRDS(data_cloned_p, here('dta', 'dta_cloned_person.Rds'))
+```
 
 ```{r }
-#| label: save-clone-dta
+#| label: sv-panel
 #| echo: false
-saveRDS(data_cloned,
-               here('dta', 'survdta_cloned.R'))
+d_final = data_cloned %>%
+  select(id, time, treat, outcome, assign, censor, event, age, female, fup, X, X_t, enter, exit, t_treat, t_outcome) 
+  
+saveRDS(d_final,
+               here('dta', 'dta_cloned_panel.Rds'))
 ```

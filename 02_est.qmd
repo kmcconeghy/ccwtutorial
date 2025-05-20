@@ -21,7 +21,8 @@ set.seed(42)
     survminer:::print.ggsurvplot(x, newpage=F)
   }
   
-d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
+dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds'))
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 ```
 
 # Introduction
@@ -100,22 +101,15 @@ We continue the below using the cloned dataset generated in [Data](01_syndata.v2
 
 ```{r }
 #| label: desc-dta
-glimpse(d_cloned)
+glimpse(dta_c_person)
 ```
 
 ## Estimation
 
 ```{r }
 #| label: KM-est
-
-d_person_c = select(data_cloned, id, time, outcome, assign, X, 
-                    age, female) %>%
-  group_by(id, assign) %>%
-  dplyr::filter(time == max(time)) %>%
-  ungroup
-
   d_km_est = broom::tidy(
-    survfit(Surv(time, outcome) ~ assign, data=d_person_c)) %>% # <1>
+    survfit(Surv(time, event) ~ assign, data=dta_c_person)) %>% # <1>
     mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
     ) %>%
     arrange(time) %>%
@@ -140,10 +134,10 @@ d_person_c = select(data_cloned, id, time, outcome, assign, X,
 ```{r }
 #| label: gg-km
 #| echo: false
-ggsurvplot(survfit(Surv(time, outcome) ~ assign, data=d_person_c),
-                            data=d_person_c,
+ggsurvplot(survfit(Surv(time, event) ~ assign, data=dta_c_person),
+                            data=dta_c_person,
                             fun = 'event',
-                            xlim = c(0, 60),
+                            xlim = c(1, 60),
                             xlab = 'Follow-up',
                             break.time.by=6,
                             palette = c('red', 'blue'),
@@ -165,9 +159,11 @@ The data was designed so treatment has no causal effect on outcome, but confound
 #| echo: FALSE
 #| warning: FALSE
 
-d_cox = coxph(Surv(time, outcome) ~ assign + female + age + X, data = d_person_c) 
+d_cox = coxph(Surv(time, event) ~ assign + female + age + X, data = dta_c_person) 
 
-d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign") %>%
+d_cox_est = surv_adjustedcurves(fit = d_cox, 
+                                variable = "assign", 
+                                data = as.data.frame(dta_c_person)) %>%
     group_by(variable, time) %>%
       dplyr::filter(row_number()==1) %>%
     ungroup %>%
@@ -195,19 +191,20 @@ The PLR model requires specification of a function of time. This choice is infor
 #| label: plr-naive-est
   
   # defined above
-  d_glm = glm(outcome ~ poly(time, 2, raw=T)*assign, data=d_cloned, family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel[censor==0, ], family=binomial()) # <1>
   
-  d_cloned$pr_ev = d_glm$fitted.values # <2>
-  d_cloned[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] # <3>
+  d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
   
-  d_plr_naive_est = d_cloned %>% # <4>
-    group_by(assign, time) %>% # <4>
-    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% # <4>
+  d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
+  d_plr_naive_est = d_plr_naive_est %>%
+    group_by(assign) %>%
+    mutate(pr_cumsurv = cumprod(pr_surv),
+           pr_cumev = 1 - pr_cumsurv) %>%
     ungroup %>% # <4>
     pivot_wider(., id_cols =c('time'), # <4>
                 names_from = assign, # <4>
                 names_prefix = 'pr_ev_', # <4>
-                values_from = pr_ev # <4>
+                values_from = pr_cumev # <4>
     ) %>%
     mutate(cid = pr_ev_1 - pr_ev_0, # <4>
            cir = pr_ev_1 / pr_ev_0) # <4>
@@ -216,7 +213,7 @@ The PLR model requires specification of a function of time. This choice is infor
 1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
 2.  If event_outc = 1 when event occurs, the fitted values are the probability of the outcome at time k.
 3.  The event-free survival probability is 1 - cumulative probability (incidence) of an event. To compute, you take the cumulative product of the fitted probabilities `pr_ev`, making sure to only compute within group and clone.
-4.  After you have cumulative event-free survival probability, then you can summarize by group/time as described above for the KM estimator.
+4.  Summarize by group/time as described above for the KM estimator.
 
 ```{r }
 #| label: gg-plr-naive
@@ -295,16 +292,16 @@ Another approach is to compare a pooled logistic regression analysis to a time-i
 #| label: glm-plr-covadj
  
 # defined above
-  d_glm = glm(event_outc ~ poly(time, 2, raw=T)*assign + female + age + CC1 + CC2 + CC3 + CC4 + CC5, 
-              data=d_panel_outc, family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, 
+              data=dta_c_panel[censor==0, ], family=binomial()) # <1>
 
-  d_panel_outc$p.event0 <- predict(d_glm, mutate(d_panel_outc, assign=0), type="response") # <2>
-  d_panel_outc$p.event1 <- predict(d_glm, mutate(d_panel_outc, assign=1), type="response") # <2>
+  dta_c_panel$p.noevent0 <- predict(d_glm, mutate(dta_c_panel, assign=0), type="response") # <2>
+  dta_c_panel$p.noevent1 <- predict(d_glm, mutate(dta_c_panel, assign=1), type="response") # <2>
   
-  d_panel_outc[, `:=`(pr_surv_1 = cumprod(1 - p.event1)), by=list(id, assign)] # <3>
-  d_panel_outc[, `:=`(pr_surv_0 = cumprod(1 - p.event0)), by=list(id, assign)] # <3>
+  dta_c_panel[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
+  dta_c_panel[, `:=`(pr_surv_0 = cumprod(p.noevent0)), by=list(id, assign)] # <3>
   
-  d_plr_adj_est = d_panel_outc %>% # <4>
+  d_plr_adj_est = dta_c_panel %>% # <4>
     group_by(time) %>% # <4>
     summarize(pr_ev_1 = mean(1-pr_surv_1),
               pr_ev_0 = mean(1-pr_surv_0), 
@@ -327,9 +324,9 @@ Note the outcome regression without weights is just for comparison and understan
 #| label: time-dependent cox model
 #| message: FALSE
 #| warning: FALSE
-  d_cox = coxph(Surv(enter, exit, event_outc) ~ assign + female + age + CC1 + CC2 + CC3 + CC4 + CC5, data = d_panel_outc) # <1>
+  d_cox = coxph(Surv(enter, exit, event_outc) ~ assign + female + age + X, data = dta_c_panel[censor==0, ]) # <1>
 
-  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign") %>% # <2>
+  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign", data = dta_c_panel[censor==0, ]) %>% # <2>
       group_by(variable, time) %>% # <3>
         dplyr::filter(row_number()==1) %>% # <3>
       ungroup %>% # <3>
@@ -411,13 +408,13 @@ In our example, artificial censoring is tied to whether treatment is initiated w
 
 ```{r }
 #| label: dta-censor
-d_treat = d_cloned %>%
+d_treat = dta_c_panel %>%
     dplyr::filter(assign==0) %>% # <1>
     mutate(start=1,
            end = t_treat) %>% # <2>
     group_by(id) %>% # <3>
     mutate( # <3>
-      time = t_clone, # <3> 
+      time = pmin(t_treat, t_outcome), # <3> 
       outcome = if_else(time==t_treat, 1, 0) # <3>
     ) %>% # <3>
     ungroup # <3>

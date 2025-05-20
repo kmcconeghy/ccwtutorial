@@ -21,8 +21,8 @@ set.seed(42)
     survminer:::print.ggsurvplot(x, newpage=F)
   }
   
-dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds'))
-dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
+d_cloned = readRDS(here('dta', 'survdta_cloned.R')) %>%
+  dplyr::
 ```
 
 # Introduction
@@ -87,101 +87,9 @@ ii) main results reported should be the IPCW-weighted PLR analysis
 Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf), which explains why the odds approximates the hazard at a given time-point *k*, as long as the hazard is small (i.e. rare event) at time *k*.
 :::
 
-# Kaplan-Meier Estimator
-
-A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is "naive" in that the artificial censoring is not considered, it is useful for the following reasons:
-
-1)  It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low.
-
-2)  The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).
-
-## Data
-
-We continue the below using the cloned dataset generated in [Data](01_syndata.v2.qmd).
-
-```{r }
-#| label: desc-dta
-glimpse(dta_c_person)
-```
-
-## Estimation
-
-```{r }
-#| label: KM-est
-  d_km_est = broom::tidy(
-    survfit(Surv(time, event) ~ assign, data=dta_c_person)) %>% # <1>
-    mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
-    ) %>%
-    arrange(time) %>%
-    select(-strata) %>%
-    mutate(pr_ev = 1-estimate) %>% # <2>
-    rename(pr_s = estimate) %>% # <2>
-    pivot_wider(id_cols = c(time), # <3>
-                names_from = assign, # <3>
-                values_from = c(pr_ev, pr_s, # <3>
-                                n.risk, n.event)) %>% # <3>
-    mutate(cir = pr_ev_1 / pr_ev_0, # <4>
-           cid = (pr_ev_1 - pr_ev_0)) # <4>
-```
-
-1.  Naive estimator, K-M estimator, assignment is by clone (not person). `t_clone` is the follow-up time for each clone, taking into account artificial censoring.
-2.  `estimate` from the model is the survival probability, so probability of event is 1 - estimate
-3.  Data is in long form, so one colum per group with cumulative incidence/survival
-4.  Estimands, `cir` is ratio analogous to relative risk, and `cid` is analogous to risk difference
-
-## Summarize KM estimator
-
-```{r }
-#| label: gg-km
-#| echo: false
-ggsurvplot(survfit(Surv(time, event) ~ assign, data=dta_c_person),
-                            data=dta_c_person,
-                            fun = 'event',
-                            xlim = c(1, 60),
-                            xlab = 'Follow-up',
-                            break.time.by=6,
-                            palette = c('red', 'blue'),
-                            linetype = 'strata',
-                            censor=F,
-                            cumevents=T,
-                            conf.int=F, pval=F,
-                            risk.table=T, risk.table.col = 'strata',
-                            risk.table.height=0.25, 
-                            ggtheme = theme_classic())
-```
-
-## Cox Proportional Hazards
-
-The data was designed so treatment has no causal effect on outcome, but confounding is present [Data](01_syndata.v2.qmd). Adjustment for confounders identifies similar risks by treatment assignment.
-
-```{r }
-#| label: cox-mod
-#| echo: FALSE
-#| warning: FALSE
-
-d_cox = coxph(Surv(time, event) ~ assign + female + age + X, data = dta_c_person) 
-
-d_cox_est = surv_adjustedcurves(fit = d_cox, 
-                                variable = "assign", 
-                                data = as.data.frame(dta_c_person)) %>%
-    group_by(variable, time) %>%
-      dplyr::filter(row_number()==1) %>%
-    ungroup %>%
-    mutate(pr_ev = 1 - surv) %>%
-    pivot_wider(., id_cols =c('time'), # 
-                names_from = variable, # 
-                names_prefix = 'pr_ev_',
-                values_from = pr_ev # 
-    ) %>%
-    mutate(cid = pr_ev_1 - pr_ev_0, # 
-           cir = pr_ev_1 / pr_ev_0) # 
-    
-tbl_regression(d_cox, exponentiate=T)
-```
-
 # Pooled logistic regression
 
-Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. These steps are computationally intensive and so this step is important to test your code. Make sure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. An unadusted PLR model should closely approximate the KM curves, if it doesn't then something is wrong.
+No weights or covariate-adjustment is applied yet. These steps are computationally intensive and so its important to test your code. Make sure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. An unadusted PLR model should closely approximate the KM curves, if it doesn't then something is wrong.
 
 ## Estimation
 
@@ -191,20 +99,19 @@ The PLR model requires specification of a function of time. This choice is infor
 #| label: plr-naive-est
   
   # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel[censor==0, ], family=binomial()) # <1>
+  d_glm = glm(outcome ~ poly(time, 2, raw=T)*assign, data=d_cloned, family=binomial()) # <1>
   
-  d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
+  d_cloned$pr_ev = d_glm$fitted.values # <2>
+  d_cloned[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] # <3>
   
-  d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
-  d_plr_naive_est = d_plr_naive_est %>%
-    group_by(assign) %>%
-    mutate(pr_cumsurv = cumprod(pr_surv),
-           pr_cumev = 1 - pr_cumsurv) %>%
+  d_plr_naive_est = d_cloned %>% # <4>
+    group_by(assign, time) %>% # <4>
+    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% # <4>
     ungroup %>% # <4>
     pivot_wider(., id_cols =c('time'), # <4>
                 names_from = assign, # <4>
                 names_prefix = 'pr_ev_', # <4>
-                values_from = pr_cumev # <4>
+                values_from = pr_ev # <4>
     ) %>%
     mutate(cid = pr_ev_1 - pr_ev_0, # <4>
            cir = pr_ev_1 / pr_ev_0) # <4>
@@ -213,7 +120,7 @@ The PLR model requires specification of a function of time. This choice is infor
 1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
 2.  If event_outc = 1 when event occurs, the fitted values are the probability of the outcome at time k.
 3.  The event-free survival probability is 1 - cumulative probability (incidence) of an event. To compute, you take the cumulative product of the fitted probabilities `pr_ev`, making sure to only compute within group and clone.
-4.  Summarize by group/time as described above for the KM estimator.
+4.  After you have cumulative event-free survival probability, then you can summarize by group/time as described above for the KM estimator.
 
 ```{r }
 #| label: gg-plr-naive
@@ -292,16 +199,16 @@ Another approach is to compare a pooled logistic regression analysis to a time-i
 #| label: glm-plr-covadj
  
 # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, 
-              data=dta_c_panel[censor==0, ], family=binomial()) # <1>
+  d_glm = glm(outcome ~ poly(time, 2, raw=T)*assign + female + age + X + X_t, 
+              data=d_cloned, family=binomial()) # <1>
 
-  dta_c_panel$p.noevent0 <- predict(d_glm, mutate(dta_c_panel, assign=0), type="response") # <2>
-  dta_c_panel$p.noevent1 <- predict(d_glm, mutate(dta_c_panel, assign=1), type="response") # <2>
+  d_cloned$p.event0 <- predict(d_glm, mutate(d_cloned, assign=0), type="response") # <2>
+  d_cloned$p.event1 <- predict(d_glm, mutate(d_cloned, assign=1), type="response") # <2>
   
-  dta_c_panel[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
-  dta_c_panel[, `:=`(pr_surv_0 = cumprod(p.noevent0)), by=list(id, assign)] # <3>
+  d_cloned[, `:=`(pr_surv_1 = cumprod(1 - p.event1)), by=list(id, assign)] # <3>
+  d_cloned[, `:=`(pr_surv_0 = cumprod(1 - p.event0)), by=list(id, assign)] # <3>
   
-  d_plr_adj_est = dta_c_panel %>% # <4>
+  d_plr_adj_est = d_cloned %>% # <4>
     group_by(time) %>% # <4>
     summarize(pr_ev_1 = mean(1-pr_surv_1),
               pr_ev_0 = mean(1-pr_surv_0), 
@@ -324,9 +231,9 @@ Note the outcome regression without weights is just for comparison and understan
 #| label: time-dependent cox model
 #| message: FALSE
 #| warning: FALSE
-  d_cox = coxph(Surv(enter, exit, event_outc) ~ assign + female + age + X, data = dta_c_panel[censor==0, ]) # <1>
+  d_cox = coxph(Surv(enter, exit, outcome) ~ assign + female + age + X + X_t, data = d_cloned) # <1>
 
-  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign", data = dta_c_panel[censor==0, ]) %>% # <2>
+  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign") %>% # <2>
       group_by(variable, time) %>% # <3>
         dplyr::filter(row_number()==1) %>% # <3>
       ungroup %>% # <3>
@@ -408,13 +315,24 @@ In our example, artificial censoring is tied to whether treatment is initiated w
 
 ```{r }
 #| label: dta-censor
-d_treat = dta_c_panel %>%
-    dplyr::filter(assign==0) %>% # <1>
-    dplyr::filter(t_treat >= time) # <2>
+d_treat = d_cloned %>%
+    dplyr::filter(assign==0) 
 ```
 
 1.  This may be a little confusing, but I am taking clones where assign=0 from the `d_cloned` dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.
-2.  We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this, so this line of code should be unnecessary but I leave in to illustrate point. 
+2.  We are estimating time to treatment, not outcome
+3.  *Artificial* censoring time is same as treatment time unless dead first, and outcome = 1 if treated.
+
+Then we expand the dataset as described above:
+
+```{r }
+#| label: exp-dta-censor
+  setDT(d_treat)
+  d_treat[, event_treat := if_else(t_treat <= time, 1L, 0L), by = list(id)]
+  d_treat = select(d_treat, id, time, event_treat, t_treat, enter, exit, age, female, X, X_t) # <1>
+```
+
+1.  Note we keep covariates for estimation of censoring weights.
 
 ## Estimation of weights
 
@@ -433,16 +351,13 @@ We fit a model with the outcome of censoring, including the key variables. Then 
 #| warning: FALSE
 
   # Numerator (margin probability)
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), 
-                 data=d_treat, family=binomial()) # <1>
-  
-  dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
+  d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T), data=d_treat, family=binomial()) # <1>
+  d_cloned$pr_censnum = predict(d_glm_wt, newdata = d_cloned, type='response') # <1>
 
   # Denominator 
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + female + age + X + X_t, 
-                 data=d_treat, family=binomial()) # <2>
+  d_glm_wt = glm(event_treat ~ poly(time, 2, raw=T) + X + X_t, data=d_treat, family=binomial()) # <2>
   
-  dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+  d_cloned$pr_censdenom = predict(d_glm_wt, newdata = d_cloned, type='response') # <2>
 ```
 
 1.  Marginal probability of no censoring
@@ -458,30 +373,29 @@ This step is highly specific to a project and must be considered carefully. I ha
 
 ```{r }
 #| label: cpt-weights
-  setDT(dta_c_panel)
+  setDT(d_cloned)
   
-  dta_c_panel[, ipw := fcase(
-    assign==0 & censor==0, 1 / (1-pr_censdenom), # <1>
-    assign==0 & censor==1, 0,
+  d_cloned[, ipw := fcase(
+    assign==0, 1 / (1-pr_censdenom), # <1>
+    assign==0 & t_treat==time, 0,
     assign==1 & time < 12, 1, # <2>
     assign==1 & time == 12  & t_treat  < 12, 1, # <3> 
-    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_censdenom), # <4> 
-    assign==1 & time == 12  & t_treat  >12 & event==0, 0, # <5> 
-    assign==1 & time == 12  & t_treat  >12 & event==1, 1, # <6> 
+    assign==1 & time == 12  & t_treat  ==12, 1 / (pr_censdenom), # <4> 
+    assign==1 & time == 12  & t_treat  >12 & outcome==0, 0, # <5> 
+    assign==1 & time == 12  & t_treat  >12 & outcome==1, 1, # <6> 
     assign==1 & time > 12, 1 # <7>
   )]
   
-  dta_c_panel[, marg_ipw := fcase(
-    assign==0 & censor==0, (1-pr_censnum) / (1-pr_censdenom), # <8>
-    assign==1 & time == 12 & t_treat   ==12 & censor==0, pr_censnum / (pr_censdenom), # <9>
+  d_cloned[, marg_ipw := fcase(
+    assign==0, (1-pr_censnum) / (1-pr_censdenom), # <8>
+    assign==1 & time == 12 & t_treat   ==12, pr_censnum / (pr_censdenom), # <9>
     default = ipw
   )]
   
-  dta_c_panel[, `:=`(ipw = cumprod(ipw),
-                      marg_ipw = cumprod(marg_ipw)),
-               by=list(id, assign)] # <9>
+  d_cloned[, `:=`(ipw = cumprod(ipw),
+                  marg_ipw = cumprod(marg_ipw)),
+               by=list(id, assign)] # <10>
   
-  dta_outcome = dta_c_panel[censor==0, ]
 ```
 
 1.  (assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored
@@ -491,21 +405,21 @@ This step is highly specific to a project and must be considered carefully. I ha
 5.  (assign=1) If a clone is not treated they censor at the end of the window
 6.  (assign=1) In periods greater than the end of the grace window, no artificial censoring occurs (they either are treated or already censored at this point).
 7. If died in last interval, do not set weight to zero.
-8.  After setting these conditions, we compute the cumulative product of the weights.
-9.  Marginal IPW is same, except numerator probability replaces 1
+8.  Marginal IPW is same, except numerator probability replaces 1
+9.  After setting these conditions, we compute the cumulative product of the weights.
 
 ### Overall IPW Distribution  
 
 ```{r }
 #| label: desc-ipw
 #| echo: false
-  summary(dta_outcome$ipw[dta_outcome$ipw!=0])
+  summary(d_cloned$ipw[d_cloned$ipw!=0])
 ```
 
 ```{r }
 #| label: desc-marg_ipw
 #| echo: false
-  summary(dta_outcome$marg_ipw[dta_outcome$marg_ipw!=0])
+  summary(d_cloned$marg_ipw[d_cloned$marg_ipw!=0])
 ```
 
 The unstabilized weights floor at 1, and we see high weights assigned to some. The marginalized weights have a mean of 1 (expected). 
@@ -515,7 +429,7 @@ The unstabilized weights floor at 1, and we see high weights assigned to some. T
 ```{r }
 #| label: desc-ipw-grace
 #| echo: false
-  summary(dta_outcome$ipw[dta_outcome$ipw!=0 & dta_outcome$assign==1])
+  summary(d_cloned$ipw[d_cloned$ipw!=0 & d_cloned$assign==1])
 ```
 The weights at the end of the grace period are key.  
 
@@ -526,15 +440,13 @@ It is good to see the marginal stabilized weights have a mean 1. You can also pl
 #| fig-cap: Distribution of Censoring Weights Across Time
 #| fig-cap-location: top
 
-dta_outcome %>%
+  d_cloned %>%
     dplyr::filter(marg_ipw!=0) %>%
- ggplot(., aes(x = cut_width(time, 12), y = marg_ipw)) +
+ ggplot(., aes(x = time, y = marg_ipw)) +
   geom_violin(aes(group = cut_width(time, 12)), 
                scale = "width", fill = "blue", alpha = 0.7) +
-  stat_summary(fun = "mean",
-               geom = "point",
-               color = "red") +
   geom_hline(aes(yintercept=1), linetype=3) +
+  scale_x_continuous(breaks = seq(0,60, 12)) +
   labs(x = "Follow-up", y = "IPW") +
   theme_bw()
 
@@ -546,12 +458,12 @@ Another way to examine the weights is to look at the weighted counts of individu
 #| label: weight-table
 #| tbl-cap: Unweighted and Weighted Counts, N at risk (cumulative events)
 #| tbl-cap-location: top
-dta_c_panel %>%
+d_cloned %>%
   group_by(time, assign) %>%
   summarize(n = sum(ipw!=0), 
             n_wt = sum(ipw),
-            ev = sum(event[ipw!=0]),
-            ev_wt = sum(event*ipw),
+            ev = sum(outcome[ipw!=0]),
+            ev_wt = sum(outcome*ipw),
             .groups = 'drop') %>%
   mutate(unwt_evn = paste0(n, ' (', ev, ')'),
          wt_evn = paste0(round(n_wt, 0), ' (', round(ev_wt, 0), ')')) %>%
@@ -575,16 +487,16 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 #| label: est-plr-wt
 #| warning: FALSE  
 #| 
-  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==1 & censor==0, ], 
+  d_glm_pe_1 = glm(outcome==0 ~ poly(time, 2, raw=T) + female + age + X, 
+                   data=d_cloned[assign==1, ], 
                    family=binomial(), weights = ipw) # <1>
 
-  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==0 & censor==0, ], 
+  d_glm_pe_0 = glm(outcome==0 ~ poly(time, 2, raw=T) + female + age + X, 
+                   data=d_cloned[assign==0, ], 
                      family=binomial(), weights = ipw) # <1>
   
-  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, type='response') # <2>
-  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, type='response') # <2>
+  d_cloned$pr_1 = predict(d_glm_pe_1, newdata = d_cloned, type='response') # <2>
+  d_cloned$pr_0 = predict(d_glm_pe_0, newdata = d_cloned, type='response') # <2>
 
 ```
 
@@ -594,10 +506,10 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 ```{r }
 #| label: survprob
 #| 
-  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
-  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  d_cloned[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  d_cloned[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
   
-  d_plrwt_est = dta_c_panel[censor==0, ] %>% # <2>
+  d_plrwt_est = d_cloned %>% # <2>
     group_by(time) %>% # <2>
     summarize(pr_ev_1 = mean(1-pr_cum_1), 
               pr_ev_0 = mean(1-pr_cum_0),
@@ -652,21 +564,21 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 #| tbl-cap: 'Comparison of estimates by model, PLR = Pooled Logistic Regression, Wtd = with censoring weights'
 #| echo: false
 
-  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                     data=dta_c_panel[assign==1 & censor==0, ], 
+  d_glm_pe_1 = glm(outcome==0 ~ poly(time, 2, raw=T) + female + age + X, 
+                     data=d_cloned[assign==1, ], 
                      family=binomial(), weights = marg_ipw) # <1>
 
-  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==0 & censor==0, ], 
+  d_glm_pe_0 = glm(outcome==0 ~ poly(time, 2, raw=T) + female + age + X, 
+                   data=d_cloned[assign==0, ], 
                      family=binomial(), weights = marg_ipw) # <1>
   
-  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, type='response') # <2>
-  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, type='response') # <2>
+  d_cloned$pr_1 = predict(d_glm_pe_1, newdata = d_cloned, type='response') # <2>
+  d_cloned$pr_0 = predict(d_glm_pe_0, newdata = d_cloned, type='response') # <2>
 
-  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
-  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  d_cloned[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  d_cloned[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
   
-  d_plrstabwt_est = dta_c_panel[censor==0, ] %>% # <2>
+  d_plrstabwt_est = d_cloned %>% # <2>
     group_by(time) %>% # <2>
     summarize(pr_ev_1 = mean(1-pr_cum_1), 
               pr_ev_0 = mean(1-pr_cum_0),
