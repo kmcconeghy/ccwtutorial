@@ -209,58 +209,6 @@ glimpse(d_panel)
 ```
 
 ```{r }
-#| label: summ-survdta
-#| echo: false
-d_person = select(data, id, time, outcome, treat, X, age, female) %>%
-  group_by(id) %>%
-  dplyr::filter(time == max(time)) %>%
-  ungroup 
-
-tbl_survfit(survfit(Surv(time, outcome) ~ treat, data = d_person), 
-            times = c(0, 12, 30, 60),
-            statistic = '{estimate}')
-```
-
-::: callout-note
-Treat=1 means they EVER received treatment, so additional work needed to describe a treatment window etc.
-:::
-
-```{r }
-#| fig-label: KM-est
-#| echo: false
-#| fig-cap: Unadjusted Kaplan-Meier Plot
-ggsurvplot(survfit(Surv(time, outcome) ~ treat, data = d_person),
-                            data=d_person,
-                            fun = 'event',
-                            xlim = c(0, 60),
-                            xlab = 'Follow-up',
-                            break.time.by=6,
-                            palette = c('red', 'blue'),
-                            linetype = 'strata',
-                            censor=F,
-                            cumevents=T,
-                            conf.int=F, pval=F,
-                            risk.table=T, risk.table.col = 'strata',
-                            risk.table.height=0.25, 
-                            ggtheme = theme_classic())
-```
-
-The unadjusted model observes differences in incidence between treatment groups. 
-
-```{r }
-#| label: fit-naive-cox
-d_cox = coxph(Surv(time, outcome) ~ treat, data = d_person) 
-tbl_regression(d_cox, exponentiate=T)
-```
-
-A proportional hazards model adjusting for the confounder does not observe a difference.  
-
-```{r }
-#| label: fit-cox
-d_cox = coxph(Surv(time, outcome) ~ treat + X + female + age, data = d_person) 
-tbl_regression(d_cox, exponentiate=T)
-```
-```{r }
 #| label: save-dta
 #| echo: false
 saveRDS(data, here('dta', 'survdta.R'))
@@ -285,21 +233,22 @@ To clone, you make two copies of the data, and make a new `artifical censoring` 
 data_cloned = bind_rows( # <1>
                      data %>% # <1>
                        mutate(assign = 0, # <1>
-                              t_artcens = if_else(t_treat < time, t_treat, Inf) # <1>
+                              censor = if_else(treat==1, 1L, NA_integer_), # <1>
+                              event = if_else(censor==1, 0, outcome)
                        ), # <1>
                      data %>% # <2>
                        mutate(assign = 1, # <2>
-                              t_artcens = if_else(t_treat > 12, 12, Inf) # <2>
+                              censor = if_else(time == 12 & treat !=1, 1L, NA_integer_), # <2>
+                              event = if_else(censor==1, 0, outcome)
                               ) # <2>
                        ) %>% # <2>
-  dplyr::filter(time <= t_artcens) %>% # <3>
-  arrange(id, time)
-
-d_person_c = select(data_cloned, id, time, outcome, assign, X, 
-                    age, female) %>%
+  arrange(id, assign, time) %>%
   group_by(id, assign) %>%
-  dplyr::filter(time == max(time)) %>%
-  ungroup
+    mutate(censor = nafill(censor, type = 'locf')) %>%
+    mutate(event = nafill(event, type = 'locf')) %>%
+  ungroup %>%
+  mutate(censor = coalesce(censor, 0L),
+         event = coalesce(event, 0L))
 ```
 
 1. Clones assigned to strategy 1 (No treatment)
@@ -309,40 +258,6 @@ d_person_c = select(data_cloned, id, time, outcome, assign, X,
 ::: callout-note
 I set failure times to Infinite when the event is unobserved, e.g. if no treatment, time to treatment is INF
 :::
-
-```{r }
-#| label: KM-est
-#| echo: false
-ggsurvplot(survfit(Surv(time, outcome) ~ assign, data=d_person_c),
-                            data=d_person_c,
-                            fun = 'event',
-                            xlim = c(0, 60),
-                            xlab = 'Follow-up',
-                            break.time.by=6,
-                            palette = c('red', 'blue'),
-                            linetype = 'strata',
-                            censor=F,
-                            cumevents=T,
-                            conf.int=F, pval=F,
-                            risk.table=T, risk.table.col = 'strata',
-                            risk.table.height=0.25, 
-                            ggtheme = theme_classic())
-```
-The cloned dataset finds a similar answer (unadjusted), except the differences do not reveal until the end of the grace period.  
-
-```{r }
-#| label: fit-naive-cox2
-d_cox = coxph(Surv(time, outcome) ~ assign, data = d_person_c) 
-tbl_regression(d_cox, exponentiate = T)
-```
-
-An adjusted Cox model on the cloned dataset finds similar results between the `treat` and `assign` variables.
-
-```{r }
-#| label: fit-cox2
-d_cox = coxph(Surv(time, outcome) ~ assign + female + age, data = d_person_c) 
-tbl_regression(d_cox, exponentiate = T)
-```
 
 ```{r }
 #| label: save-clone-dta
