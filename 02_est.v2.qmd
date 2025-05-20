@@ -433,13 +433,13 @@ We fit a model with the outcome of censoring, including the key variables. Then 
 #| warning: FALSE
 
   # Numerator (margin probability)
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), 
+  d_glm_wt = glm(treat ~ splines::bs(time, df=6), 
                  data=d_treat, family=binomial()) # <1>
   
   dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
 
   # Denominator 
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + female + age + X + X_t, 
+  d_glm_wt = glm(treat ~ splines::bs(time, df=6) + X + X_t, 
                  data=d_treat, family=binomial()) # <2>
   
   dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
@@ -515,7 +515,7 @@ The unstabilized weights floor at 1, and we see high weights assigned to some. T
 ```{r }
 #| label: desc-ipw-grace
 #| echo: false
-  summary(dta_outcome$ipw[dta_outcome$ipw!=0 & dta_outcome$assign==1])
+  summary(dta_outcome$ipw[dta_outcome$ipw!=0 & dta_outcome$assign==1 & dta_outcome$time==12])
 ```
 The weights at the end of the grace period are key.  
 
