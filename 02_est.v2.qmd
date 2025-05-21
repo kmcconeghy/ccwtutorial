@@ -23,6 +23,8 @@ set.seed(42)
   
 dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds'))
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
+
+cbbPalette = c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
 # Introduction
@@ -97,7 +99,7 @@ A reasonable starting point is to evaluate the cloned dataset without probabilit
 
 ## Data
 
-We continue the below using the cloned dataset generated in [Data](01_syndata.v2.qmd).
+We continue the below using the cloned dataset generated in [Data](01_syndata.v3.qmd).
 
 ```{r }
 #| label: desc-dta
@@ -140,19 +142,19 @@ ggsurvplot(survfit(Surv(time, event) ~ assign, data=dta_c_person),
                             xlim = c(1, 60),
                             xlab = 'Follow-up',
                             break.time.by=6,
-                            palette = c('red', 'blue'),
+                            palette = cbbPalette,
                             linetype = 'strata',
                             censor=F,
                             cumevents=T,
                             conf.int=F, pval=F,
                             risk.table=T, risk.table.col = 'strata',
                             risk.table.height=0.25, 
-                            ggtheme = theme_classic())
+                            ggtheme = theme_bw())
 ```
 
 ## Cox Proportional Hazards
 
-The data was designed so treatment has no causal effect on outcome, but confounding is present [Data](01_syndata.v2.qmd). Adjustment for confounders identifies similar risks by treatment assignment.
+The data was designed so treatment has no causal effect on outcome, but confounding is present [Data](01_syndata.v3.qmd). Adjustment for confounders identifies similar risks by treatment assignment.
 
 ```{r }
 #| label: cox-mod
@@ -191,7 +193,7 @@ The PLR model requires specification of a function of time. This choice is infor
 #| label: plr-naive-est
   
   # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel[censor==0, ], family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel, family=binomial()) # <1>
   
   d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
   
@@ -199,34 +201,35 @@ The PLR model requires specification of a function of time. This choice is infor
   d_plr_naive_est = d_plr_naive_est %>%
     group_by(assign) %>%
     mutate(pr_cumsurv = cumprod(pr_surv),
-           pr_cumev = 1 - pr_cumsurv) %>%
-    ungroup %>% # <4>
-    pivot_wider(., id_cols =c('time'), # <4>
-                names_from = assign, # <4>
-                names_prefix = 'pr_ev_', # <4>
-                values_from = pr_cumev # <4>
+           pr_cumev = 1 - pr_cumsurv) %>% # <2>
+    ungroup %>% # <3>
+    pivot_wider(., id_cols =c('time'), # <3>
+                names_from = assign, # <3>
+                names_prefix = 'pr_ev_', # <3>
+                values_from = pr_cumev # <3>
     ) %>%
-    mutate(cid = pr_ev_1 - pr_ev_0, # <4>
-           cir = pr_ev_1 / pr_ev_0) # <4>
+    mutate(cid = pr_ev_1 - pr_ev_0, # <3>
+           cir = pr_ev_1 / pr_ev_0) # <3>
 ```
 
 1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
-2.  If event_outc = 1 when event occurs, the fitted values are the probability of the outcome at time k.
-3.  The event-free survival probability is 1 - cumulative probability (incidence) of an event. To compute, you take the cumulative product of the fitted probabilities `pr_ev`, making sure to only compute within group and clone.
-4.  Summarize by group/time as described above for the KM estimator.
+2.  The event-free survival probability is 1 - cumulative probability (incidence) of an event. To compute, you take the cumulative product of the fitted probabilities `pr_ev`, making sure to only compute within group and clone.
+3.  Summarize by group/time as described above for the KM estimator.
 
 ```{r }
 #| label: gg-plr-naive
 #| fig-cap: Unadjusted, unweighted cumulative incidences by treatment group (PLR)
 #| fig-cap-location: top
 #| echo: false
+#| eval: false
     d_gg_ci = d_plr_naive_est %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = pr_ev_0), color='red', linewidth=1.2) +
-      geom_line(aes(y = pr_ev_1), color='blue', linewidth=1.2) + 
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Cumulative incidence')
     
@@ -240,38 +243,34 @@ At first glance, the plot looks reasonable. Direct comparison of the PLR and KM 
 #| fig-cap: "Comparison of Naive PLR versus KM estimator"
 #| fig-cap-location: top
 #| echo: FALSE
-d_ci_cmp = inner_join(
+d_ci_cmp = bind_rows(
   select(d_plr_naive_est, time, pr_ev_0, pr_ev_1, cid) %>%
-    rename(plr_0 = pr_ev_0, plr_1 = pr_ev_1, plr_cid = cid),
+    mutate(Model = 'PLR-Naive'),
   select(d_km_est, time, pr_ev_1, pr_ev_0, cid) %>%
-    rename(km_0 = pr_ev_0, km_1 = pr_ev_1, km_cid = cid),
-  by = join_by(time)
-)
+    mutate(Model = 'KM-Naive')) %>%
+    pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', 
+                 names_prefix = 'pr_ev_', values_to = 'pr_ev')
 
 d_gg_ci = d_ci_cmp %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = plr_0), color='#A60A3D', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = km_0), color='red', shape=2, size=1.5) + 
-      geom_line(aes(y = plr_1), color='navyblue', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = km_1), color='blue', shape=2, size=1.5) + 
+      ggplot(aes(x=time, color = Model, Group = Model)) +
+      geom_line(aes(y = pr_ev, linetype=assign), linewidth=0.9) +
+      geom_point(aes(y = pr_ev, shape=assign), size=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
+      scale_color_manual(values = cbbPalette) +
       theme_bw() +
-      labs(x = '', y = 'Cumulative incidence')
+      labs(x = '', y = 'Cumulative incidence') 
     
  d_gg_rr = d_ci_cmp %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = km_cid), color='green', linetype=1, linewidth=1.5) + 
-      geom_line(aes(y = plr_cid), color='forestgreen', linetype=2, linewidth=1.5) +
+      ggplot(aes(x=time, color = Model)) +
+      geom_line(aes(y = cid), linewidth=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(-0.2, 0.2)) +
+      scale_color_manual(values = cbbPalette) +
       theme_bw() +
-      labs(x = 'Follow-up', y = 'Risk Differences')
+      labs(x = 'Follow-up', y = 'Risk Differences') 
     
-    d_gg_1 = ggarrange(d_gg_ci, d_gg_rr,
-                       nrow=2)
+    d_gg_1 = ggarrange(d_gg_ci, d_gg_rr, nrow=2, common.legend = T)
     
 d_gg_1
 ```
@@ -292,14 +291,15 @@ Another approach is to compare a pooled logistic regression analysis to a time-i
 #| label: glm-plr-covadj
  
 # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, 
-              data=dta_c_panel[censor==0, ], family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, data=dta_c_panel, family=binomial()) # <1>
 
   dta_c_panel$p.noevent0 <- predict(d_glm, mutate(dta_c_panel, assign=0), type="response") # <2>
   dta_c_panel$p.noevent1 <- predict(d_glm, mutate(dta_c_panel, assign=1), type="response") # <2>
   
-  dta_c_panel[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
-  dta_c_panel[, `:=`(pr_surv_0 = cumprod(p.noevent0)), by=list(id, assign)] # <3>
+  setDT(dta_c_panel)
+    dta_c_panel[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
+    dta_c_panel[, `:=`(pr_surv_0 = cumprod(p.noevent0)), by=list(id, assign)] # <3>
+  setDF(dta_c_panel)
   
   d_plr_adj_est = dta_c_panel %>% # <4>
     group_by(time) %>% # <4>
@@ -321,12 +321,12 @@ Note the outcome regression without weights is just for comparison and understan
 :::
 
 ```{r }
-#| label: time-dependent cox model
+#| label: time-dependent-cox
 #| message: FALSE
 #| warning: FALSE
-  d_cox = coxph(Surv(enter, exit, event_outc) ~ assign + female + age + X, data = dta_c_panel[censor==0, ]) # <1>
+  d_cox = coxph(Surv(enter, exit, event) ~ assign + female + age + X, data = dta_c_panel) # <1>
 
-  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign", data = dta_c_panel[censor==0, ]) %>% # <2>
+  d_cox_est = surv_adjustedcurves(fit = d_cox, variable = "assign", data = dta_c_panel) %>% # <2>
       group_by(variable, time) %>% # <3>
         dplyr::filter(row_number()==1) %>% # <3>
       ungroup %>% # <3>
@@ -342,7 +342,8 @@ Note the outcome regression without weights is just for comparison and understan
 
 For comparison, A time-dependent Cox model is fit.
 
-1.  Cox model, with time1, time2 parameters which represent the start and stop time of each interval
+1.  Cox model, with time1, time2 parameters which represent the start and stop time of each interval. Note that althought the cox model is time-dependent and you could adjust for `X_t` this could be problematic, because X_t also includes time-points post treatment. In our synthetic data, X_t is not a collider (Treat -> X_t <- Outcome) or on the causal path (Treat -> X_t -> Outcome). 
+
 2.  Estimation of adjusted survival curves by treatment group, with subpopulations balanced using `conditional` method.[@acompar]
 3.  Summarizing survival probabilities by time
 
@@ -352,38 +353,34 @@ For comparison, A time-dependent Cox model is fit.
 #| fig-label: Time-dependent Cox model versus Covariate-adjusted PLR (no weights)
 #| fig-cap-location: top
 
-d_ci_cmp = inner_join(
+d_ci_cmp = bind_rows(
   select(d_plr_adj_est, time, pr_ev_0, pr_ev_1, cid) %>%
-    rename(plr_0 = pr_ev_0, plr_1 = pr_ev_1, plr_cid = cid),
+    mutate(Model = 'PLR-OM-Adj.'),
   select(d_cox_est, time, pr_ev_1, pr_ev_0, cid) %>%
-    rename(cox_0 = pr_ev_0, cox_1 = pr_ev_1, cox_cid = cid),
-  by = join_by(time)
-)
+    mutate(Model = 'Cox-Adj')
+  ) %>%
+  pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', names_prefix = 'pr_ev_', values_to = 'pr_ev')
 
 d_gg_ci = d_ci_cmp %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = plr_0), color='#A60A3D', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = cox_0), color='red', shape=2, size=1.5) + 
-      geom_line(aes(y = plr_1), color='navyblue', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = cox_1), color='blue', shape=2, size=1.5) + 
+      ggplot(aes(x=time, color = Model, Group = Model)) +
+      geom_line(aes(y = pr_ev, linetype=assign), linewidth=0.9) +
+      geom_point(aes(y = pr_ev, shape=assign), size=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
+      scale_color_manual(values = cbbPalette) +
       theme_bw() +
-      labs(x = '', y = 'Cumulative incidence')
+      labs(x = '', y = 'Cumulative incidence') 
     
  d_gg_rr = d_ci_cmp %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = cox_cid), color='green', linetype=1, linewidth=1.5) + 
-      geom_line(aes(y = plr_cid), color='forestgreen', linetype=2, linewidth=1.5) +
+      ggplot(aes(x=time, color = Model)) +
+      geom_line(aes(y = cid), linewidth=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(-0.2, 0.2)) +
+      scale_color_manual(values = cbbPalette) +
       theme_bw() +
-      labs(x = 'Follow-up', y = 'Risk Differences')
+      labs(x = 'Follow-up', y = 'Risk Differences') 
     
-    d_gg_1 = ggarrange(d_gg_ci, d_gg_rr,
-                       nrow=2)
+    d_gg_1 = ggarrange(d_gg_ci, d_gg_rr, nrow=2, common.legend = T)
     
 d_gg_1
 ```
@@ -400,18 +397,11 @@ There is no consideration here to model training, causal DAGs or covariate selec
 
 ## Build a longitudinal panel
 
-The person- or clone-level data must be expanded to a longitudinal panel by time. Two datasets are constructed, one for estimation of censoring probabilities and one for estimation of outcome probabilities.
+The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.
 
 ### Censoring dataset
 
 In our example, artificial censoring is tied to whether treatment is initiated within a grace window or not. This is specific to a project's definitions of treatment so proceed with caution. The basic idea is that since clones censor according to whether treatments starts (or not), the probability of censoring is essentially the probability of initiating treatment. So we generate a dataset that is at the person-level with time to treatment as the outcome (no cloning):
-
-```{r }
-#| label: dta-censor
-d_treat = dta_c_panel %>%
-    dplyr::filter(assign==0) %>% # <1>
-    dplyr::filter(t_treat >= time) # <2>
-```
 
 1.  This may be a little confusing, but I am taking clones where assign=0 from the `d_cloned` dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.
 2.  We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this, so this line of code should be unnecessary but I leave in to illustrate point. 
@@ -431,16 +421,16 @@ We fit a model with the outcome of censoring, including the key variables. Then 
 ```{r }
 #| label: est-censor-prob
 #| warning: FALSE
-
+  
   # Numerator (margin probability)
   d_glm_wt = glm(treat ~ splines::bs(time, df=6), 
-                 data=d_treat, family=binomial()) # <1>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
   
   dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
 
   # Denominator 
   d_glm_wt = glm(treat ~ splines::bs(time, df=6) + X + X_t, 
-                 data=d_treat, family=binomial()) # <2>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <2>
   
   dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
 ```

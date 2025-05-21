@@ -40,5 +40,11 @@
   },
   "05_appendix.qmd": {
     "05_appendix.html": "0d6728f2"
+  },
+  "01_syndata.v3.qmd": {
+    "01_syndata.v3.html": "81e9d2eb"
+  },
+  "02_est.v2.qmd": {
+    "02_est.v2.html": "c178b338"
   }
 }

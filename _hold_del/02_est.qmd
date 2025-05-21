@@ -23,6 +23,10 @@ set.seed(42)
   
 dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds'))
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
+
+# Color-blind friendly
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 ```
 
 # Introduction
@@ -140,14 +144,14 @@ ggsurvplot(survfit(Surv(time, event) ~ assign, data=dta_c_person),
                             xlim = c(1, 60),
                             xlab = 'Follow-up',
                             break.time.by=6,
-                            palette = c('red', 'blue'),
+                            palette = cbbPalette,
                             linetype = 'strata',
                             censor=F,
                             cumevents=T,
                             conf.int=F, pval=F,
                             risk.table=T, risk.table.col = 'strata',
                             risk.table.height=0.25, 
-                            ggtheme = theme_classic())
+                            ggtheme = theme_bw())
 ```
 
 ## Cox Proportional Hazards
@@ -191,11 +195,13 @@ The PLR model requires specification of a function of time. This choice is infor
 #| label: plr-naive-est
   
   # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel[censor==0, ], family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+              data=dta_c_panel, family=binomial()) # <1>
   
   d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
   
   d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
+  
   d_plr_naive_est = d_plr_naive_est %>%
     group_by(assign) %>%
     mutate(pr_cumsurv = cumprod(pr_surv),
@@ -221,12 +227,13 @@ The PLR model requires specification of a function of time. This choice is infor
 #| fig-cap-location: top
 #| echo: false
     d_gg_ci = d_plr_naive_est %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = pr_ev_0), color='red', linewidth=1.2) +
-      geom_line(aes(y = pr_ev_1), color='blue', linewidth=1.2) + 
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Cumulative incidence')
     
@@ -240,23 +247,22 @@ At first glance, the plot looks reasonable. Direct comparison of the PLR and KM 
 #| fig-cap: "Comparison of Naive PLR versus KM estimator"
 #| fig-cap-location: top
 #| echo: FALSE
-d_ci_cmp = inner_join(
+d_ci_cmp = bind_rows(
   select(d_plr_naive_est, time, pr_ev_0, pr_ev_1, cid) %>%
-    rename(plr_0 = pr_ev_0, plr_1 = pr_ev_1, plr_cid = cid),
+    mutate(Model = 'PLR-Naive'),
   select(d_km_est, time, pr_ev_1, pr_ev_0, cid) %>%
-    rename(km_0 = pr_ev_0, km_1 = pr_ev_1, km_cid = cid),
-  by = join_by(time)
-)
+    mutate(Model = 'KM-Naive')) %>%
+    pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', 
+                 names_prefix = 'pr_ev_', values_to = 'pr_ev')
 
 d_gg_ci = d_ci_cmp %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = plr_0), color='#A60A3D', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = km_0), color='red', shape=2, size=1.5) + 
-      geom_line(aes(y = plr_1), color='navyblue', linetype=1, linewidth=1.1) +
-      geom_point(aes(y = km_1), color='blue', shape=2, size=1.5) + 
+      ggplot(aes(x=time, color = Model, Group = Model)) +
+      geom_line(aes(y = pr_ev, linetype=assign), linewidth=1.1) +
+      geom_point(aes(y = pr_ev, shape=assign), size=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
+      scale_y_continuous(limits = c(0, 0.3)) +
+      scale_color_manual(values = cbbPalette) +
       theme_bw() +
       labs(x = '', y = 'Cumulative incidence')
     

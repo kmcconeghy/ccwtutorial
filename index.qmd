@@ -4,8 +4,8 @@ bibliography: references.bib
 ---
 # Sections {#sec-sections}
 
-1. [Data](01_syndata.v2.qmd): Discusses creation of synthetic data used in this examples
-2. [Estimation](02_est.qmd): Estimation describes an step-by-step approach for CCW methods.
+1. [Data](01_syndata.v3.qmd): Discusses creation of synthetic data used in this examples
+2. [Estimation](02_est.v2.qmd): Estimation describes an step-by-step approach for CCW methods.
 3. [Inference](03_inference.qmd); Discussion and practical on obtaining confidence intervals.  
 4. [Additional Topics](04_advanced.qmd): Some various related topics, how to speed up computation etc.
 5. [Appendix](05_appendix.qmd): Some notes on inference and weighting approach,  that may be helpful in adapting this tutorial to a specific project.  
