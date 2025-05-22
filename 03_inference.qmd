@@ -1,6 +1,5 @@
 ---
-title: "Reporting Results"
-subtite: "Table 1 Considerations"
+title: "Inference"
 bibliography: references.bib
 ---
 
@@ -14,6 +13,8 @@ library(here)
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
 set.seed(42)
+
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 ```
 
 # Description of the cohort
@@ -32,9 +33,51 @@ This would lead to a "Table 1" with three columns.
 ## Table 1
 
 ```{r }
+#| label: tab-1
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1. Example of presentation of characteristics of a CCW Cohort"
+#| echo: FALSE
+#| warning: FALSE
 
+d_cbase = dta_c_panel %>%
+  # Take one obs for the baseline column
+  dplyr::filter(time==1 & assign==1 & censor==0) %>%
+  summarize(N = n(),
+            X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
+            X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
+            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
+                                        ' (', round(mean(female)*100,1), ')')) %>%
+  t()
 
+d_c0 = dta_c_panel %>%
+  # End of grace period
+  dplyr::filter(time==12 & assign==0 & censor==0) %>%
+  summarize(N = n(),
+            X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
+            X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
+            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
+                                        ' (', round(mean(female)*100,1), ')')) %>%
+  t()
+  
+d_c1 = dta_c_panel %>%
+  # End of grace period
+  dplyr::filter(time==12 & assign==1 & censor==0) %>%
+  summarize(N = n(),
+            X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
+            X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
+            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
+                                        ' (', round(mean(female)*100,1), ')')) %>%
+  t()
+  
 
+bind_cols(Variables = c('N', 'X', 'Xt', 'Age (years)', 'Gender, female'),
+          `Baseline` = d_cbase, `Assign=0` = d_c0, `Assign=1` = d_c1) %>%
+  kable(, align = 'c') %>%
+  kable_styling() %>%
+  add_header_above(c(" " = 2, "Uncensored at end of grace period" = 2))
 ```
 
 ## Presentation of weighted differences
