@@ -291,7 +291,8 @@ Another approach is to compare a pooled logistic regression analysis to a time-i
 #| label: glm-plr-covadj
  
 # defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, data=dta_c_panel, family=binomial()) # <1>
+  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, 
+              data=dta_c_panel, family=binomial()) # <1>
 
   dta_c_panel$p.noevent0 <- predict(d_glm, mutate(dta_c_panel, assign=0), type="response") # <2>
   dta_c_panel$p.noevent1 <- predict(d_glm, mutate(dta_c_panel, assign=1), type="response") # <2>
@@ -376,6 +377,7 @@ d_gg_ci = d_ci_cmp %>%
       geom_line(aes(y = cid), linewidth=1.1) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
+      scale_y_continuous(limits = c(-0.1, 0.1)) +
       scale_color_manual(values = cbbPalette) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Risk Differences') 
@@ -423,13 +425,13 @@ We fit a model with the outcome of censoring, including the key variables. Then 
 #| warning: FALSE
   
   # Numerator (margin probability)
-  d_glm_wt = glm(treat ~ splines::bs(time, df=6), 
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), 
                  data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
   
   dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
 
   # Denominator 
-  d_glm_wt = glm(treat ~ splines::bs(time, df=6) + X + X_t, 
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t, 
                  data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <2>
   
   dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
@@ -468,10 +470,8 @@ This step is highly specific to a project and must be considered carefully. I ha
   )]
   
   dta_c_panel[, `:=`(ipw = cumprod(ipw),
-                      marg_ipw = cumprod(marg_ipw)),
+                     marg_ipw = cumprod(marg_ipw)),
                by=list(id, assign)] # <9>
-  
-  dta_outcome = dta_c_panel[censor==0, ]
 ```
 
 1.  (assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored
@@ -489,13 +489,13 @@ This step is highly specific to a project and must be considered carefully. I ha
 ```{r }
 #| label: desc-ipw
 #| echo: false
-  summary(dta_outcome$ipw[dta_outcome$ipw!=0])
+  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0])
 ```
 
 ```{r }
 #| label: desc-marg_ipw
 #| echo: false
-  summary(dta_outcome$marg_ipw[dta_outcome$marg_ipw!=0])
+  summary(dta_c_panel$marg_ipw[dta_c_panel$marg_ipw!=0])
 ```
 
 The unstabilized weights floor at 1, and we see high weights assigned to some. The marginalized weights have a mean of 1 (expected). 
@@ -505,7 +505,7 @@ The unstabilized weights floor at 1, and we see high weights assigned to some. T
 ```{r }
 #| label: desc-ipw-grace
 #| echo: false
-  summary(dta_outcome$ipw[dta_outcome$ipw!=0 & dta_outcome$assign==1 & dta_outcome$time==12])
+  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0 & dta_c_panel$assign==1 & dta_c_panel$time==12])
 ```
 The weights at the end of the grace period are key.  
 
@@ -516,18 +516,18 @@ It is good to see the marginal stabilized weights have a mean 1. You can also pl
 #| fig-cap: Distribution of Censoring Weights Across Time
 #| fig-cap-location: top
 
-dta_outcome %>%
+dta_c_panel %>%
     dplyr::filter(marg_ipw!=0) %>%
  ggplot(., aes(x = cut_width(time, 12), y = marg_ipw)) +
   geom_violin(aes(group = cut_width(time, 12)), 
-               scale = "width", fill = "blue", alpha = 0.7) +
+               scale = "width", fill = cbbPalette[1], alpha = 0.5) +
   stat_summary(fun = "mean",
                geom = "point",
-               color = "red") +
-  geom_hline(aes(yintercept=1), linetype=3) +
-  labs(x = "Follow-up", y = "IPW") +
+               color = cbbPalette[2], size=2) +
+  geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
+  scale_x_discrete(labels = seq(0, 60, 12)) +
+  labs(x = "Follow-up", y = "IPW", ) +
   theme_bw()
-
 ```
 
 Another way to examine the weights is to look at the weighted counts of individuals at risk, and number of events pre- and post-weighting:
@@ -564,18 +564,18 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 ```{r }
 #| label: est-plr-wt
 #| warning: FALSE  
-#| 
-  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==1 & censor==0, ], 
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[assign==1, ], 
                    family=binomial(), weights = ipw) # <1>
 
-  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==0 & censor==0, ], 
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[assign==0, ], 
                      family=binomial(), weights = ipw) # <1>
   
-  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, type='response') # <2>
-  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, type='response') # <2>
-
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                             type='response') # <2>
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') # <2>
 ```
 
 1.  Estimate for each assignment group separately. Note the `weights = ipw` argument, everything else is same as PLR model above. R `glm()` will generate a warning message because the weighted counts are "non-integer", but this is expected and not a problem.
@@ -587,51 +587,37 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
   dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
   dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
   
-  d_plrwt_est = dta_c_panel[censor==0, ] %>% # <2>
+  d_plrwt_est = dta_c_panel %>% # <2>
     group_by(time) %>% # <2>
-    summarize(pr_ev_1 = mean(1-pr_cum_1), 
-              pr_ev_0 = mean(1-pr_cum_0),
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
               .groups = 'drop') %>% # <2>
     ungroup %>% # <2>
-    mutate(cid = pr_ev_1 - pr_ev_0,  # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, # <2>
            cir = pr_ev_1 / pr_ev_0) # <2>
 ```
 
 1.  Cumulative product
-
 2.  Summarize across group, time as before.
 
 ```{r }
-#| label: plot-plr-weighted
+#| label: gg-plr-weighted
 #| fig-cap: Weighted PLR Analysis
+#| fig-cap-location: top
 #| echo: false
-
-  ### Plot ----
+#| eval: false
     d_gg_ci = d_plrwt_est %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = pr_ev_0), color='red', linewidth = 1) +
-      geom_line(aes(y = pr_ev_1), color='blue', linewidth = 1, linetype=2) + 
-      geom_vline(aes(xintercept = 12), color='black', linewidth = 0.5, linetype=3) + 
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
-      scale_y_continuous(limits = c(0, 1)) +
       theme_bw() +
       labs(x = 'Follow-up', y = 'Cumulative incidence')
-
-    d_gg_cid = d_plrwt_est %>%
-      ggplot(aes(x=time)) +
-      geom_line(aes(y = cid), color='#228b22', linewidth = 1, linetype=4) + 
-      geom_hline(aes(yintercept = 0), color='black', linewidth = 0.5, linetype=3) + 
-      scale_y_continuous(limits = c(-0.2, 0.2)) + 
-      scale_x_continuous(breaks = seq(0, 60, 6),
-                         limits = c(0, 60)) +
-      theme_bw() +
-      labs(x = 'Follow-up', y = 'Risk Difference', caption = '12-month grace period')
     
-    d_gg_1 = ggarrange(d_gg_ci, d_gg_cid,
-                       nrow=2) 
-    
-    d_gg_1
+    d_gg_ci
 ```
 
 # Final Comparison
@@ -640,30 +626,34 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 #| label: tbl-compare-est
 #| tbl-cap-location: top
 #| tbl-cap: 'Comparison of estimates by model, PLR = Pooled Logistic Regression, Wtd = with censoring weights'
+#| warning: false
+#| message: false
 #| echo: false
 
-  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                     data=dta_c_panel[assign==1 & censor==0, ], 
-                     family=binomial(), weights = marg_ipw) # <1>
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=dta_c_panel[assign==1, ], 
+                     family=binomial(), weights = marg_ipw) 
 
-  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T) + female + age + X, 
-                   data=dta_c_panel[assign==0 & censor==0, ], 
-                     family=binomial(), weights = marg_ipw) # <1>
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[assign==0, ], 
+                     family=binomial(), weights = marg_ipw) 
   
-  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, type='response') # <2>
-  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, type='response') # <2>
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                             type='response') 
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') 
 
-  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
-  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
   
-  d_plrstabwt_est = dta_c_panel[censor==0, ] %>% # <2>
-    group_by(time) %>% # <2>
-    summarize(pr_ev_1 = mean(1-pr_cum_1), 
-              pr_ev_0 = mean(1-pr_cum_0),
-              .groups = 'drop') %>% # <2>
+  d_plrstabwt_est = dta_c_panel %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
     ungroup %>% # <2>
-    mutate(cid = pr_ev_1 - pr_ev_0,  # <2>
-           cir = pr_ev_1 / pr_ev_0) # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
   
  d_all_est = 
   bind_rows(
@@ -676,7 +666,8 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
     select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
       mutate(Model = 'PLR-Wtd'),
     select(d_plrstabwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
-      mutate(Model = 'PLR-Stab-Wtd')
+      mutate(Model = 'PLR-Stab-Wtd'),
+    
   ) %>%
   dplyr::filter(time %in% c(6, 12, 36, 60))
 

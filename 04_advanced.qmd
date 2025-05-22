@@ -8,7 +8,7 @@ bibliography: references.bib
 #| label: setup
 #| echo: false
 #| message: false
-#| 
+
 library(here())
 library(microbenchmark)
 
@@ -23,16 +23,9 @@ set.seed(42)
     survminer:::print.ggsurvplot(x, newpage=F)
   }
   
-d_cloned = readRDS(here('dta', 'survdta_cloned.R'))
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 
-setDT(d_cloned) 
-d_panel = d_cloned[rep(seq(.N), t_clone)] 
-d_panel[, exit := (seq_len(.N)), by = list(id, assign)] 
-d_panel[, enter := exit-1] 
-d_panel[, time := seq_len(.N), by = list(id, assign)] 
-d_panel[, event_outc := if_else( t_clone <= time, event_outc, 0L), by = list(id, assign)] 
-d_panel_outc = select(d_panel, id, time, event_outc, t_treat, assign, enter, exit) 
-    
+setDT(dta_c_panel)
 ```
 
 # Description of cohort, “Table 1”
@@ -63,8 +56,8 @@ Because the pooled logistic regression models a person-time dataset, for large s
 
 ```{r }
 #| label: compare-glm
-#| eval: False 
-glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial())
+#| eval: false 
+glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel, family=binomial())
 ```
 
 ### Speeding up GLM ML procedure
@@ -78,9 +71,12 @@ This is a simple trick, either 1) run the GLM once and store est, or 2) run the 
 ```{r }
 #| label: init-glm
 
-d_fit = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial()) # <1>
+d_fit = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+            data=dta_c_panel, family=binomial()) # <1>
 
-d_fit_2 = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), start = d_fit$coefficients) # <2>
+d_fit_2 = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+              data=dta_c_panel, family=binomial(), 
+              start = d_fit$coefficients) # <2>
 
 ```
 
@@ -95,8 +91,9 @@ The `parglm` package provides much faster computations (but somewhat more unstab
 #| label: par-glm
 library(parglm)
 
-d_fit_3 = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
-       binomial(), d_panel_outc, start = d_fit$coefficients,
+d_fit_3 = parglm(event==0 ~ poly(time, 2, raw=T)*assign, 
+       family=binomial(), data=dta_c_panel, 
+       start = d_fit$coefficients,
        control = parglm.control(method = "FAST", nthreads = 8L)) # <1>
 ```
 
@@ -108,19 +105,36 @@ d_fit_3 = parglm(event_outc ~ poly(time, 2, raw=T)*assign,
 #| label: benchmark-glm
 #| echo: false
 d_summ = microbenchmark(
-  `base GLM` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial()),
-  `GLM with inits` = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(), start = d_fit$coefficients),
-  `PARGLM` = parglm(event_outc ~ poly(time, 2, raw=T)*assign, 
-       binomial(), d_panel_outc, start = d_fit$coefficients,
-       control = parglm.control(method = "FAST", nthreads = 8L)),
+  `base GLM` = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                   data=dta_c_panel, family=binomial()),
+  `GLM with inits` = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                         data=dta_c_panel, family=binomial(), 
+                         start = d_fit$coefficients),
+  `PARGLM` = parglm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                    family=binomial(), data = dta_c_panel, 
+                    start = d_fit$coefficients,
+                    control = parglm.control(method = "FAST", nthreads = 8L)),
   times = 5,
   unit = "seconds"
 ) 
 
-print(d_summ, signif=4)
+print(d_summ, signif=3)
 ```
 
 Even in a small example, `parglm()` significantly outperforms base `glm()`. This will scale considerably with multiple cores and larger datasets as well.
+
+`parglm()` may be more unstable (convergence issues), but should be sufficient for most problems. 
+
+```{r }
+#| label: benchmark-glm
+#| echo: false
+#| tab-cap: "Comparison of glm() and parglm() results"
+#| tab-cap-location: top
+bind_cols(Coefficient = names(d_fit$coefficients), 
+          `glm()` = d_fit$coefficients, `parglm()` = d_fit_3$coefficients) %>%
+kable(digits = 5) %>%
+  kable_styling()
+```
 
 ## Bootstrapping procedure
 
@@ -138,29 +152,33 @@ The bootstrap procedure must sample at the person level to account for the cloni
 #| label: bad-bootstrap-ex
 boot_it_1 = function() {
   
-  d_ids = distinct(d_panel_outc, id) # <1>
+  d_ids = distinct(dta_c_panel, id) # <1>
   
   d_boot = slice_sample(d_ids, prop=1, replace=T)
   
   d_panel_outc_2 = left_join(d_boot, #<2>
-                             d_panel_outc, by = join_by(id),
+                             dta_c_panel, by = join_by(id),
                              relationship = "many-to-many") # <3>
   
-  d_glm_pe = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc_2, family=binomial())
+  d_glm_pe = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                 data=d_panel_outc_2, family=binomial())
   
-  d_panel_outc_2$pr_ev = d_glm_pe$fitted.values 
-  d_panel_outc_2[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] 
+  d_panel_outc_2$pr_1 = predict(d_glm_pe_1, newdata = d_panel_outc_2, 
+                              type='response') 
+  d_panel_outc_2$pr_0 = predict(d_glm_pe_0, newdata = d_panel_outc_2, 
+                             type='response') 
+
+  d_panel_outc_2[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  d_panel_outc_2[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  
   d_res = d_panel_outc_2 %>% 
-    group_by(assign, time) %>% 
-    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% 
-    ungroup %>% 
-    pivot_wider(., id_cols =c('time'),  
-                names_from = assign,  
-                names_prefix = 'pr_ev_', 
-                values_from = pr_ev 
-    ) %>% 
-    mutate(cid = pr_ev_1 - pr_ev_0,  
-           cir = pr_ev_1 / pr_ev_0) 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0)
   
   return(d_res$cid[d_res$time==60])
 }
@@ -178,23 +196,27 @@ Rather than sampling rows of the matrix with replacement, an alternative is to a
 #| label: goodbootstrap-ex
 boot_it_2 = function() {
   
-  d_panel_outc[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
+  dta_c_panel[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
 
-  d_glm_pe = glm(event_outc ~ poly(time, 2, raw=T)*assign, data=d_panel_outc, family=binomial(),
+  d_glm_pe = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                 data=dta_c_panel, family=binomial(),
                  weights = freqwt)
   
-  d_panel_outc$pr_ev = d_glm_pe$fitted.values 
-  d_panel_outc[, `:=`(pr_surv = cumprod(1 - pr_ev)), by=list(id, assign)] 
-  d_res = d_panel_outc %>%
-    group_by(assign, time) %>%
-    summarize(pr_ev = mean(1-pr_surv), .groups = 'drop') %>% 
-    ungroup %>% 
-    pivot_wider(., id_cols =c('time'),  
-                names_from = assign,  
-                names_prefix = 'pr_ev_', 
-                values_from = pr_ev 
-    ) %>% 
-    mutate(cid = pr_ev_1 - pr_ev_0,  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                              type='response') 
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') 
+
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  
+  d_res = dta_c_panel %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, 
            cir = pr_ev_1 / pr_ev_0) 
   
   return(d_res$cid[d_res$time==60])
@@ -215,7 +237,7 @@ d_summ = microbenchmark(
   unit = "seconds"
 ) 
 
-print(d_summ, signif=4)
+print(d_summ, signif=3)
 ```
 
 The Poisson bootstrap procedure is faster even in a small sample, but critically this performance will scale much better for large datasets.
@@ -230,6 +252,8 @@ Here is a simple example for a Dell Laptop using the `Furrr` package with 10 wor
 
 ```{r }
 #| label: bootproc-futureplan
+#| warning: false
+#| message: false
 library(furrr)
 plan(multisession, workers = 10) # <1>
 
@@ -264,7 +288,7 @@ tibble(Resampling = resampling_res, Poisson = poisson_res) %>%
     max = max(CID),
     SD = sd(CID)
   ) %>%
-  kable(digits = 3, align = 'c') %>%
+  kable(digits = 4, align = 'c') %>%
   kable_styling()
 ```
 

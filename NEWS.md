@@ -19,4 +19,5 @@ Project set-up
 
   - Revamped synthetic data for time-varying confounding
   - Added cox models to estimator page
+  - switched to color-blind friendly color-scheme
   
