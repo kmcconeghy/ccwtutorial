@@ -4,6 +4,12 @@ project:
 
 website:
   title: "Tutorial on Clone-Censor-Weight"
+  announcement: 
+    icon: info-circle
+    dismissable: true
+    content: "**Alert** - This is a work-in-progress, errors may exist in code"
+    type: primary
+    position: below-navbar
   navbar:
     title: "Section"
     left:

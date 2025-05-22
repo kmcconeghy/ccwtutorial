@@ -24,8 +24,6 @@ set.seed(42)
   }
   
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
-
-setDT(dta_c_panel)
 ```
 
 # Description of cohort, “Table 1”
@@ -126,7 +124,7 @@ Even in a small example, `parglm()` significantly outperforms base `glm()`. This
 `parglm()` may be more unstable (convergence issues), but should be sufficient for most problems. 
 
 ```{r }
-#| label: benchmark-glm
+#| label: summ-benchmark-glm
 #| echo: false
 #| tab-cap: "Comparison of glm() and parglm() results"
 #| tab-cap-location: top
@@ -150,26 +148,33 @@ The bootstrap procedure must sample at the person level to account for the cloni
 
 ```{r }
 #| label: bad-bootstrap-ex
-boot_it_1 = function() {
+boot_it_1 = function(x) {
   
-  d_ids = distinct(dta_c_panel, id) # <1>
+  setDT(x)
   
-  d_boot = slice_sample(d_ids, prop=1, replace=T)
+  d_ids = distinct(x, id) # <1>
   
-  d_panel_outc_2 = left_join(d_boot, #<2>
-                             dta_c_panel, by = join_by(id),
+  d_boot = slice_sample(d_ids, prop=1, replace=T) # <2>
+  
+  d_panel_outc_2 = left_join(d_boot, # <3>
+                             x, by = join_by(id),
                              relationship = "many-to-many") # <3>
   
-  d_glm_pe = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
-                 data=d_panel_outc_2, family=binomial())
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=d_panel_outc_2[d_panel_outc_2$assign==1, ], 
+                     family=binomial()) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=d_panel_outc_2[d_panel_outc_2$assign==0, ], 
+                     family=binomial())
   
   d_panel_outc_2$pr_1 = predict(d_glm_pe_1, newdata = d_panel_outc_2, 
                               type='response') 
   d_panel_outc_2$pr_0 = predict(d_glm_pe_0, newdata = d_panel_outc_2, 
                              type='response') 
 
-  d_panel_outc_2[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
-  d_panel_outc_2[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  d_panel_outc_2[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  d_panel_outc_2[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
   
   d_res = d_panel_outc_2 %>% 
     group_by(time) %>% 
@@ -194,28 +199,34 @@ Rather than sampling rows of the matrix with replacement, an alternative is to a
 
 ```{r }
 #| label: goodbootstrap-ex
-boot_it_2 = function() {
+boot_it_2 = function(x) {
   
-  dta_c_panel[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
+  setDT(x)
+  
+  x[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
 
-  d_glm_pe = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
-                 data=dta_c_panel, family=binomial(),
-                 weights = freqwt)
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=x[x$assign==1, ], 
+                     family=binomial(), weights = freqwt) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=x[x$assign==0, ], 
+                     family=binomial(), weights = freqwt) 
   
-  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+  x$pr_1 = predict(d_glm_pe_1, newdata = x, 
                               type='response') 
-  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+  x$pr_0 = predict(d_glm_pe_0, newdata = x, 
                              type='response') 
 
-  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
-  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  x[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  x[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
   
-  d_res = dta_c_panel %>% 
+  d_res = x %>% 
     group_by(time) %>% 
-    summarize(pr_ev_1 = mean(1-pr_cum_1),
-              pr_ev_0 = mean(1-pr_cum_0), 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), # <2>
+              pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt), # <2>
               .groups = 'drop') %>% 
-    ungroup %>% # <2>
+    ungroup %>%
     mutate(cid = pr_ev_1 - pr_ev_0, 
            cir = pr_ev_1 / pr_ev_0) 
   
@@ -223,7 +234,8 @@ boot_it_2 = function() {
 }
 ```
 
-1.  Generate a frequency weight by group ID from a Poisson distribution with mean 1
+1. Generate a frequency weight by group ID from a Poisson distribution with mean 1
+2. Note the use of `weighted.mean()` versus `mean()` in other code.
 
 ### Benchmarking GLM methods
 
@@ -231,16 +243,14 @@ boot_it_2 = function() {
 #| label: benchmark-bs
 #| echo: false
 d_summ = microbenchmark(
-  `Resampling bootstrap` = boot_it_1(),
-  `Poisson bootstrap` = boot_it_2(),
+  `Resampling bootstrap` = boot_it_1(dta_c_panel),
+  `Poisson bootstrap` = boot_it_2(dta_c_panel),
   times = 5,
   unit = "seconds"
 ) 
 
 print(d_summ, signif=3)
 ```
-
-The Poisson bootstrap procedure is faster even in a small sample, but critically this performance will scale much better for large datasets.
 
 ### Parallel computation  
 
@@ -255,14 +265,15 @@ Here is a simple example for a Dell Laptop using the `Furrr` package with 10 wor
 #| warning: false
 #| message: false
 library(furrr)
+boots = 100
 plan(multisession, workers = 10) # <1>
 
-resampling_res = future_map_dbl(1:100, 
-                                function(x) boot_it_1(), 
+resampling_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_1(dta_c_panel), 
                                 .options = furrr_options(seed=T)) # <2>
 
-poisson_res = future_map_dbl(1:100, 
-                                function(x) boot_it_2(), 
+poisson_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_2(dta_c_panel), 
                                 .options = furrr_options(seed=T)) # <2>
 
 ```
@@ -273,8 +284,8 @@ poisson_res = future_map_dbl(1:100,
 ```{r }
 #| label: bootproc-compare
 #| echo: FALSE
-#| tbl-cap: "Comparison of Poisson and Resampling Bootstraps"
-#| tbl-cap-location: top
+#| tbl-cap: paste0('Distribution of risk difference by assignment by either bootstrap methods, ', boots, ' bootstraps)
+#| tbl-cap-location: bottom
 
 tibble(Resampling = resampling_res, Poisson = poisson_res) %>%
   pivot_longer(cols = c(Resampling, Poisson), names_to = 'Method', values_to = 'CID') %>%

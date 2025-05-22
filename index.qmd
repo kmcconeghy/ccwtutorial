@@ -12,6 +12,10 @@ bibliography: references.bib
 
 For production notes and future efforts see [About](about.qmd).
 
+# Troubleshooting your own project
+
+For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the estimation page code: [Estimation](02_est.v2.qmd##ipcwplr) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
+
 # Background reading {#sec-background}
 
 The "Clone-Censor-Weight" analytical approach is popular in the target trial emulation (TTE) framework. A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website is a tutorial meant to guide researchers and others in how to execute a CCW analysis.

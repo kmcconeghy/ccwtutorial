@@ -89,20 +89,17 @@ Adjustment for `X` should lead to identification of a *NULL* effect of treatment
 #| 
 
 set.seed(100)
-
-
 n = 10000L # <1>
 fup = 90 # <1>
 
 df = tibble(id = 1:n, 
             age = round(rnorm(n, mean = 75, sd = 10), 1), # <2> 
             female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)), # <2>
-            fup = fup, 
-            X = rnorm(n, 0, sd=1), 
-            X_shift = rexp(n, rate=0.005))
+            fup = fup, # <2> 
+            X = rnorm(n, 0, sd=1), # <2> 
+            X_shift = rexp(n, rate=0.005)) # <2> 
   
 setDT(df) 
-
 d_panel = df[rep(seq(.N), fup)] # <3> 
 d_panel[, exit := (seq_len(.N)), by = list(id)] # <3>
 d_panel[, enter := exit-1] # <3> 
@@ -113,32 +110,31 @@ d_panel[, time := seq_len(.N), by = list(id)] # <3>
 2. Specify covariates, `age`, `female` and `X`.
 3. Expand dataset, each observation period is an interval of length = 1.
 
-For X, I specify a binary variable representing a diagnosis of a condition which increases likelihood of treatment and outcome. Once diagnosed, X is always 1. So the time-varying confounder increases in prevalence across time.  
+For `X`, further include `X_t` which varies across time. A change in X_t is triggered by intermediate variable `X_shift` which is a random draw from an exponential distribution (meant to represent a time to change in X). So for each person, there is a baseline X, then a random timepoint in follow-up where X changes. 
 
 ```{r }
 #| label: sim-tvarydata
 #| message: false
 #| warning: false
 #| 
-
 d_panel[, X_t := fifelse(X_shift <= time, X+rnorm(0, n=1), X), by = list(id)] 
-
 ```
 
 ```{r }
 #| label: gg-tvary
 #| fig-cap: "Figure 4. Distribution of Time-varying Confounder"
 #| fig-cap-location: top
+#| echo: false
 #| 
 d_panel %>%
-  group_by(time) %>%
-  summarize(Xt_prob = mean(X_t),
-            X = mean(X)) %>%
-  ggplot(aes(x = time, y = Xt_prob)) +
-  geom_line() +
-  geom_hline(aes(yintercept = X), color = 'red', linetype = 2) +
-  scale_y_continuous(limits = c(-0.1, 0.1)) +
-  labs(x = 'Follow-up', y = 'Mean(X)', caption = 'Red line is baseline prevalence') +
+  ggplot(aes(x = cut_width(time, 12), y = X_t)) +
+  geom_violin( scale = "width", fill = cbbPalette[1], alpha = 0.5) +
+  stat_summary(fun = "mean",
+               geom = "point",
+               color = cbbPalette[2], size=2) +
+  geom_hline(aes(yintercept=0),linewidth=1.1, linetype=3) +
+  scale_x_discrete(labels = seq(0, 90, 12)) +
+  labs(x = "Follow-up", y = "Time-varying X", ) +
   theme_bw()
 ```
 
@@ -150,8 +146,8 @@ Time to treatment and outcome is simulated in a longitudinal dataset, to allow f
 #| warning: false
   set.seed(101)
   
-  d_panel_2 = d_panel %>%
-    # Treat event
+  d_panel_2 = d_panel %>% 
+    # Treat event # <1>
     mutate(log_odds = -4.1 + 0.0001*time + -0.00001*(time^2) + 0.2*X + 0.2*X_t,
            p = exp(log_odds) / (1 + exp(log_odds)),
            treat = rbinom(n(), size = 1, prob = p),
@@ -160,8 +156,8 @@ Time to treatment and outcome is simulated in a longitudinal dataset, to allow f
     group_by(id) %>%
       fill(treat, .direction = 'down') %>%
     ungroup %>%
-    mutate(treat = coalesce(treat, 0L)) %>%
-    # Outcome event
+    mutate(treat = coalesce(treat, 0L)) %>% # <1>
+    # Outcome event # <2>
     mutate(log_odds = -5 + 0.009*time + 0.0003*(time^2) + 0.4*X + 0.3*X_t + 
                                   -0.2*female + 0.07*age + -0.001*(age^2),
            p = exp(log_odds) / (1 + exp(log_odds)),
@@ -169,18 +165,21 @@ Time to treatment and outcome is simulated in a longitudinal dataset, to allow f
            outcome = if_else(outcome==1, 1, NA_integer_)
     ) %>%
     group_by(id) %>%
-      fill(outcome, .direction = 'down') %>%
+      fill(outcome, .direction = 'down') %>% 
     ungroup %>%
-    mutate(outcome = coalesce(outcome, 0L)) %>%
-    group_by(id) %>%
+    mutate(outcome = coalesce(outcome, 0L)) %>% # <2>
+    group_by(id) %>% # <3>
       mutate(t_outcome = coalesce(min(time[outcome==1]), Inf),
              t_treat   = coalesce(min(time[treat==1]), Inf)) %>%
     ungroup %>%
     dplyr::filter(outcome  == 0 | time == t_outcome) %>%
     dplyr::filter(time <= 60) %>%
     mutate(t_treat = if_else(t_outcome < t_treat, Inf, t_treat),
-           t_treat = if_else(60 < t_treat, Inf, t_treat))
+           t_treat = if_else(60 < t_treat, Inf, t_treat))  # <3>
 ```
+1. Simulation of treatment event times. Treatment is only a function of `time`, `X`, and `X_t`.
+2. Simulation of outcome event times. Outcome is a function of `time`, `X`, and `X_t`, `F`, `Age`.
+3. Modify dataset so that follow-up times coincide with new treatment and outcome variables. 
 
 ### Simulated treatment times  
 
@@ -208,6 +207,7 @@ summary(d_panel_2$t_outcome)
 #| fig-cap-location: top
 #| message: false
 #| warning: false
+#| echo: false
 gg_treat = d_panel_2 %>%
   group_by(time) %>%
   summarize(treat_prob = mean(treat)) %>%
@@ -222,7 +222,7 @@ gg_outc = d_panel_2 %>%
     summarize(outcome = sum(outcome)) %>%
   ggplot(aes(x = time, y = outcome)) +
   geom_line() +
-  labs(x = 'Follow-up', y = 'Proportion outcome', title = 'Outcome') +
+  labs(x = 'Follow-up', y = 'Events', title = 'Outcome') +
   theme_bw()
 
 ggarrange(gg_treat, gg_outc, ncol = 1)
@@ -234,10 +234,12 @@ ggarrange(gg_treat, gg_outc, ncol = 1)
 #| fig-cap-location: top
 #| message: false
 #| warning: false
-#| 
+#| echo: false
 corrplot(cor(d_panel_2[, c('age', 'female', 'X', 'X_t', 'treat', 'outcome')]),
          method = 'number', diag=F, type='upper', bg = 'black')
 ```
+
+Simple correlation statistics support the simulated dataset has target associations.   
 
 # Summary of survival dataset {#sec-summdta}
 
@@ -252,9 +254,11 @@ glimpse(d_panel_2)
 
 The cloning procedure is very project specific, tied to how the treatment strategy is defined so it is hard to give general recommendations here. For this tutorial, we describe an arbitrary window in which treatment is expected to initiate and outline strategies around this:
 
-**Treatment Strategies: **
-1) Do not ever receive treatment
-2) Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12. 
+**Treatment Strategies: **  
+
+1) Do not ever receive treatment  
+
+2) Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12  
 
 ::: callout-note
 The grace window is a funny concept when you first consider it. This does not reflect any trial I have ever heard of actually being done but may identify an interesting or important effect. It is essentially outlying a treatment "protocol" and saying what if everyone adhered to this protocol counterfactual to what was observed.

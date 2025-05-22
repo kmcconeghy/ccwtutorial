@@ -21,3 +21,6 @@ Project set-up
   - Added cox models to estimator page
   - switched to color-blind friendly color-scheme
   
+## Version 0.5 05-22-2025
+  - Tutorial appears to work as expected, some edits to text and code to be more concise
+  

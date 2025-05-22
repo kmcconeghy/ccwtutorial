@@ -15,11 +15,10 @@ The synthetic data was manually created for this project.
 
 *Some planned guides:*
 
-1. Speeding up computation steps
-2. Aggregation of continuous times into discrete intervals
-3. Assessment of covariate balance in weighted sample
-4. Covariate selection
+1. Aggregation of continuous times into discrete intervals
+2. Assessment of covariate balance in weighted sample
+3. Covariate selection
 
-# Version {.unnumbered}  
+# Versions {.unnumbered}  
 
 {{< include NEWS.md >}}

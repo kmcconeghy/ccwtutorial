@@ -131,7 +131,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./02_est.qmd"> 
+    <a class="nav-link" href="./02_est.v2.html"> 
 <span class="menu-text">Estimators</span></a>
   </li>  
   <li class="nav-item">
@@ -147,7 +147,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Appendix</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./01_syndata.v2.qmd"> 
+    <a class="nav-link active" href="./01_syndata.v3.html" aria-current="page"> 
 <span class="menu-text">Data</span></a>
   </li>  
   <li class="nav-item">
@@ -160,6 +160,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
       </div> <!-- /container-fluid -->
     </nav>
+  <div id="quarto-announcement" data-announcement-id="3973cc0e9e77730972a08b31df6e0a48" class="alert alert-primary hidden"><i class="bi bi-info-circle quarto-announcement-icon"></i><div class="quarto-announcement-content">
+<p><strong>Alert</strong> - This is a work-in-progress, errors may exist in code</p>
+</div><i class="bi bi-x-lg quarto-announcement-action"></i></div>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
@@ -244,56 +247,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Simulation Parameters</h1>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
-<span id="annotated-cell-1-2"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-4" class="code-annotation-target"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">10000</span>L</span>
-<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>fup <span class="ot">=</span> <span class="dv">90</span></span>
-<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n, </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-8" class="code-annotation-target"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">age =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">75</span>, <span class="at">sd =</span> <span class="dv">10</span>), <span class="dv">1</span>),</span>
-<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">female =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.34</span>)),</span>
-<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">fup =</span> fup, </span>
-<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="at">sd=</span><span class="dv">1</span>), </span>
-<span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_shift =</span> <span class="fu">rexp</span>(n, <span class="at">rate=</span><span class="fl">0.005</span>))</span>
-<span id="annotated-cell-1-13"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(df) </span>
-<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-16" class="code-annotation-target"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>d_panel <span class="ot">=</span> df[<span class="fu">rep</span>(<span class="fu">seq</span>(.N), fup)]</span>
-<span id="annotated-cell-1-17"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>d_panel[, exit <span class="sc">:</span><span class="er">=</span> (<span class="fu">seq_len</span>(.N)), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
-<span id="annotated-cell-1-18"><a href="#annotated-cell-1-18" aria-hidden="true" tabindex="-1"></a>d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
-<span id="annotated-cell-1-19"><a href="#annotated-cell-1-19" aria-hidden="true" tabindex="-1"></a>d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">10000</span>L</span>
+<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>fup <span class="ot">=</span> <span class="dv">90</span></span>
+<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n, </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-6" class="code-annotation-target"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">age =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">75</span>, <span class="at">sd =</span> <span class="dv">10</span>), <span class="dv">1</span>),</span>
+<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">female =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.34</span>)),</span>
+<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">fup =</span> fup,</span>
+<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="at">sd=</span><span class="dv">1</span>),</span>
+<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_shift =</span> <span class="fu">rexp</span>(n, <span class="at">rate=</span><span class="fl">0.005</span>))</span>
+<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(df) </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-13" class="code-annotation-target"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>d_panel <span class="ot">=</span> df[<span class="fu">rep</span>(<span class="fu">seq</span>(.N), fup)]</span>
+<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>d_panel[, exit <span class="sc">:</span><span class="er">=</span> (<span class="fu">seq_len</span>(.N)), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
+<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a>d_panel[, enter <span class="sc">:</span><span class="er">=</span> exit<span class="dv">-1</span>]</span>
+<span id="annotated-cell-1-16"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>d_panel[, time <span class="sc">:</span><span class="er">=</span> <span class="fu">seq_len</span>(.N), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="4,5" data-code-annotation="1">Specify 10000 individuals with 90 observation periods of follow-up.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="2,3" data-code-annotation="1">Specify 10000 individuals with 90 observation periods of follow-up.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="8,9" data-code-annotation="2">Specify covariates, <code>age</code>, <code>female</code> and <code>X</code>.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="6,7,8,9,10" data-code-annotation="2">Specify covariates, <code>age</code>, <code>female</code> and <code>X</code>.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="16,17,18,19" data-code-annotation="3">Expand dataset, each observation period is an interval of length = 1.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="13,14,15,16" data-code-annotation="3">Expand dataset, each observation period is an interval of length = 1.</span>
 </dd>
 </dl>
 </div>
 </div>
-<p>For X, I specify a binary variable representing a diagnosis of a condition which increases likelihood of treatment and outcome. Once diagnosed, X is always 1. So the time-varying confounder increases in prevalence across time.</p>
+<p>For <code>X</code>, further include <code>X_t</code> which varies across time. A change in X_t is triggered by intermediate variable <code>X_shift</code> which is a random draw from an exponential distribution (meant to represent a time to change in X). So for each person, there is a baseline X, then a random timepoint in follow-up where X changes.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_panel[, X_t <span class="sc">:</span><span class="er">=</span> <span class="fu">fifelse</span>(X_shift <span class="sc">&lt;=</span> time, X<span class="sc">+</span><span class="fu">rnorm</span>(<span class="dv">0</span>, <span class="at">n=</span><span class="dv">1</span>), X), by <span class="ot">=</span> <span class="fu">list</span>(id)] </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb2" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_panel <span class="sc">%&gt;%</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Xt_prob =</span> <span class="fu">mean</span>(X_t),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">mean</span>(X)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> Xt_prob)) <span class="sc">+</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept =</span> X), <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>)) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Mean(X)'</span>, <span class="at">caption =</span> <span class="st">'Red line is baseline prevalence'</span>) <span class="sc">+</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -305,45 +295,61 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Time to treatment and outcome is simulated in a longitudinal dataset, to allow for time-varying effect of X. Then the dataset is modified so that persons follow-up ends at the time of outcome:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">101</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  d_panel_2 <span class="ot">=</span> d_panel <span class="sc">%&gt;%</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Treat event</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="fl">4.1</span> <span class="sc">+</span> <span class="fl">0.0001</span><span class="sc">*</span>time <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.00001</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X_t,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">if_else</span>(treat<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="cn">NA_integer_</span>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">fill</span>(treat, <span class="at">.direction =</span> <span class="st">'down'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">treat =</span> <span class="fu">coalesce</span>(treat, <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Outcome event</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="dv">5</span> <span class="sc">+</span> <span class="fl">0.009</span><span class="sc">*</span>time <span class="sc">+</span> <span class="fl">0.0003</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.1</span><span class="sc">*</span>X_t <span class="sc">+</span> </span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                                  <span class="sc">-</span><span class="fl">0.2</span><span class="sc">*</span>female <span class="sc">+</span> <span class="fl">0.07</span><span class="sc">*</span>age <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.001</span><span class="sc">*</span>(age<span class="sc">^</span><span class="dv">2</span>),</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">outcome =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">outcome =</span> <span class="fu">if_else</span>(outcome<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="cn">NA_integer_</span>)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">fill</span>(outcome, <span class="at">.direction =</span> <span class="st">'down'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">outcome =</span> <span class="fu">coalesce</span>(outcome, <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">t_outcome =</span> <span class="fu">coalesce</span>(<span class="fu">min</span>(time[outcome<span class="sc">==</span><span class="dv">1</span>]), <span class="cn">Inf</span>),</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>             <span class="at">t_treat   =</span> <span class="fu">coalesce</span>(<span class="fu">min</span>(time[treat<span class="sc">==</span><span class="dv">1</span>]), <span class="cn">Inf</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(outcome  <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> time <span class="sc">==</span> t_outcome) <span class="sc">%&gt;%</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">60</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">t_treat =</span> <span class="fu">if_else</span>(t_outcome <span class="sc">&lt;</span> t_treat, <span class="cn">Inf</span>, t_treat),</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>           <span class="at">t_treat =</span> <span class="fu">if_else</span>(<span class="dv">60</span> <span class="sc">&lt;</span> t_treat, <span class="cn">Inf</span>, t_treat))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">101</span>)</span>
+<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>  d_panel_2 <span class="ot">=</span> d_panel <span class="sc">%&gt;%</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-4" class="code-annotation-target"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Treat event</span></span>
+<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="fl">4.1</span> <span class="sc">+</span> <span class="fl">0.0001</span><span class="sc">*</span>time <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.00001</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X_t,</span>
+<span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
+<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
+<span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">if_else</span>(treat<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="cn">NA_integer_</span>)</span>
+<span id="annotated-cell-3-9"><a href="#annotated-cell-3-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-10"><a href="#annotated-cell-3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">fill</span>(treat, <span class="at">.direction =</span> <span class="st">'down'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-12"><a href="#annotated-cell-3-12" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-13"><a href="#annotated-cell-3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">treat =</span> <span class="fu">coalesce</span>(treat, <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-14" class="code-annotation-target"><a href="#annotated-cell-3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Outcome event</span></span>
+<span id="annotated-cell-3-15"><a href="#annotated-cell-3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="dv">5</span> <span class="sc">+</span> <span class="fl">0.009</span><span class="sc">*</span>time <span class="sc">+</span> <span class="fl">0.0003</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.4</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.3</span><span class="sc">*</span>X_t <span class="sc">+</span> </span>
+<span id="annotated-cell-3-16"><a href="#annotated-cell-3-16" aria-hidden="true" tabindex="-1"></a>                                  <span class="sc">-</span><span class="fl">0.2</span><span class="sc">*</span>female <span class="sc">+</span> <span class="fl">0.07</span><span class="sc">*</span>age <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.001</span><span class="sc">*</span>(age<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="annotated-cell-3-17"><a href="#annotated-cell-3-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
+<span id="annotated-cell-3-18"><a href="#annotated-cell-3-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">outcome =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
+<span id="annotated-cell-3-19"><a href="#annotated-cell-3-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">outcome =</span> <span class="fu">if_else</span>(outcome<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="cn">NA_integer_</span>)</span>
+<span id="annotated-cell-3-20"><a href="#annotated-cell-3-20" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-21"><a href="#annotated-cell-3-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-22"><a href="#annotated-cell-3-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">fill</span>(outcome, <span class="at">.direction =</span> <span class="st">'down'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-3-23"><a href="#annotated-cell-3-23" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-24"><a href="#annotated-cell-3-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">outcome =</span> <span class="fu">coalesce</span>(outcome, <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-3-25" class="code-annotation-target"><a href="#annotated-cell-3-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-26"><a href="#annotated-cell-3-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">t_outcome =</span> <span class="fu">coalesce</span>(<span class="fu">min</span>(time[outcome<span class="sc">==</span><span class="dv">1</span>]), <span class="cn">Inf</span>),</span>
+<span id="annotated-cell-3-27"><a href="#annotated-cell-3-27" aria-hidden="true" tabindex="-1"></a>             <span class="at">t_treat   =</span> <span class="fu">coalesce</span>(<span class="fu">min</span>(time[treat<span class="sc">==</span><span class="dv">1</span>]), <span class="cn">Inf</span>)) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-28"><a href="#annotated-cell-3-28" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-29"><a href="#annotated-cell-3-29" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(outcome  <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> time <span class="sc">==</span> t_outcome) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-30"><a href="#annotated-cell-3-30" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">60</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-3-31"><a href="#annotated-cell-3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">t_treat =</span> <span class="fu">if_else</span>(t_outcome <span class="sc">&lt;</span> t_treat, <span class="cn">Inf</span>, t_treat),</span>
+<span id="annotated-cell-3-32"><a href="#annotated-cell-3-32" aria-hidden="true" tabindex="-1"></a>           <span class="at">t_treat =</span> <span class="fu">if_else</span>(<span class="dv">60</span> <span class="sc">&lt;</span> t_treat, <span class="cn">Inf</span>, t_treat))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="4,13" data-code-annotation="1">Simulation of treatment event times. Treatment is only a function of <code>time</code>, <code>X</code>, and <code>X_t</code>.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="14,24" data-code-annotation="2">Simulation of outcome event times. Outcome is a function of <code>time</code>, <code>X</code>, and <code>X_t</code>, <code>F</code>, <code>Age</code>.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="25,32" data-code-annotation="3">Modify dataset so that follow-up times coincide with new treatment and outcome variables.</span>
+</dd>
+</dl>
+</div>
 </div>
 <section id="simulated-treatment-times" class="level3">
 <h3 class="anchored" data-anchor-id="simulated-treatment-times">Simulated treatment times</h3>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      18      46     Inf     Inf     Inf </code></pre>
+      1      18      48     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 </section>
@@ -352,28 +358,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      57      75     Inf     Inf     Inf </code></pre>
+      1      57      76     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb6" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gg_treat <span class="ot">=</span> d_panel_2 <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">treat_prob =</span> <span class="fu">mean</span>(treat)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> treat_prob)) <span class="sc">+</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Proportion treated'</span>, <span class="at">title =</span> <span class="st">'Treatment'</span>) <span class="sc">+</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>gg_outc <span class="ot">=</span> d_panel_2 <span class="sc">%&gt;%</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">outcome =</span> <span class="fu">sum</span>(outcome)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> outcome)) <span class="sc">+</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Proportion outcome'</span>, <span class="at">title =</span> <span class="st">'Outcome'</span>) <span class="sc">+</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(gg_treat, gg_outc, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -384,8 +372,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb7" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot</span>(<span class="fu">cor</span>(d_panel_2[, <span class="fu">c</span>(<span class="st">'age'</span>, <span class="st">'female'</span>, <span class="st">'X'</span>, <span class="st">'X_t'</span>, <span class="st">'treat'</span>, <span class="st">'outcome'</span>)]),</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">method =</span> <span class="st">'number'</span>, <span class="at">diag=</span>F, <span class="at">type=</span><span class="st">'upper'</span>, <span class="at">bg =</span> <span class="st">'black'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -395,13 +381,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+<p>Simple correlation statistics support the simulated dataset has target associations.</p>
 </section>
 </section>
 <section id="sec-summdta" class="level1">
 <h1>Summary of survival dataset</h1>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 495,175
+<pre><code>Rows: 484,775
 Columns: 16
 $ id        &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 $ age       &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, …
@@ -413,8 +400,8 @@ $ exit      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1
 $ enter     &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
 $ time      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
 $ X_t       &lt;dbl&gt; -0.7311102, -0.7311102, -0.7311102, -0.7311102, -0.7311102, …
-$ log_odds  &lt;dbl&gt; -5.210033, -5.200133, -5.189633, -5.178533, -5.166833, -5.15…
-$ p         &lt;dbl&gt; 0.005431827, 0.005485573, 0.005543154, 0.005604679, 0.005670…
+$ log_odds  &lt;dbl&gt; -5.502477, -5.492577, -5.482077, -5.470977, -5.459277, -5.44…
+$ p         &lt;dbl&gt; 0.004060109, 0.004100338, 0.004143439, 0.004189494, 0.004238…
 $ treat     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 $ outcome   &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 $ t_outcome &lt;dbl&gt; 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, …
@@ -425,7 +412,11 @@ $ t_treat   &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, I
 <section id="sec-cloning" class="level1">
 <h1>Cloning procedure</h1>
 <p>The cloning procedure is very project specific, tied to how the treatment strategy is defined so it is hard to give general recommendations here. For this tutorial, we describe an arbitrary window in which treatment is expected to initiate and outline strategies around this:</p>
-<p><strong>Treatment Strategies: </strong> 1) Do not ever receive treatment 2) Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12.</p>
+<p><strong>Treatment Strategies: </strong></p>
+<ol type="1">
+<li><p>Do not ever receive treatment</p></li>
+<li><p>Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12</p></li>
+</ol>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -441,32 +432,37 @@ Note
 </div>
 <p>To clone, you make two copies of the data, and make a new <code>artifical censoring</code> variable, which is a censoring time for the period when clones observed data are no longer consistent with their assigned strategy.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-7-1" class="code-annotation-target"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a>data_cloned <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
-<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a>                     d_panel_2 <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">0</span>,</span>
-<span id="annotated-cell-7-4"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>                              <span class="at">censor =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;=</span> time, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
-<span id="annotated-cell-7-5"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">event =</span> <span class="fu">if_else</span>(censor<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> t_outcome<span class="sc">&lt;=</span>time, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
-<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a>                       ),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-7-7" class="code-annotation-target"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>                     d_panel_2 <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-8"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">1</span>,</span>
-<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>                              <span class="at">censor =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&gt;</span> <span class="dv">12</span> <span class="sc">&amp;</span> time<span class="sc">&gt;=</span><span class="dv">12</span>, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
-<span id="annotated-cell-7-10"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">event  =</span> <span class="fu">if_else</span>(censor<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> t_outcome<span class="sc">&lt;=</span>time, <span class="dv">1</span>L, <span class="dv">0</span>L)</span>
-<span id="annotated-cell-7-11"><a href="#annotated-cell-7-11" aria-hidden="true" tabindex="-1"></a>                              )</span>
-<span id="annotated-cell-7-12"><a href="#annotated-cell-7-12" aria-hidden="true" tabindex="-1"></a>                       ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-13"><a href="#annotated-cell-7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id, assign, time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-14"><a href="#annotated-cell-7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, assign) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-15"><a href="#annotated-cell-7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">t_censor =</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-16"><a href="#annotated-cell-7-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(censor <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> time <span class="sc">==</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-17"><a href="#annotated-cell-7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, time, t_outcome, t_treat, t_censor, censor, event, assign, enter, exit, <span class="fu">everything</span>(), <span class="sc">-</span>fup, <span class="sc">-</span>X_shift, <span class="sc">-</span>log_odds, <span class="sc">-</span>p)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-1" class="code-annotation-target"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>data_cloned <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
+<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a>                     d_panel_2 <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">0</span>,</span>
+<span id="annotated-cell-4-4"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>                              <span class="at">censor =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&lt;=</span> time, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
+<span id="annotated-cell-4-5"><a href="#annotated-cell-4-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">event =</span> <span class="fu">if_else</span>(censor<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> t_outcome<span class="sc">&lt;=</span>time, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
+<span id="annotated-cell-4-6"><a href="#annotated-cell-4-6" aria-hidden="true" tabindex="-1"></a>                       ),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-4-7" class="code-annotation-target"><a href="#annotated-cell-4-7" aria-hidden="true" tabindex="-1"></a>                     d_panel_2 <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-8"><a href="#annotated-cell-4-8" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="dv">1</span>,</span>
+<span id="annotated-cell-4-9"><a href="#annotated-cell-4-9" aria-hidden="true" tabindex="-1"></a>                              <span class="at">censor =</span> <span class="fu">if_else</span>(t_treat <span class="sc">&gt;</span> <span class="dv">12</span> <span class="sc">&amp;</span> time<span class="sc">&gt;=</span><span class="dv">12</span>, <span class="dv">1</span>L, <span class="dv">0</span>L),</span>
+<span id="annotated-cell-4-10"><a href="#annotated-cell-4-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">event  =</span> <span class="fu">if_else</span>(censor<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> t_outcome<span class="sc">&lt;=</span>time, <span class="dv">1</span>L, <span class="dv">0</span>L)</span>
+<span id="annotated-cell-4-11"><a href="#annotated-cell-4-11" aria-hidden="true" tabindex="-1"></a>                              )</span>
+<span id="annotated-cell-4-12"><a href="#annotated-cell-4-12" aria-hidden="true" tabindex="-1"></a>                       ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-13"><a href="#annotated-cell-4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id, assign, time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-14"><a href="#annotated-cell-4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, assign) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-15"><a href="#annotated-cell-4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">t_censor =</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-4-16" class="code-annotation-target"><a href="#annotated-cell-4-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(censor <span class="sc">==</span> <span class="dv">0</span> <span class="sc">|</span> time <span class="sc">==</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-17"><a href="#annotated-cell-4-17" aria-hidden="true" tabindex="-1"></a>  ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-4-18"><a href="#annotated-cell-4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, time, t_outcome, t_treat, t_censor, censor, event, assign, enter, exit, <span class="fu">everything</span>(), <span class="sc">-</span>fup, <span class="sc">-</span>X_shift, <span class="sc">-</span>log_odds, <span class="sc">-</span>p)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="1,2,3,4,5,6" data-code-annotation="1">Clones assigned to strategy 1 (No treatment)</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="1,2,3,4,5,6" data-code-annotation="1">Clones assigned to strategy 1 (No treatment)</span>
 </dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="7,8,9,11,12" data-code-annotation="2">Clones assigned to strategy 2 (grace window for treatment)</span>
+<span data-code-cell="annotated-cell-4" data-code-lines="7,8,9,11,12" data-code-annotation="2">Clones assigned to strategy 2 (grace window for treatment)</span>
+</dd>
+<dt data-target-cell="annotated-cell-4" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-4" data-code-lines="16" data-code-annotation="3">Update failure times and events counting for artificial censoring</span>
 </dd>
 </dl>
 </div>
@@ -502,23 +498,23 @@ Note
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total treat (ever)</td>
-<td style="text-align: right;">5316</td>
-<td style="text-align: right;">5316</td>
+<td style="text-align: right;">5149</td>
+<td style="text-align: right;">5149</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total treat (t&lt;=12)</td>
-<td style="text-align: right;">1798</td>
-<td style="text-align: right;">1798</td>
+<td style="text-align: right;">1775</td>
+<td style="text-align: right;">1775</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total events</td>
-<td style="text-align: right;">2348</td>
-<td style="text-align: right;">1236</td>
+<td style="text-align: right;">2422</td>
+<td style="text-align: right;">1382</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total censored</td>
-<td style="text-align: right;">5316</td>
-<td style="text-align: right;">7730</td>
+<td style="text-align: right;">5149</td>
+<td style="text-align: right;">7652</td>
 </tr>
 </tbody>
 </table>
@@ -528,17 +524,17 @@ Note
 </div>
 <p>A person-level version of the data is also created (excluded time-varying X) for comparison:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>data_cloned_p <span class="ot">=</span> data_cloned <span class="sc">%&gt;%</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, assign) <span class="sc">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">t_censor =</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  ungroup <span class="sc">%&gt;%</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time =</span> <span class="fu">pmin</span>(t_censor, t_outcome, <span class="dv">60</span>),</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">event =</span> <span class="fu">case_when</span>(</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>           time<span class="sc">==</span>t_censor <span class="sc">~</span> <span class="dv">0</span>, </span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>           time<span class="sc">==</span>t_outcome <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>           T <span class="sc">~</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, assign, t_treat, t_outcome, t_censor, time, event, X, female, age) <span class="sc">%&gt;%</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_cloned_p <span class="ot">=</span> data_cloned <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, assign) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">t_censor =</span> <span class="fu">min</span>(time[censor<span class="sc">==</span><span class="dv">1</span>])) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  ungroup <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time =</span> <span class="fu">pmin</span>(t_censor, t_outcome, <span class="dv">60</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">event =</span> <span class="fu">case_when</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>           time<span class="sc">==</span>t_censor <span class="sc">~</span> <span class="dv">0</span>, </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>           time<span class="sc">==</span>t_outcome <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>           T <span class="sc">~</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, assign, t_treat, t_outcome, t_censor, time, event, X, female, age) <span class="sc">%&gt;%</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
