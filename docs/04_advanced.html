@@ -193,18 +193,9 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#description-of-cohort-table-1" id="toc-description-of-cohort-table-1" class="nav-link active" data-scroll-target="#description-of-cohort-table-1">Description of cohort, “Table 1”</a>
-  <ul class="collapse">
-  <li><a href="#cloning-grace-period" id="toc-cloning-grace-period" class="nav-link" data-scroll-target="#cloning-grace-period">Cloning &amp; Grace Period</a></li>
-  </ul></li>
-  <li><a href="#evaluation-of-target-trial-design" id="toc-evaluation-of-target-trial-design" class="nav-link" data-scroll-target="#evaluation-of-target-trial-design">Evaluation of Target Trial Design</a>
+  <li><a href="#evaluation-of-target-trial-design-elements" id="toc-evaluation-of-target-trial-design-elements" class="nav-link active" data-scroll-target="#evaluation-of-target-trial-design-elements">Evaluation of Target Trial Design Elements</a>
   <ul class="collapse">
   <li><a href="#evaluation-of-grace-period" id="toc-evaluation-of-grace-period" class="nav-link" data-scroll-target="#evaluation-of-grace-period">Evaluation of Grace Period</a></li>
-  </ul></li>
-  <li><a href="#evaluation-of-weighting" id="toc-evaluation-of-weighting" class="nav-link" data-scroll-target="#evaluation-of-weighting">Evaluation of Weighting</a>
-  <ul class="collapse">
-  <li><a href="#weighting-distributions" id="toc-weighting-distributions" class="nav-link" data-scroll-target="#weighting-distributions">Weighting distributions</a></li>
-  <li><a href="#covariate-balance-across-pre--post-weighting-during-follow-up" id="toc-covariate-balance-across-pre--post-weighting-during-follow-up" class="nav-link" data-scroll-target="#covariate-balance-across-pre--post-weighting-during-follow-up">Covariate balance across pre-, post-weighting during follow-up</a></li>
   </ul></li>
   <li><a href="#computational-issues" id="toc-computational-issues" class="nav-link" data-scroll-target="#computational-issues">Computational issues</a>
   <ul class="collapse">
@@ -247,28 +238,12 @@ div.csl-indent {
 </header>
 
 
-<section id="description-of-cohort-table-1" class="level1">
-<h1>Description of cohort, “Table 1”</h1>
-<p>In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e.&nbsp;no p-values or confidence intervals) but will provide a standardized mean difference.</p>
-<p>Some special considerations are needed when presenting target trial emulations.</p>
-<section id="cloning-grace-period" class="level2">
-<h2 class="anchored" data-anchor-id="cloning-grace-period">Cloning &amp; Grace Period</h2>
-<p>The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)</p>
-</section>
-</section>
-<section id="evaluation-of-target-trial-design" class="level1">
-<h1>Evaluation of Target Trial Design</h1>
+<section id="evaluation-of-target-trial-design-elements" class="level1">
+<h1>Evaluation of Target Trial Design Elements</h1>
 <section id="evaluation-of-grace-period" class="level2">
 <h2 class="anchored" data-anchor-id="evaluation-of-grace-period">Evaluation of Grace Period</h2>
-</section>
-</section>
-<section id="evaluation-of-weighting" class="level1">
-<h1>Evaluation of Weighting</h1>
-<section id="weighting-distributions" class="level2">
-<h2 class="anchored" data-anchor-id="weighting-distributions">Weighting distributions</h2>
-</section>
-<section id="covariate-balance-across-pre--post-weighting-during-follow-up" class="level2">
-<h2 class="anchored" data-anchor-id="covariate-balance-across-pre--post-weighting-during-follow-up">Covariate balance across pre-, post-weighting during follow-up</h2>
+<p>The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.</p>
+<p>Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn’t change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results.</p>
 </section>
 </section>
 <section id="computational-issues" class="level1">
@@ -333,9 +308,9 @@ div.csl-indent {
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
            expr   min    lq  mean median    uq   max neval
-       base GLM 2.380 2.400 2.490  2.460 2.460 2.750     5
- GLM with inits 0.815 0.855 0.962  1.020 1.030 1.080     5
-         PARGLM 0.468 0.476 0.520  0.483 0.489 0.684     5</code></pre>
+       base GLM 1.710 1.730 1.820  1.820 1.900 1.950     5
+ GLM with inits 0.650 0.749 0.736  0.754 0.764 0.765     5
+         PARGLM 0.362 0.370 0.371  0.370 0.375 0.378     5</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> significantly outperforms base <code>glm()</code>. This will scale considerably with multiple cores and larger datasets as well.</p>
@@ -524,8 +499,8 @@ Note
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
                  expr  min   lq mean median   uq  max neval
- Resampling bootstrap 2.39 2.46 2.57   2.50 2.72 2.75     5
-    Poisson bootstrap 2.34 2.36 2.38   2.36 2.41 2.44     5</code></pre>
+ Resampling bootstrap 1.83 1.86  1.9   1.92 1.93 1.96     5
+    Poisson bootstrap 1.85 1.87  1.9   1.90 1.90 1.99     5</code></pre>
 </div>
 </div>
 </section>

@@ -589,7 +589,7 @@ Uncensored at end of grace period
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(time)) <span class="sc">+</span></span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
 <span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'SMD'</span>, <span class="at">y =</span> <span class="st">'Variable'</span>,</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>           <span class="at">caption =</span> <span class="st">'weighted differences in uncensored risk set'</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>           <span class="at">caption =</span> <span class="st">'M-dist = Mahalanobis distance for overall groups covariate means'</span>)</span>
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  gg_bal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -615,7 +615,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weighted account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at time-point 12, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).</p>
+<p>You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).</p>
 </div>
 </div>
 </section>
@@ -644,19 +644,6 @@ Note
 <section id="inference-statistics" class="level2">
 <h2 class="anchored" data-anchor-id="inference-statistics">Inference statistics</h2>
 <p>Inferential statistics</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>These variables are generated independently, but in real-life would be correlated…</p>
-</div>
-</div>
 </section>
 </section>
 <section id="references" class="level1">
