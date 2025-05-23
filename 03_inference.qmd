@@ -26,7 +26,7 @@ Some special considerations are needed when presenting target trial emulations.
 
 ## Cloning & Grace Period
 
-The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
+The cloning presents an interesting problem for a “Table 1” because the groups are identical at baseline. Artificial censoring may change the distribution of covariates over time if censoring is correlated with these covariates. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time point. The end of the grace period is a good standard choice. It makes sense to present the time-invariant covariates as well as time-varying covariates.
 
 Assume a simple example where the design of the study includes a baseline period, "time zero" and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur.There being two main periods: 1) Baseline time zero, 2) End of the grace period.
 
@@ -381,7 +381,7 @@ f_cpt_dist = function(dta) {
 ```
 
 ::: callout-note
-You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).
+You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution is advised in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).
 :::
 
 # Uncertainty estimates
@@ -397,6 +397,161 @@ Also consider, bootstrapping may fail to produce valid estimates in cases of mat
 ::: callout-note
 A Poisson bootstrap procedure is used here, see:[Additional Topics](04_advanced.qmd) for some notes on this. 
 :::
+
+Bootstrapping is fairly straightforward, but for specific projects the procedure may need to be modified because of computing resources. Here we execute the entire procedure in one step, but it may make sense for your project to generate a single bootstrapped data first, then run each estimation step sequentially and store the results in a file before executing the next one. This would make sense if 1) one bootstrap takes a very long time, 2) there is a decent chance that the procedure may be interrupted (like a cloud server cuts off user etc.). 
+
+The function generates a frequency weight from a random Poisson distribution with mean=1. This weight is used through the IPW estimation and outcome model steps. 
+
+```{r }
+#| label: boot-func
+#| message: false
+#| warning: false
+boot_ipw = function(x, point=F) {
+  
+  setDT(x)
+  
+  x[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
+
+  if (point) x[, freqwt:=1] # <2>
+
+  # Numerator (margin probability)
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), 
+                 data=x[x$assign==0, ], family=binomial(),
+                 weights = freqwt) # <3>
+  
+  x$pr_censnum = predict(d_glm_wt, newdata = x, type='response') 
+
+  # Denominator 
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t, 
+                 data=x[x$assign==0, ], family=binomial(),
+                 weights = freqwt) # <3>
+  
+  x$pr_censdenom = predict(d_glm_wt, newdata = x, type='response') 
+  
+  x[, ipw := fcase(
+    assign==0 & censor==0, 1 / (1-pr_censdenom), 
+    assign==0 & censor==1, 0,
+    assign==1 & time < 12, 1, 
+    assign==1 & time == 12  & t_treat  < 12, 1, 
+    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_censdenom), 
+    assign==1 & time == 12  & t_treat  >12 & event==0, 0,  
+    assign==1 & time == 12  & t_treat  >12 & event==1, 1,  
+    assign==1 & time > 12, 1 
+  )]
+  
+  x[, marg_ipw := fcase( 
+    assign==0 & censor==0, (1-pr_censnum) / (1-pr_censdenom), 
+    assign==1 & time == 12 & t_treat   ==12 & censor==0, pr_censnum / (pr_censdenom), 
+    default = ipw 
+  )]
+  
+  x[, `:=`(ipw = cumprod(ipw), 
+           marg_ipw = cumprod(marg_ipw)), 
+               by=list(id, assign)] 
+  
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=x[x$assign==1, ], 
+                     family=binomial(), weights = freqwt*ipw) # <4>
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=x[x$assign==0, ], 
+                     family=binomial(), weights = freqwt*ipw) # <4>
+  
+  x$pr_1 = predict(d_glm_pe_1, newdata = x, 
+                              type='response') 
+  x$pr_0 = predict(d_glm_pe_0, newdata = x, 
+                             type='response') 
+
+  x[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  x[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_res = x %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), # <5>
+              pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt), # <5>
+              .groups = 'drop') %>% 
+    ungroup %>%
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res)
+}
+```
+1. The random Poisson draw is representing the number of times that observation would have appeared in dataset resampled with equal size and replacement (i.e. on average would appear 1 time). 
+2. This option allows estimating the point estimate (not bootstrapped).
+3. Note the `freqwt` used in the `glm()` procedure.
+4. Note the `freqwt*ipw` used in the `glm()` procedure.
+5. Note the use of `weighted.mean()` and `freqwt`. 
+
+The function can be run iteratively, with `replicate()` or purrr/furrr or many other options. 
+
+```{r }
+#| label: boot-ests
+#| message: false
+#| warning: false
+
+library(furrr)
+boots = 10
+plan(multisession, workers = 10) # <1>
+
+d_pe = boot_ipw(dta_c_panel, point=T) # <2>
+
+d_boot = future_map(1:boots, 
+                        function(x) boot_ipw(dta_c_panel), 
+                        .options = furrr_options(seed=T)) # <3>
+```
+
+1. Set 10 CPU workers for parallel computation
+2. Obtain point estimates first (no bootstrapping)
+3. Run bootstraps in parallel, note the `furrr_options(seed=T)` is important because of the RNG functions and is needed to ensure reproducibility and some funny quirks of generating random numbers in parallel. See `furrr` for explanation.  
+
+After the bootstraps, summarizing is straightforward as well:
+
+```{r }
+#| label: boot-summ
+#| message: false
+#| warning: false
+#| 
+lci_q = 0.025 # <1>
+uci_q = 0.975 # <1>
+
+d_summ = d_boot %>%
+  bind_rows(., .id = 'boot') %>%
+  group_by(time) %>%
+  summarize(n_boots = n(),
+            pr_ev_1_lci = quantile(pr_ev_1, lci_q),
+            pr_ev_1_uci = quantile(pr_ev_1, uci_q),
+            pr_ev_0_lci = quantile(pr_ev_0, lci_q),
+            pr_ev_0_uci = quantile(pr_ev_0, uci_q),
+            cid_lci = quantile(cid, lci_q),
+            cid_uci = quantile(cid, uci_q),
+            cir_lci = quantile(cir, lci_q),
+            cir_uci = quantile(cir, uci_q)
+            ) %>%
+  inner_join(., d_pe, by='time') # <2>
+```
+
+1. percentile intervals are specified at the conventional points (95%). However any of the typical bootstrapped confidence procedures can be done at this point. 
+2. Joining the computed intervals back with point estimates.  
+
+```{r }
+#| label: boot-tab
+#| tbl-cap: "IPW-adjusted cumulative incidences, differences and relative risks"
+#| tbl-cap-location: top
+#| message: false
+#| warning: false
+#| echo: false
+d_summ %>%
+  dplyr::filter(time %in% c(12, 24, 60)) %>%
+  mutate_all(., ~sprintf('%1.2f', .)) %>%
+  mutate(`Assign=1` = paste0(pr_ev_1, ' (', pr_ev_1_lci, ', ', pr_ev_1_uci, ')'),
+         `Assign=0` = paste0(pr_ev_0, ' (', pr_ev_0_lci, ', ', pr_ev_0_uci, ')'),
+         `CID` = paste0(cid, ' (', cid_lci, ', ', cid_uci, ')'),
+         `RR` = paste0(cir, ' (', cir_lci, ', ', cir_uci, ')')) %>%
+  select(time, `Assign=1`, `Assign=0`, CID, RR) %>%
+  kable(., align = 'c', digits=3) %>%
+  kable_styling()
+```
 
 ## Inference statistics
 

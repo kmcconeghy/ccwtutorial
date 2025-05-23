@@ -92,12 +92,12 @@ set.seed(100)
 n = 10000L # <1>
 fup = 90 # <1>
 
-df = tibble(id = 1:n, 
+df = tibble(id = 1:n, # <2>
             age = round(rnorm(n, mean = 75, sd = 10), 1), # <2> 
             female = sample(c(1, 0), size = n, replace = TRUE, prob = c(0.66, 0.34)), # <2>
             fup = fup, # <2> 
-            X = rnorm(n, 0, sd=1), # <2> 
-            X_shift = rexp(n, rate=0.005)) # <2> 
+            X = rnorm(n, 0, sd=1), # <2>
+            ) # <2> 
   
 setDT(df) 
 d_panel = df[rep(seq(.N), fup)] # <3> 
@@ -110,14 +110,16 @@ d_panel[, time := seq_len(.N), by = list(id)] # <3>
 2. Specify covariates, `age`, `female` and `X`.
 3. Expand dataset, each observation period is an interval of length = 1.
 
-For `X`, further include `X_t` which varies across time. A change in X_t is triggered by intermediate variable `X_shift` which is a random draw from an exponential distribution (meant to represent a time to change in X). So for each person, there is a baseline X, then a random timepoint in follow-up where X changes. 
+For `X`, further include `X_t` which varies across time. A change in X_t is triggered by intermediate variable `X_shift` which is a random binomial draw (meant to represent a triggering event for a change in X). So for each person, there is a baseline X, then random timepoints in follow-up where X changes. 
 
 ```{r }
 #| label: sim-tvarydata
 #| message: false
 #| warning: false
-#| 
-d_panel[, X_t := fifelse(X_shift <= time, X+rnorm(0, n=1), X), by = list(id)] 
+
+d_panel[, X_shift := rbinom(.N, 1, 0.05)]
+d_panel[, X_shift := cumsum(X_shift), by = list(id)]
+d_panel[, X_t := X+(X_shift*(rnorm(1, 0, 1)))]
 ```
 
 ```{r }

@@ -27,6 +27,16 @@ dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 
 # Introduction
 
+## Case Study  
+
+For the following, I simulated a dataset with treatment, `treat` or A, and treatment strategy `assign` which is either 1) receive treatment by time period 12, or 2) never receive treatment through follow-up. The outcome `Y` is designed to be a function of `treat`, `X`, `age` and gender (`female`). While initiation of treatment is a function of `X` only. `X` is recorded as the baseline value at time zero, and `X_t` which varies across time. 
+
+So the naive estimate, not adjusting for `X` should identify a positive association between treatment and outcome, while adjustment for `X` and `X_t` should find a null association. This data and assumptions are used to validate the code procedures below.  
+
+See: [Data](01_syndata.v2.qmd) for full explanation of procedure for generating data.  
+
+## Stepwise approach
+
 I recommend the following stepwise procedure in estimation:
 
 PLR
@@ -698,7 +708,7 @@ kables(
 ))
 
 ```
-Note. The IPW-PLR finds a null effect, and similar results to a time-depedent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.
+Note. The IPW-PLR finds a null effect, and similar results to a time-dependent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.
 
 # References
 
