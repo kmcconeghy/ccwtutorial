@@ -26,25 +26,13 @@ set.seed(42)
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 ```
 
-# Description of cohort, “Table 1”
-
-In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e. no p-values or confidence intervals) but will provide a standardized mean difference.
-
-Some special considerations are needed when presenting target trial emulations.
-
-## Cloning & Grace Period
-
-The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
-
-# Evaluation of Target Trial Design
+# Evaluation of Target Trial Design Elements  
 
 ## Evaluation of Grace Period
 
-# Evaluation of Weighting
+The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases. 
 
-## Weighting distributions
-
-## Covariate balance across pre-, post-weighting during follow-up
+Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn't change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results. 
 
 # Computational issues
 

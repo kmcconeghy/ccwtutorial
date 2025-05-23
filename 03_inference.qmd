@@ -9,6 +9,7 @@ bibliography: references.bib
 #| message: false
 #| 
 library(here)
+library(purrr)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
@@ -17,13 +18,19 @@ set.seed(42)
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 ```
 
-# Description of the cohort
+# Description of cohort, “Table 1”
 
-If the design of the study includes a baseline period, "time zero" and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur then the presentation of group characteristics is a little different from the typical trial or cohort study.
+In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e. no p-values or confidence intervals) but will provide a standardized mean difference.
 
-There being two main periods: 1) Baseline time zero, 2) End of the grace period.
+Some special considerations are needed when presenting target trial emulations.
 
-So here is one approach:
+## Cloning & Grace Period
+
+The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)
+
+Assume a simple example where the design of the study includes a baseline period, "time zero" and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur.There being two main periods: 1) Baseline time zero, 2) End of the grace period.
+
+Here is one approach:
 
 1.  Present the baseline characteristics for everyone (prior to cloning) at time zero.
 2.  Present the characteristics for both treatment groups at the end of the grace period.
@@ -32,20 +39,21 @@ This would lead to a "Table 1" with three columns.
 
 ## Table 1
 
+Many R packages will construct a "Table 1" for users. I manually code below for transparency. 
+
 ```{r }
 #| label: tab-1
-#| tbl-cap-location: top
-#| tbl-cap: "Table 1. Example of presentation of characteristics of a CCW Cohort"
-#| echo: FALSE
 #| warning: FALSE
+
+# Many packages can do this for you, I write out manually for transparency
 
 d_cbase = dta_c_panel %>%
   # Take one obs for the baseline column
   dplyr::filter(time==1 & assign==1 & censor==0) %>%
-  summarize(N = n(),
+  summarize(N = prettyNum(n(), big.mark=','),
             X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
             X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
-            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Age, years (SD)`  = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
             `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
                                         ' (', round(mean(female)*100,1), ')')) %>%
   t()
@@ -53,10 +61,10 @@ d_cbase = dta_c_panel %>%
 d_c0 = dta_c_panel %>%
   # End of grace period
   dplyr::filter(time==12 & assign==0 & censor==0) %>%
-  summarize(N = n(),
+  summarize(N = prettyNum(n(), big.mark=','),
             X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
             X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
-            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Age, years (SD)`  = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
             `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
                                         ' (', round(mean(female)*100,1), ')')) %>%
   t()
@@ -64,17 +72,24 @@ d_c0 = dta_c_panel %>%
 d_c1 = dta_c_panel %>%
   # End of grace period
   dplyr::filter(time==12 & assign==1 & censor==0) %>%
-  summarize(N = n(),
+  summarize(N = prettyNum(n(), big.mark=','),
             X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
             X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
-            `Age (years)` = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
+            `Age, years (SD)`  = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
             `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
                                         ' (', round(mean(female)*100,1), ')')) %>%
   t()
-  
 
-bind_cols(Variables = c('N', 'X', 'Xt', 'Age (years)', 'Gender, female'),
-          `Baseline` = d_cbase, `Assign=0` = d_c0, `Assign=1` = d_c1) %>%
+d_tab1 = bind_cols(Variables = c('N', 'X, mean (SD)', 'Xt, mean (SD)', 'Age (years)', 'Gender, female'),
+          `Baseline` = d_cbase, `Assign=0` = d_c0, `Assign=1` = d_c1) 
+```
+
+```{r }
+#| label: tab-1-kable
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1. Example of presentation of characteristics of a CCW Cohort"
+#| echo: false
+d_tab1 %>%
   kable(, align = 'c') %>%
   kable_styling() %>%
   add_header_above(c(" " = 2, "Uncensored at end of grace period" = 2))
@@ -82,22 +97,296 @@ bind_cols(Variables = c('N', 'X', 'Xt', 'Age (years)', 'Gender, female'),
 
 ## Presentation of weighted differences
 
-Most analyses would provide the naive differences between groups, and then present some adjusted difference. Most commonly the standardized mean differences (aSMD) or a P-value from a univariate test (not recommended).
+Most researchers would provide the naive differences between groups, and then present some adjusted difference. Most commonly the standardized mean differences (aSMD) or a P-value from a univariate test (not recommended).
 
 So you could add one column for the SMD to the "Table 1", but there are also other approaches such as reporting Mahalanobis distance.
 
 ### Computation of distances
 
+```{r }
+#| label: tab-1-smd
+#| warning: FALSE
+#| 
+d_smd = dta_c_panel %>%
+  dplyr::filter(time==12 & censor==0) %>%
+  summarize(`X, mean (SD)` = (mean(X[assign==1]) - mean(X[assign==0])) / sd(X),
+            `Xt, mean (SD)` = (mean(X_t[assign==1]) - mean(X_t[assign==0])) / sd(X_t),
+            `Age, years (SD)`  = (mean(age[assign==1]) - mean(age[assign==0])) / sd(age),
+            `Gender, female` = (mean(female[assign==1]) - mean(female[assign==0])) / sd(female)
+         ) %>%
+  t() %>%
+  as_tibble(rownames = 'Variable') %>%
+  rename(`aSMD` = V1)
+
+d_tab1 = left_join(d_tab1, d_smd, by=c('Variables' = 'Variable'))
+```
+
+```{r }
+#| label: tab-1-mahdist
+#| warning: FALSE
+#| 
+
+# Compute pooled covariance matrix
+cov_pooled <- (var(dta_c_panel[dta_c_panel$assign==1, c('X', 'X_t', 'age', 'female')]) + 
+                 var(dta_c_panel[dta_c_panel$assign==0, c('X', 'X_t', 'age', 'female')])) / 2
+
+# Compute Mahalanobis distance
+mahal_dist <- mahalanobis(colMeans(dta_c_panel[dta_c_panel$assign==1, 
+                                               c('X', 'X_t', 'age', 'female')]), 
+                          center = colMeans(dta_c_panel[dta_c_panel$assign==0, 
+                                                        c('X', 'X_t', 'age', 'female')]), 
+                          cov = cov_pooled)
+```
+
 ### Table 1 with differences
 
 ```{r }
+#| label: tab-1-smd-kable
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1 + aSMD (unweighted)"
+#| echo: false
+#| 
+  
+kable(d_tab1, align = 'c', digits=3) %>%
+  kable_styling() %>%
+  add_header_above(c(" " = 2, "Uncensored at end of grace period" = 3)) 
+```
+Note: `r paste0("Mahalanobis distance between groups, ", 'Naive: ', round(mahal_dist, 3))`
 
+### Table 1 with weighted differences
+
+::: callout-note
+See [Estimators](02_est.v2.qmd) for full description of weight estimation
+:::
+
+```{r }
+#| label: est-wts
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1 + aSMD (unweighted)"
+#| echo: false
+
+ # Numerator (margin probability)
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), # <1>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
+  
+  dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
+
+  # Denominator 
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t, # <2>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <2>
+  
+  dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+  
+  #| label: cpt-weights
+  setDT(dta_c_panel)
+  
+  dta_c_panel[, ipw := fcase(
+    assign==0 & censor==0, 1 / (1-pr_censdenom), # <1>
+    assign==0 & censor==1, 0,
+    assign==1 & time < 12, 1, # <2>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <3> 
+    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_censdenom), # <4> 
+    assign==1 & time == 12  & t_treat  >12 & event==0, 0, # <5> 
+    assign==1 & time == 12  & t_treat  >12 & event==1, 1, # <6> 
+    assign==1 & time > 12, 1 # <7>
+  )]
+  
+  dta_c_panel[, marg_ipw := fcase( # <8>
+    assign==0 & censor==0, (1-pr_censnum) / (1-pr_censdenom), # <8>
+    assign==1 & time == 12 & t_treat   ==12 & censor==0, pr_censnum / (pr_censdenom), # <8>
+    default = ipw # <8>
+  )]
+  
+  dta_c_panel[, `:=`(ipw = cumprod(ipw), # <9>
+                     marg_ipw = cumprod(marg_ipw)), # <9>
+               by=list(id, assign)] # <9>
 
 ```
 
+```{r }
+#| label: tab1-smd-wts
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1 + aSMD (unweighted)"
+#| echo: false
+#| 
+d_smd_wt = dta_c_panel %>%
+  # End of grace period
+  dplyr::filter(time==12 & censor==0) %>%
+  summarize(`X, mean (SD)` = (weighted.mean(X[assign==1], w = ipw[assign==1]) - 
+                     weighted.mean(X[assign==0], w = ipw[assign==0])) / sd(X),
+            `Xt, mean (SD)`  = (weighted.mean(X_t[assign==1], w = ipw[assign==1]) - 
+                      weighted.mean(X_t[assign==0], w = ipw[assign==0])) / sd(X_t),
+            `Age, years (SD)` = (weighted.mean(age[assign==1], w = ipw[assign==1]) - 
+                               weighted.mean(age[assign==0], w = ipw[assign==0])) / sd(age),
+            `Gender, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
+                                  weighted.mean(female[assign==0], w = ipw[assign==0])) / sd(female)
+         ) %>%
+  t() %>%
+  as_tibble(rownames = 'Variable') %>%
+  rename(`IPW aSMD` = V1)
+
+# Compute pooled covariance matrix
+cov_pooled <- (var(dta_c_panel[dta_c_panel$assign==1, c('X', 'X_t', 'age', 'female')]) + 
+                 var(dta_c_panel[dta_c_panel$assign==0, c('X', 'X_t', 'age', 'female')])) / 2
+
+# Compute Mahalanobis distance
+grp_1_mn = dta_c_panel %>%
+  # End of grace period
+  dplyr::filter(time==12 & censor==0 & assign==1) %>%
+  summarize(X = weighted.mean(X, w = ipw),
+            X_t = weighted.mean(X_t, w = ipw),
+            age = weighted.mean(age, w = ipw),
+            female = weighted.mean(female, w = ipw))
+
+grp_0_mn = dta_c_panel %>%
+  # End of grace period
+  dplyr::filter(time==12 & censor==0 & assign==0) %>%
+  summarize(X = weighted.mean(X, w = ipw),
+            X_t = weighted.mean(X_t, w = ipw),
+            age = weighted.mean(age, w = ipw),
+            female = weighted.mean(female, w = ipw))
+
+wt_mahal_dist <- mahalanobis(unlist(grp_1_mn), 
+                          center = unlist(grp_0_mn), 
+                          cov = cov_pooled)
+
+d_tab1 = left_join(d_tab1, d_smd_wt, by = c('Variables' = 'Variable')) 
+```
+
+```{r }
+#| label: tab-1-smdwtd-kable
+#| tbl-cap-location: top
+#| tbl-cap: "Table 1 + aSMD (unweighted)"
+#| echo: false
+#| 
+kable(d_tab1, align = 'c') %>%
+  kable_styling() %>%
+  add_header_above(c(" " = 2, "Uncensored at end of grace period" = 4)) 
+```
+
+Note. `r paste0("Mahalanobis distance between groups, ", 'Naive: ', round(mahal_dist, 3), ', IPW: ', round(wt_mahal_dist, 3))`
+
+## Figure of differences across time  
+
+These differences can also be presented in a modified "Love" plot, with panels for each period of follow-up. It doesn't really make sense to do one at baseline because the differences will be small/none. But we can pick a few follow-up periods to evaluate:  
+
+```{r }
+#| label: mk-funcs
+#| message: false
+#| warning: false
+#| echo: false
+f_cpt_dist_wt = function(dta) {
+  
+  d_dist = dta %>%
+  summarize(`X, mean (SD)` = (weighted.mean(X[assign==1], w = ipw[assign==1]) - 
+                     weighted.mean(X[assign==0], w = ipw[assign==0])) / sd(X),
+            `Xt, mean (SD)`  = (weighted.mean(X_t[assign==1], w = ipw[assign==1]) - 
+                      weighted.mean(X_t[assign==0], w = ipw[assign==0])) / sd(X_t),
+            `Age, years (SD)` = (weighted.mean(age[assign==1], w = ipw[assign==1]) - 
+                               weighted.mean(age[assign==0], w = ipw[assign==0])) / sd(age),
+            `Gender, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
+                                  weighted.mean(female[assign==0], w = ipw[assign==0])) / sd(female)
+         ) %>%
+  t() %>%
+  as_tibble(rownames = 'Variable') %>%
+  rename(`SMD` = V1)
+
+  cov_pooled <- (var(dta[dta$assign==1, c('X', 'X_t', 'age', 'female')]) + 
+                   var(dta[dta$assign==0, c('X', 'X_t', 'age', 'female')])) / 2
+
+  grp_1_mn = dta %>%
+    dplyr::filter(assign==1) %>%
+    summarize(X = weighted.mean(X, w = ipw),
+              X_t = weighted.mean(X_t, w = ipw),
+              age = weighted.mean(age, w = ipw),
+              female = weighted.mean(female, w = ipw))
+
+  grp_0_mn = dta %>%
+    dplyr::filter(assign==0) %>%
+    summarize(X = weighted.mean(X, w = ipw),
+              X_t = weighted.mean(X_t, w = ipw),
+              age = weighted.mean(age, w = ipw),
+              female = weighted.mean(female, w = ipw))
+
+  wt_mahal_dist <- mahalanobis(unlist(grp_1_mn), 
+                            center = unlist(grp_0_mn), 
+                            cov = cov_pooled)
+  
+  bind_rows(d_dist, 
+                     tibble(Variable = 'M-dist', `SMD` = wt_mahal_dist))
+  
+}
+
+f_cpt_dist = function(dta) {
+  
+  d_dist = dta %>%
+  summarize(`X, mean (SD)` = (mean(X[assign==1]) - mean(X[assign==0])) / sd(X),
+            `Xt, mean (SD)` = (mean(X_t[assign==1]) - mean(X_t[assign==0])) / sd(X_t),
+            `Age, years (SD)`  = (mean(age[assign==1]) - mean(age[assign==0])) / sd(age),
+            `Gender, female` = (mean(female[assign==1]) - mean(female[assign==0])) / sd(female)
+         ) %>%
+  t() %>%
+  as_tibble(rownames = 'Variable') %>%
+  rename(`SMD` = V1)
+    
+  cov_pooled <- (var(dta[dta$assign==1, c('X', 'X_t', 'age', 'female')]) + 
+                     var(dta[dta$assign==0, c('X', 'X_t', 'age', 'female')])) / 2
+
+  mahal_dist <- mahalanobis(colMeans(dta[dta$assign==1, 
+                                                 c('X', 'X_t', 'age', 'female')]), 
+                            center = colMeans(dta[dta$assign==0, 
+                                                          c('X', 'X_t', 'age', 'female')]), 
+                            cov = cov_pooled)
+  
+  bind_rows(d_dist, tibble(Variable = 'M-dist', `SMD` = mahal_dist)) 
+
+}
+```
+
+```{r }
+#| label: fig-1-smdwtd
+#| fig-cap-location: top
+#| fig-cap: "Baseline and Time-varying Differences by Treatment Group"
+#| message: false
+#| warning: false
+# aSMD Figure ----
+  i_SMD_grps = c(12, 24, 60)
+
+  d_time = dta_c_panel %>%
+    dplyr::filter(time %in% c(i_SMD_grps) & censor==0) %>%
+    nest(.by = time) 
+  
+  d_time$SMD_naive = map(d_time$data, ~f_cpt_dist(.))
+  d_time$SMD_ipw = map(d_time$data, ~f_cpt_dist_wt(.))
+  
+  gg_bal = select(d_time, time, SMD_naive, SMD_ipw) %>%
+    unnest() %>%
+    select(-Variable1) %>%
+    rename(`Naive` = SMD,
+           `IPW` = SMD1) %>%
+      pivot_longer(cols = c('Naive', 'IPW'), 
+                   names_to = 'Model', values_to = 'SMD') %>% 
+      mutate(flag = if_else(abs(SMD)>0.1, cbbPalette[1], cbbPalette[2])) %>%
+      ggplot(., aes(y = Variable, x = SMD, group = Model)) +
+      geom_point(aes(shape=Model, color = flag), size=1.8) +
+      geom_vline(xintercept = 0, linetype=2) +
+      geom_vline(xintercept = 0.2, linetype=2, color=cbbPalette[3]) +
+      scale_color_identity() + 
+      facet_grid(cols = vars(time)) +
+      theme_classic() +
+      labs(x = 'SMD', y = 'Variable',
+           caption = 'M-dist = Mahalanobis distance for overall groups covariate means')
+  
+  gg_bal
+```
+
+::: callout-note
+You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).
+:::
+
 # Uncertainty estimates
 
-Several steps in the analysis makes the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights should be considered.
+Several steps in the analysis make the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights must be accounted for.
 
 Currently, most researchers are using bootstrapping to obtain confidence limits via percentile method. It is critical that: 1. The bootstrapping step occur prior to sequential repeated sampling, cloning or estimation of weights 2. The bootstrap sampling with replacement must be at the cluster-level (person).
 
@@ -112,9 +401,5 @@ A Poisson bootstrap procedure is used here, see:[Additional Topics](04_advanced.
 ## Inference statistics
 
 Inferential statistics
-
-::: callout-note
-These variables are generated independently, but in real-life would be correlated...
-:::
 
 # References
