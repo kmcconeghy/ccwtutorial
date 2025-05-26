@@ -54,7 +54,7 @@ d_cbase = dta_c_panel %>%
             X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
             X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
             `Age, years (SD)`  = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
-            `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
+            `Sex, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
                                         ' (', round(mean(female)*100,1), ')')) %>%
   t()
 
@@ -76,11 +76,11 @@ d_c1 = dta_c_panel %>%
             X = paste0(round(mean(X), 2), ' (', round(sd(X), 2), ')'),
             X_t = paste0(round(mean(X_t), 2), ' (', round(sd(X_t), 2), ')'),
             `Age, years (SD)`  = paste0(floor(mean(age)), ' (', floor(sd(age)), ')'),
-            `Gender, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
+            `Sex, % Female` = paste0(prettyNum(sum(female==1), big.mark = ','), 
                                         ' (', round(mean(female)*100,1), ')')) %>%
   t()
 
-d_tab1 = bind_cols(Variables = c('N', 'X, mean (SD)', 'Xt, mean (SD)', 'Age (years)', 'Gender, female'),
+d_tab1 = bind_cols(Variables = c('N', 'X, mean (SD)', 'Xt, mean (SD)', 'Age, years (SD)', 'Sex, female'),
           `Baseline` = d_cbase, `Assign=0` = d_c0, `Assign=1` = d_c1) 
 ```
 
@@ -112,7 +112,7 @@ d_smd = dta_c_panel %>%
   summarize(`X, mean (SD)` = (mean(X[assign==1]) - mean(X[assign==0])) / sd(X),
             `Xt, mean (SD)` = (mean(X_t[assign==1]) - mean(X_t[assign==0])) / sd(X_t),
             `Age, years (SD)`  = (mean(age[assign==1]) - mean(age[assign==0])) / sd(age),
-            `Gender, female` = (mean(female[assign==1]) - mean(female[assign==0])) / sd(female)
+            `Sex, female` = (mean(female[assign==1]) - mean(female[assign==0])) / sd(female)
          ) %>%
   t() %>%
   as_tibble(rownames = 'Variable') %>%
@@ -218,7 +218,7 @@ d_smd_wt = dta_c_panel %>%
                       weighted.mean(X_t[assign==0], w = ipw[assign==0])) / sd(X_t),
             `Age, years (SD)` = (weighted.mean(age[assign==1], w = ipw[assign==1]) - 
                                weighted.mean(age[assign==0], w = ipw[assign==0])) / sd(age),
-            `Gender, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
+            `Sex, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
                                   weighted.mean(female[assign==0], w = ipw[assign==0])) / sd(female)
          ) %>%
   t() %>%
@@ -259,7 +259,7 @@ d_tab1 = left_join(d_tab1, d_smd_wt, by = c('Variables' = 'Variable'))
 #| tbl-cap: "Table 1 + aSMD (unweighted)"
 #| echo: false
 #| 
-kable(d_tab1, align = 'c') %>%
+kable(d_tab1, align = 'c', digits=3) %>%
   kable_styling() %>%
   add_header_above(c(" " = 2, "Uncensored at end of grace period" = 4)) 
 ```
@@ -284,7 +284,7 @@ f_cpt_dist_wt = function(dta) {
                       weighted.mean(X_t[assign==0], w = ipw[assign==0])) / sd(X_t),
             `Age, years (SD)` = (weighted.mean(age[assign==1], w = ipw[assign==1]) - 
                                weighted.mean(age[assign==0], w = ipw[assign==0])) / sd(age),
-            `Gender, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
+            `Sex, female` = (weighted.mean(female[assign==1], w = ipw[assign==1]) - 
                                   weighted.mean(female[assign==0], w = ipw[assign==0])) / sd(female)
          ) %>%
   t() %>%
@@ -491,7 +491,7 @@ The function can be run iteratively, with `replicate()` or purrr/furrr or many o
 #| warning: false
 
 library(furrr)
-boots = 10
+boots = 20
 plan(multisession, workers = 10) # <1>
 
 d_pe = boot_ipw(dta_c_panel, point=T) # <2>

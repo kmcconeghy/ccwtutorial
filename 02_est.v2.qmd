@@ -33,7 +33,7 @@ For the following, I simulated a dataset with treatment, `treat` or A, and treat
 
 So the naive estimate, not adjusting for `X` should identify a positive association between treatment and outcome, while adjustment for `X` and `X_t` should find a null association. This data and assumptions are used to validate the code procedures below.  
 
-See: [Data](01_syndata.v2.qmd) for full explanation of procedure for generating data.  
+See: [Data](01_syndata.v3.qmd) for full explanation of procedure for generating data.  
 
 ## Stepwise approach
 

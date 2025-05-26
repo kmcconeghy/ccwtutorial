@@ -250,12 +250,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">10000</span>L</span>
 <span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>fup <span class="ot">=</span> <span class="dv">90</span></span>
 <span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n, </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-6" class="code-annotation-target"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">age =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">75</span>, <span class="at">sd =</span> <span class="dv">10</span>), <span class="dv">1</span>),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-5" class="code-annotation-target"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>n,</span>
+<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">age =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">75</span>, <span class="at">sd =</span> <span class="dv">10</span>), <span class="dv">1</span>),</span>
 <span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">female =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">size =</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.66</span>, <span class="fl">0.34</span>)),</span>
 <span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">fup =</span> fup,</span>
 <span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="at">sd=</span><span class="dv">1</span>),</span>
-<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_shift =</span> <span class="fu">rexp</span>(n, <span class="at">rate=</span><span class="fl">0.005</span>))</span>
+<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>            )</span>
 <span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(df) </span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-13" class="code-annotation-target"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>d_panel <span class="ot">=</span> df[<span class="fu">rep</span>(<span class="fu">seq</span>(.N), fup)]</span>
@@ -270,7 +270,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="6,7,8,9,10" data-code-annotation="2">Specify covariates, <code>age</code>, <code>female</code> and <code>X</code>.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="5,6,7,8,9,10" data-code-annotation="2">Specify covariates, <code>age</code>, <code>female</code> and <code>X</code>.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
 <dd>
@@ -279,9 +279,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </dl>
 </div>
 </div>
-<p>For <code>X</code>, further include <code>X_t</code> which varies across time. A change in X_t is triggered by intermediate variable <code>X_shift</code> which is a random draw from an exponential distribution (meant to represent a time to change in X). So for each person, there is a baseline X, then a random timepoint in follow-up where X changes.</p>
+<p>For <code>X</code>, further include <code>X_t</code> which varies across time. A change in X_t is triggered by intermediate variable <code>X_shift</code> which is a random binomial draw (meant to represent a triggering event for a change in X). So for each person, there is a baseline X, then random timepoints in follow-up where X changes.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_panel[, X_t <span class="sc">:</span><span class="er">=</span> <span class="fu">fifelse</span>(X_shift <span class="sc">&lt;=</span> time, X<span class="sc">+</span><span class="fu">rnorm</span>(<span class="dv">0</span>, <span class="at">n=</span><span class="dv">1</span>), X), by <span class="ot">=</span> <span class="fu">list</span>(id)] </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_panel[, X_shift <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fl">0.05</span>)]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>d_panel[, X_shift <span class="sc">:</span><span class="er">=</span> <span class="fu">cumsum</span>(X_shift), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>d_panel[, X_t <span class="sc">:</span><span class="er">=</span> X<span class="sc">+</span>(X_shift<span class="sc">*</span>(<span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell fig-cap-location-top">
 <div class="cell-output-display">
@@ -349,7 +351,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      18      48     Inf     Inf     Inf </code></pre>
+      1      19      49     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 </section>
@@ -358,7 +360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      57      76     Inf     Inf     Inf </code></pre>
+      1      58      77     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 <div class="cell fig-cap-location-top">
@@ -388,17 +390,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Summary of survival dataset</h1>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 484,775
+<pre><code>Rows: 486,944
 Columns: 16
 $ id        &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 $ age       &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, …
 $ female    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 $ fup       &lt;dbl&gt; 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, …
 $ X         &lt;dbl&gt; -0.7311102, -0.7311102, -0.7311102, -0.7311102, -0.7311102, …
-$ X_shift   &lt;dbl&gt; 37.27515, 37.27515, 37.27515, 37.27515, 37.27515, 37.27515, …
 $ exit      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
 $ enter     &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
 $ time      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
+$ X_shift   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, …
 $ X_t       &lt;dbl&gt; -0.7311102, -0.7311102, -0.7311102, -0.7311102, -0.7311102, …
 $ log_odds  &lt;dbl&gt; -5.502477, -5.492577, -5.482077, -5.470977, -5.459277, -5.44…
 $ p         &lt;dbl&gt; 0.004060109, 0.004100338, 0.004143439, 0.004189494, 0.004238…
@@ -498,23 +500,23 @@ Note
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total treat (ever)</td>
-<td style="text-align: right;">5149</td>
-<td style="text-align: right;">5149</td>
+<td style="text-align: right;">5116</td>
+<td style="text-align: right;">5116</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total treat (t&lt;=12)</td>
-<td style="text-align: right;">1775</td>
-<td style="text-align: right;">1775</td>
+<td style="text-align: right;">1768</td>
+<td style="text-align: right;">1768</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total events</td>
-<td style="text-align: right;">2422</td>
-<td style="text-align: right;">1382</td>
+<td style="text-align: right;">2380</td>
+<td style="text-align: right;">1364</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total censored</td>
-<td style="text-align: right;">5149</td>
-<td style="text-align: right;">7652</td>
+<td style="text-align: right;">5116</td>
+<td style="text-align: right;">7659</td>
 </tr>
 </tbody>
 </table>

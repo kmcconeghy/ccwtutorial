@@ -222,7 +222,11 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#case-study" id="toc-case-study" class="nav-link" data-scroll-target="#case-study">Case Study</a></li>
+  <li><a href="#stepwise-approach" id="toc-stepwise-approach" class="nav-link" data-scroll-target="#stepwise-approach">Stepwise approach</a></li>
+  </ul></li>
   <li><a href="#kaplan-meier-estimator" id="toc-kaplan-meier-estimator" class="nav-link" data-scroll-target="#kaplan-meier-estimator">Kaplan-Meier Estimator</a>
   <ul class="collapse">
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
@@ -277,6 +281,14 @@ window.Quarto = {
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
+<section id="case-study" class="level2">
+<h2 class="anchored" data-anchor-id="case-study">Case Study</h2>
+<p>For the following, I simulated a dataset with treatment, <code>treat</code> or A, and treatment strategy <code>assign</code> which is either 1) receive treatment by time period 12, or 2) never receive treatment through follow-up. The outcome <code>Y</code> is designed to be a function of <code>treat</code>, <code>X</code>, <code>age</code> and gender (<code>female</code>). While initiation of treatment is a function of <code>X</code> only. <code>X</code> is recorded as the baseline value at time zero, and <code>X_t</code> which varies across time.</p>
+<p>So the naive estimate, not adjusting for <code>X</code> should identify a positive association between treatment and outcome, while adjustment for <code>X</code> and <code>X_t</code> should find a null association. This data and assumptions are used to validate the code procedures below.</p>
+<p>See: <a href="./01_syndata.v3.html">Data</a> for full explanation of procedure for generating data.</p>
+</section>
+<section id="stepwise-approach" class="level2">
+<h2 class="anchored" data-anchor-id="stepwise-approach">Stepwise approach</h2>
 <p>I recommend the following stepwise procedure in estimation:</p>
 <dl>
 <dt>PLR</dt>
@@ -343,6 +355,7 @@ Note
 </div>
 </div>
 </section>
+</section>
 <section id="kaplan-meier-estimator" class="level1">
 <h1>Kaplan-Meier Estimator</h1>
 <p>A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is “naive” in that the artificial censoring is not considered, it is useful for the following reasons:</p>
@@ -361,7 +374,7 @@ Columns: 10
 $ id        &lt;int&gt; 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10…
 $ assign    &lt;dbl&gt; 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, …
 $ t_treat   &lt;dbl&gt; Inf, Inf, 20, 20, Inf, Inf, 22, 22, 16, 16, Inf, Inf, 24, 24…
-$ t_outcome &lt;dbl&gt; 46, 46, Inf, Inf, 77, 77, Inf, Inf, 73, 73, 87, 87, 60, 60, …
+$ t_outcome &lt;dbl&gt; 46, 46, Inf, Inf, 77, 77, Inf, Inf, 73, 73, 87, 87, 67, 67, …
 $ t_censor  &lt;dbl&gt; Inf, 12, 20, 12, Inf, 12, 22, 12, 16, 12, Inf, 12, 24, 12, 1…
 $ time      &lt;dbl&gt; 46, 12, 20, 12, 60, 12, 22, 12, 16, 12, 60, 12, 24, 12, 14, …
 $ event     &lt;dbl&gt; 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
@@ -895,8 +908,8 @@ $ age       &lt;dbl&gt; 70.0, 70.0, 76.3, 76.3, 74.2, 74.2, 83.9, 83.9, 76.2, 76
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="label">X</td>
-<td class="gt_row gt_center" headers="estimate">1.90</td>
-<td class="gt_row gt_center" headers="conf.low">1.84, 1.97</td>
+<td class="gt_row gt_center" headers="estimate">1.92</td>
+<td class="gt_row gt_center" headers="conf.low">1.86, 1.99</td>
 <td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
 </tr>
 </tbody><tfoot class="gt_sourcenotes">
@@ -1216,7 +1229,7 @@ Note
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  1.000   1.000   1.148   1.922   1.496 159.935 </code></pre>
+  1.000   1.000   1.149   1.933   1.494 163.031 </code></pre>
 </div>
 </div>
 </section>
@@ -1225,7 +1238,7 @@ Note
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.3632  0.9531  1.0000  0.9923  1.0006  5.2056 </code></pre>
+ 0.3825  0.9523  1.0000  0.9925  1.0006  5.1434 </code></pre>
 </div>
 </div>
 <p>The unstabilized weights floor at 1, and we see high weights assigned to some. The marginal weights have a mean of 1 (expected).</p>
@@ -1237,7 +1250,7 @@ Note
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  1.000   1.000   1.000   5.234   1.000 159.935 </code></pre>
+  1.000   1.000   1.000   5.344   1.000 163.031 </code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -1308,31 +1321,31 @@ Note
 <tbody>
 <tr class="odd">
 <td style="text-align: center;">1</td>
-<td style="text-align: center;">9829</td>
+<td style="text-align: center;">9830</td>
 <td style="text-align: center;">10000</td>
-<td style="text-align: center;">9999</td>
+<td style="text-align: center;">10000</td>
 <td style="text-align: center;">10000</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">12</td>
-<td style="text-align: center;">7652</td>
-<td style="text-align: center;">1712</td>
-<td style="text-align: center;">9344</td>
-<td style="text-align: center;">8961</td>
+<td style="text-align: center;">7659</td>
+<td style="text-align: center;">1708</td>
+<td style="text-align: center;">9342</td>
+<td style="text-align: center;">9128</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">30</td>
-<td style="text-align: center;">5094</td>
-<td style="text-align: center;">1469</td>
-<td style="text-align: center;">8207</td>
-<td style="text-align: center;">7862</td>
+<td style="text-align: center;">5143</td>
+<td style="text-align: center;">1468</td>
+<td style="text-align: center;">8241</td>
+<td style="text-align: center;">8023</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">60</td>
-<td style="text-align: center;">2469</td>
-<td style="text-align: center;">971</td>
-<td style="text-align: center;">5830</td>
-<td style="text-align: center;">5564</td>
+<td style="text-align: center;">2544</td>
+<td style="text-align: center;">983</td>
+<td style="text-align: center;">5937</td>
+<td style="text-align: center;">5804</td>
 </tr>
 </tbody>
 </table>
@@ -1452,7 +1465,7 @@ PLR-Stab-Wtd
 0.032
 </td>
 <td style="text-align:center;">
-0.034
+0.035
 </td>
 <td style="text-align:center;">
 0.027
@@ -1475,10 +1488,10 @@ PLR-Stab-Wtd
 0.069
 </td>
 <td style="text-align:center;">
-0.057
+0.056
 </td>
 <td style="text-align:center;">
-0.072
+0.073
 </td>
 <td style="text-align:center;">
 0.072
@@ -1489,19 +1502,19 @@ PLR-Stab-Wtd
 36
 </td>
 <td style="text-align:center;">
-0.214
+0.209
 </td>
 <td style="text-align:center;">
-0.214
+0.209
 </td>
 <td style="text-align:center;">
-0.196
+0.191
 </td>
 <td style="text-align:center;">
-0.232
+0.226
 </td>
 <td style="text-align:center;">
-0.232
+0.226
 </td>
 </tr>
 <tr>
@@ -1509,19 +1522,19 @@ PLR-Stab-Wtd
 60
 </td>
 <td style="text-align:center;">
-0.385
+0.376
 </td>
 <td style="text-align:center;">
-0.385
+0.376
 </td>
 <td style="text-align:center;">
-0.382
+0.372
 </td>
 <td style="text-align:center;">
-0.426
+0.416
 </td>
 <td style="text-align:center;">
-0.426
+0.416
 </td>
 </tr>
 </tbody>
@@ -1584,10 +1597,10 @@ PLR-Stab-Wtd
 12
 </td>
 <td style="text-align:center;">
-0.066
+0.065
 </td>
 <td style="text-align:center;">
-0.068
+0.067
 </td>
 <td style="text-align:center;">
 0.056
@@ -1596,7 +1609,7 @@ PLR-Stab-Wtd
 0.066
 </td>
 <td style="text-align:center;">
-0.071
+0.070
 </td>
 </tr>
 <tr>
@@ -1604,19 +1617,19 @@ PLR-Stab-Wtd
 36
 </td>
 <td style="text-align:center;">
+0.247
+</td>
+<td style="text-align:center;">
+0.238
+</td>
+<td style="text-align:center;">
+0.189
+</td>
+<td style="text-align:center;">
+0.216
+</td>
+<td style="text-align:center;">
 0.248
-</td>
-<td style="text-align:center;">
-0.241
-</td>
-<td style="text-align:center;">
-0.193
-</td>
-<td style="text-align:center;">
-0.217
-</td>
-<td style="text-align:center;">
-0.251
 </td>
 </tr>
 <tr>
@@ -1624,19 +1637,19 @@ PLR-Stab-Wtd
 60
 </td>
 <td style="text-align:center;">
-0.467
+0.459
 </td>
 <td style="text-align:center;">
-0.461
+0.454
 </td>
 <td style="text-align:center;">
-0.377
+0.369
 </td>
 <td style="text-align:center;">
-0.419
+0.405
 </td>
 <td style="text-align:center;">
-0.467
+0.459
 </td>
 </tr>
 </tbody>
@@ -1685,10 +1698,10 @@ PLR-Stab-Wtd
 -0.002
 </td>
 <td style="text-align:center;">
--0.001
+0.000
 </td>
 <td style="text-align:center;">
--0.003
+-0.004
 </td>
 <td style="text-align:center;">
 -0.002
@@ -1699,7 +1712,7 @@ PLR-Stab-Wtd
 12
 </td>
 <td style="text-align:center;">
--0.003
+-0.004
 </td>
 <td style="text-align:center;">
 -0.001
@@ -1708,10 +1721,10 @@ PLR-Stab-Wtd
 -0.001
 </td>
 <td style="text-align:center;">
--0.006
+-0.007
 </td>
 <td style="text-align:center;">
--0.001
+-0.002
 </td>
 </tr>
 <tr>
@@ -1719,19 +1732,19 @@ PLR-Stab-Wtd
 36
 </td>
 <td style="text-align:center;">
-0.034
+0.037
 </td>
 <td style="text-align:center;">
-0.027
+0.030
 </td>
 <td style="text-align:center;">
--0.003
+-0.002
 </td>
 <td style="text-align:center;">
--0.015
+-0.010
 </td>
 <td style="text-align:center;">
-0.018
+0.022
 </td>
 </tr>
 <tr>
@@ -1739,19 +1752,19 @@ PLR-Stab-Wtd
 60
 </td>
 <td style="text-align:center;">
-0.081
+0.083
 </td>
 <td style="text-align:center;">
-0.076
+0.078
 </td>
 <td style="text-align:center;">
--0.005
+-0.003
 </td>
 <td style="text-align:center;">
--0.006
+-0.011
 </td>
 <td style="text-align:center;">
-0.041
+0.043
 </td>
 </tr>
 </tbody>
@@ -1794,19 +1807,19 @@ PLR-Stab-Wtd
 6
 </td>
 <td style="text-align:center;">
-1.019
+1.016
 </td>
 <td style="text-align:center;">
-0.941
+0.929
 </td>
 <td style="text-align:center;">
-0.980
+0.986
 </td>
 <td style="text-align:center;">
-0.909
+0.895
 </td>
 <td style="text-align:center;">
-0.948
+0.934
 </td>
 </tr>
 <tr>
@@ -1814,19 +1827,19 @@ PLR-Stab-Wtd
 12
 </td>
 <td style="text-align:center;">
-0.951
+0.946
 </td>
 <td style="text-align:center;">
-0.983
+0.979
 </td>
 <td style="text-align:center;">
-0.981
+0.986
 </td>
 <td style="text-align:center;">
-0.911
+0.909
 </td>
 <td style="text-align:center;">
-0.982
+0.977
 </td>
 </tr>
 <tr>
@@ -1834,19 +1847,19 @@ PLR-Stab-Wtd
 36
 </td>
 <td style="text-align:center;">
-1.159
+1.179
 </td>
 <td style="text-align:center;">
-1.125
+1.143
 </td>
 <td style="text-align:center;">
-0.983
+0.988
 </td>
 <td style="text-align:center;">
-0.936
+0.955
 </td>
 <td style="text-align:center;">
-1.079
+1.097
 </td>
 </tr>
 <tr>
@@ -1854,19 +1867,19 @@ PLR-Stab-Wtd
 60
 </td>
 <td style="text-align:center;">
-1.210
+1.221
 </td>
 <td style="text-align:center;">
-1.198
+1.207
 </td>
 <td style="text-align:center;">
-0.987
+0.991
 </td>
 <td style="text-align:center;">
-0.985
+0.974
 </td>
 <td style="text-align:center;">
-1.096
+1.103
 </td>
 </tr>
 </tbody>
@@ -1880,7 +1893,7 @@ PLR-Stab-Wtd
 </figure>
 </div>
 </div>
-<p>Note. The IPW-PLR finds a null effect, and similar results to a time-depedent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.</p>
+<p>Note. The IPW-PLR finds a null effect, and similar results to a time-dependent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.</p>
 </section>
 <section id="references" class="level1">
 <h1>References</h1>

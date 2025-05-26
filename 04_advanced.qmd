@@ -253,7 +253,7 @@ Here is a simple example for a Dell Laptop using the `Furrr` package with 10 wor
 #| warning: false
 #| message: false
 library(furrr)
-boots = 100
+boots = 200
 plan(multisession, workers = 10) # <1>
 
 resampling_res = future_map_dbl(1:boots, 
@@ -272,7 +272,7 @@ poisson_res = future_map_dbl(1:boots,
 ```{r }
 #| label: bootproc-compare
 #| echo: FALSE
-#| tbl-cap: paste0('Distribution of risk difference by assignment by either bootstrap methods, ', boots, ' bootstraps)
+#| tbl-cap: Distribution of risk differences by either bootstrap methods
 #| tbl-cap-location: bottom
 
 tibble(Resampling = resampling_res, Poisson = poisson_res) %>%

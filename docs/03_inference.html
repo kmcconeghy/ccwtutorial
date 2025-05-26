@@ -242,7 +242,7 @@ div.csl-indent {
 <p>Some special considerations are needed when presenting target trial emulations.</p>
 <section id="cloning-grace-period" class="level2">
 <h2 class="anchored" data-anchor-id="cloning-grace-period">Cloning &amp; Grace Period</h2>
-<p>The cloning presents an interesting problem for a “Table 1” because the group is identical at baseline. Artificial censoring will change the groups over time as the groups adhere to different treatment strategies. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time-point (the end of the grace period). It makes sense to present the time-invariant covariates as well as time-varying covariates of particular interest (time-varying confounders etc.)</p>
+<p>The cloning presents an interesting problem for a “Table 1” because the groups are identical at baseline. Artificial censoring may change the distribution of covariates over time if censoring is correlated with these covariates. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time point. The end of the grace period is a good standard choice. It makes sense to present the time-invariant covariates as well as time-varying covariates.</p>
 <p>Assume a simple example where the design of the study includes a baseline period, “time zero” and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur.There being two main periods: 1) Baseline time zero, 2) End of the grace period.</p>
 <p>Here is one approach:</p>
 <ol type="1">
@@ -264,7 +264,7 @@ div.csl-indent {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X), <span class="dv">2</span>), <span class="st">')'</span>),</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_t =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X_t), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X_t), <span class="dv">2</span>), <span class="st">')'</span>),</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">floor</span>(<span class="fu">mean</span>(age)), <span class="st">' ('</span>, <span class="fu">floor</span>(<span class="fu">sd</span>(age)), <span class="st">')'</span>),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Gender, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">mean</span>(female)<span class="sc">*</span><span class="dv">100</span>,<span class="dv">1</span>), <span class="st">')'</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>()</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
@@ -286,11 +286,11 @@ div.csl-indent {
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X), <span class="dv">2</span>), <span class="st">')'</span>),</span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_t =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X_t), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X_t), <span class="dv">2</span>), <span class="st">')'</span>),</span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">floor</span>(<span class="fu">mean</span>(age)), <span class="st">' ('</span>, <span class="fu">floor</span>(<span class="fu">sd</span>(age)), <span class="st">')'</span>),</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Gender, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">mean</span>(female)<span class="sc">*</span><span class="dv">100</span>,<span class="dv">1</span>), <span class="st">')'</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>()</span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>d_tab1 <span class="ot">=</span> <span class="fu">bind_cols</span>(<span class="at">Variables =</span> <span class="fu">c</span>(<span class="st">'N'</span>, <span class="st">'X, mean (SD)'</span>, <span class="st">'Xt, mean (SD)'</span>, <span class="st">'Age (years)'</span>, <span class="st">'Gender, female'</span>),</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>d_tab1 <span class="ot">=</span> <span class="fu">bind_cols</span>(<span class="at">Variables =</span> <span class="fu">c</span>(<span class="st">'N'</span>, <span class="st">'X, mean (SD)'</span>, <span class="st">'Xt, mean (SD)'</span>, <span class="st">'Age, years (SD)'</span>, <span class="st">'Sex, female'</span>),</span>
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Baseline</span><span class="st">`</span> <span class="ot">=</span> d_cbase, <span class="st">`</span><span class="at">Assign=0</span><span class="st">`</span> <span class="ot">=</span> d_c0, <span class="st">`</span><span class="at">Assign=1</span><span class="st">`</span> <span class="ot">=</span> d_c1) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell tbl-cap-location-top">
@@ -321,8 +321,8 @@ Uncensored at end of grace period
 <tr class="odd">
 <td style="text-align: center;">N</td>
 <td style="text-align: center;">10,000</td>
-<td style="text-align: center;">7,652</td>
-<td style="text-align: center;">1,712</td>
+<td style="text-align: center;">7,659</td>
+<td style="text-align: center;">1,708</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">X, mean (SD)</td>
@@ -332,21 +332,21 @@ Uncensored at end of grace period
 </tr>
 <tr class="odd">
 <td style="text-align: center;">Xt, mean (SD)</td>
-<td style="text-align: center;">0 (0.99)</td>
-<td style="text-align: center;">-0.12 (1)</td>
-<td style="text-align: center;">0.26 (0.98)</td>
+<td style="text-align: center;">-0.01 (0.99)</td>
+<td style="text-align: center;">-0.15 (0.96)</td>
+<td style="text-align: center;">0.23 (0.97)</td>
 </tr>
 <tr class="even">
-<td style="text-align: center;">Age (years)</td>
+<td style="text-align: center;">Age, years (SD)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: center;">Gender, female</td>
+<td style="text-align: center;">Sex, female</td>
 <td style="text-align: center;">6,657 (66.6)</td>
-<td style="text-align: center;">5,098 (66.6)</td>
-<td style="text-align: center;">1,160 (67.8)</td>
+<td style="text-align: center;">5,102 (66.6)</td>
+<td style="text-align: center;">1,160 (67.9)</td>
 </tr>
 </tbody>
 </table>
@@ -367,7 +367,7 @@ Uncensored at end of grace period
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">X, mean (SD)</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(X[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(X[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(X),</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Xt, mean (SD)</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(X_t[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(X_t[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(X_t),</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> (<span class="fu">mean</span>(age[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(age[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(age),</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Gender, female</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(female)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, female</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(female)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(<span class="at">rownames =</span> <span class="st">'Variable'</span>) <span class="sc">%&gt;%</span></span>
@@ -420,8 +420,8 @@ Uncensored at end of grace period
 <tr class="odd">
 <td style="text-align: center;">N</td>
 <td style="text-align: center;">10,000</td>
-<td style="text-align: center;">7,652</td>
-<td style="text-align: center;">1,712</td>
+<td style="text-align: center;">7,659</td>
+<td style="text-align: center;">1,708</td>
 <td style="text-align: center;">NA</td>
 </tr>
 <tr class="even">
@@ -429,28 +429,28 @@ Uncensored at end of grace period
 <td style="text-align: center;">0 (0.99)</td>
 <td style="text-align: center;">-0.12 (0.96)</td>
 <td style="text-align: center;">0.26 (0.97)</td>
-<td style="text-align: center;">0.389</td>
+<td style="text-align: center;">0.392</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">Xt, mean (SD)</td>
-<td style="text-align: center;">0 (0.99)</td>
-<td style="text-align: center;">-0.12 (1)</td>
-<td style="text-align: center;">0.26 (0.98)</td>
-<td style="text-align: center;">0.377</td>
+<td style="text-align: center;">-0.01 (0.99)</td>
+<td style="text-align: center;">-0.15 (0.96)</td>
+<td style="text-align: center;">0.23 (0.97)</td>
+<td style="text-align: center;">0.391</td>
 </tr>
 <tr class="even">
-<td style="text-align: center;">Age (years)</td>
+<td style="text-align: center;">Age, years (SD)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
-<td style="text-align: center;">NA</td>
+<td style="text-align: center;">0.021</td>
 </tr>
 <tr class="odd">
-<td style="text-align: center;">Gender, female</td>
+<td style="text-align: center;">Sex, female</td>
 <td style="text-align: center;">6,657 (66.6)</td>
-<td style="text-align: center;">5,098 (66.6)</td>
-<td style="text-align: center;">1,160 (67.8)</td>
-<td style="text-align: center;">0.024</td>
+<td style="text-align: center;">5,102 (66.6)</td>
+<td style="text-align: center;">1,160 (67.9)</td>
+<td style="text-align: center;">0.028</td>
 </tr>
 </tbody>
 </table>
@@ -458,7 +458,7 @@ Uncensored at end of grace period
 
 </div>
 </div>
-<p>Note: Mahalanobis distance between groups, Naive: 0.072</p>
+<p>Note: Mahalanobis distance between groups, Naive: 0.165</p>
 </section>
 <section id="table-1-with-weighted-differences" class="level3">
 <h3 class="anchored" data-anchor-id="table-1-with-weighted-differences">Table 1 with weighted differences</h3>
@@ -513,8 +513,8 @@ Uncensored at end of grace period
 <tr class="odd">
 <td style="text-align: center;">N</td>
 <td style="text-align: center;">10,000</td>
-<td style="text-align: center;">7,652</td>
-<td style="text-align: center;">1,712</td>
+<td style="text-align: center;">7,659</td>
+<td style="text-align: center;">1,708</td>
 <td style="text-align: center;">NA</td>
 <td style="text-align: center;">NA</td>
 </tr>
@@ -523,32 +523,32 @@ Uncensored at end of grace period
 <td style="text-align: center;">0 (0.99)</td>
 <td style="text-align: center;">-0.12 (0.96)</td>
 <td style="text-align: center;">0.26 (0.97)</td>
-<td style="text-align: center;">0.3893079</td>
-<td style="text-align: center;">-0.0410679</td>
+<td style="text-align: center;">0.392</td>
+<td style="text-align: center;">-0.054</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">Xt, mean (SD)</td>
-<td style="text-align: center;">0 (0.99)</td>
-<td style="text-align: center;">-0.12 (1)</td>
-<td style="text-align: center;">0.26 (0.98)</td>
-<td style="text-align: center;">0.3773564</td>
-<td style="text-align: center;">-0.0331280</td>
+<td style="text-align: center;">-0.01 (0.99)</td>
+<td style="text-align: center;">-0.15 (0.96)</td>
+<td style="text-align: center;">0.23 (0.97)</td>
+<td style="text-align: center;">0.391</td>
+<td style="text-align: center;">-0.055</td>
 </tr>
 <tr class="even">
-<td style="text-align: center;">Age (years)</td>
+<td style="text-align: center;">Age, years (SD)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
 <td style="text-align: center;">75 (9)</td>
-<td style="text-align: center;">NA</td>
-<td style="text-align: center;">NA</td>
+<td style="text-align: center;">0.021</td>
+<td style="text-align: center;">-0.038</td>
 </tr>
 <tr class="odd">
-<td style="text-align: center;">Gender, female</td>
+<td style="text-align: center;">Sex, female</td>
 <td style="text-align: center;">6,657 (66.6)</td>
-<td style="text-align: center;">5,098 (66.6)</td>
-<td style="text-align: center;">1,160 (67.8)</td>
-<td style="text-align: center;">0.0240822</td>
-<td style="text-align: center;">0.0027052</td>
+<td style="text-align: center;">5,102 (66.6)</td>
+<td style="text-align: center;">1,160 (67.9)</td>
+<td style="text-align: center;">0.028</td>
+<td style="text-align: center;">0.006</td>
 </tr>
 </tbody>
 </table>
@@ -556,7 +556,7 @@ Uncensored at end of grace period
 
 </div>
 </div>
-<p>Note. Mahalanobis distance between groups, Naive: 0.072, IPW: 0.003</p>
+<p>Note. Mahalanobis distance between groups, Naive: 0.165, IPW: 0.004</p>
 </section>
 </section>
 <section id="figure-of-differences-across-time" class="level2">
@@ -615,7 +615,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).</p>
+<p>You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution is advised in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).</p>
 </div>
 </div>
 </section>
@@ -638,6 +638,205 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>A Poisson bootstrap procedure is used here, see:<a href="./04_advanced.html">Additional Topics</a> for some notes on this.</p>
+</div>
+</div>
+<p>Bootstrapping is fairly straightforward, but for specific projects the procedure may need to be modified because of computing resources. Here we execute the entire procedure in one step, but it may make sense for your project to generate a single bootstrapped data first, then run each estimation step sequentially and store the results in a file before executing the next one. This would make sense if 1) one bootstrap takes a very long time, 2) there is a decent chance that the procedure may be interrupted (like a cloud server cuts off user etc.).</p>
+<p>The function generates a frequency weight from a random Poisson distribution with mean=1. This weight is used through the IPW estimation and outcome model steps.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>boot_ipw <span class="ot">=</span> <span class="cf">function</span>(x, <span class="at">point=</span>F) {</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setDT</span>(x)</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-5" class="code-annotation-target"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  x[, freqwt<span class="sc">:</span><span class="er">=</span><span class="fu">rpois</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">lambda=</span><span class="dv">1</span>), by <span class="ot">=</span> <span class="fu">factor</span>(id)]</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-7" class="code-annotation-target"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (point) x[, freqwt<span class="sc">:</span><span class="er">=</span><span class="dv">1</span>]</span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Numerator (margin probability)</span></span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>(),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-12" class="code-annotation-target"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
+<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_censnum <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Denominator </span></span>
+<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t, </span>
+<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>(),</span>
+<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
+<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-21"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_censdenom <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-23"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>  x[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
+<span id="annotated-cell-5-24"><a href="#annotated-cell-5-24" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom), </span>
+<span id="annotated-cell-5-25"><a href="#annotated-cell-5-25" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,</span>
+<span id="annotated-cell-5-26"><a href="#annotated-cell-5-26" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-5-27"><a href="#annotated-cell-5-27" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-5-28"><a href="#annotated-cell-5-28" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_censdenom), </span>
+<span id="annotated-cell-5-29"><a href="#annotated-cell-5-29" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">0</span>, <span class="dv">0</span>,  </span>
+<span id="annotated-cell-5-30"><a href="#annotated-cell-5-30" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>,  </span>
+<span id="annotated-cell-5-31"><a href="#annotated-cell-5-31" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
+<span id="annotated-cell-5-32"><a href="#annotated-cell-5-32" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="annotated-cell-5-33"><a href="#annotated-cell-5-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-34"><a href="#annotated-cell-5-34" aria-hidden="true" tabindex="-1"></a>  x[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>( </span>
+<span id="annotated-cell-5-35"><a href="#annotated-cell-5-35" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, (<span class="dv">1</span><span class="sc">-</span>pr_censnum) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom), </span>
+<span id="annotated-cell-5-36"><a href="#annotated-cell-5-36" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span> <span class="sc">&amp;</span> t_treat   <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, pr_censnum <span class="sc">/</span> (pr_censdenom), </span>
+<span id="annotated-cell-5-37"><a href="#annotated-cell-5-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">default =</span> ipw </span>
+<span id="annotated-cell-5-38"><a href="#annotated-cell-5-38" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="annotated-cell-5-39"><a href="#annotated-cell-5-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-40"><a href="#annotated-cell-5-40" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw), </span>
+<span id="annotated-cell-5-41"><a href="#annotated-cell-5-41" aria-hidden="true" tabindex="-1"></a>           <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)), </span>
+<span id="annotated-cell-5-42"><a href="#annotated-cell-5-42" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-43"><a href="#annotated-cell-5-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-44"><a href="#annotated-cell-5-44" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-45"><a href="#annotated-cell-5-45" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ], </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-5-46" class="code-annotation-target"><a href="#annotated-cell-5-46" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> freqwt<span class="sc">*</span>ipw)</span>
+<span id="annotated-cell-5-47"><a href="#annotated-cell-5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-48"><a href="#annotated-cell-5-48" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-49"><a href="#annotated-cell-5-49" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], </span>
+<span id="annotated-cell-5-50"><a href="#annotated-cell-5-50" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> freqwt<span class="sc">*</span>ipw)</span>
+<span id="annotated-cell-5-51"><a href="#annotated-cell-5-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-52"><a href="#annotated-cell-5-52" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-5-53"><a href="#annotated-cell-5-53" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-54"><a href="#annotated-cell-5-54" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-5-55"><a href="#annotated-cell-5-55" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-56"><a href="#annotated-cell-5-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-57"><a href="#annotated-cell-5-57" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-58"><a href="#annotated-cell-5-58" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-59"><a href="#annotated-cell-5-59" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-60"><a href="#annotated-cell-5-60" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> x <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-61"><a href="#annotated-cell-5-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-5-62" class="code-annotation-target"><a href="#annotated-cell-5-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1, freqwt),</span>
+<span id="annotated-cell-5-63"><a href="#annotated-cell-5-63" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0, freqwt),</span>
+<span id="annotated-cell-5-64"><a href="#annotated-cell-5-64" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-65"><a href="#annotated-cell-5-65" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-66"><a href="#annotated-cell-5-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0, </span>
+<span id="annotated-cell-5-67"><a href="#annotated-cell-5-67" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
+<span id="annotated-cell-5-68"><a href="#annotated-cell-5-68" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-69"><a href="#annotated-cell-5-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res)</span>
+<span id="annotated-cell-5-70"><a href="#annotated-cell-5-70" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="5" data-code-annotation="1">The random Poisson draw is representing the number of times that observation would have appeared in dataset resampled with equal size and replacement (i.e.&nbsp;on average would appear 1 time).</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="7" data-code-annotation="2">This option allows estimating the point estimate (not bootstrapped).</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="12,19" data-code-annotation="3">Note the <code>freqwt</code> used in the <code>glm()</code> procedure.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="46,50" data-code-annotation="4">Note the <code>freqwt*ipw</code> used in the <code>glm()</code> procedure.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="62,63" data-code-annotation="5">Note the use of <code>weighted.mean()</code> and <code>freqwt</code>.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The function can be run iteratively, with <code>replicate()</code> or purrr/furrr or many other options.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a>boots <span class="ot">=</span> <span class="dv">20</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-3" class="code-annotation-target"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">10</span>)</span>
+<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-6-5" class="code-annotation-target"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>d_pe <span class="ot">=</span> <span class="fu">boot_ipw</span>(dta_c_panel, <span class="at">point=</span>T)</span>
+<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a>d_boot <span class="ot">=</span> <span class="fu">future_map</span>(<span class="dv">1</span><span class="sc">:</span>boots, </span>
+<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">function</span>(x) <span class="fu">boot_ipw</span>(dta_c_panel), </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-6-9" class="code-annotation-target"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed=</span>T))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="3" data-code-annotation="1">Set 10 CPU workers for parallel computation</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="5" data-code-annotation="2">Obtain point estimates first (no bootstrapping)</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="9" data-code-annotation="3">Run bootstraps in parallel, note the <code>furrr_options(seed=T)</code> is important because of the RNG functions and is needed to ensure reproducibility and some funny quirks of generating random numbers in parallel. See <code>furrr</code> for explanation.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>After the bootstraps, summarizing is straightforward as well:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-7-1" class="code-annotation-target"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a>lci_q <span class="ot">=</span> <span class="fl">0.025</span></span>
+<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a>uci_q <span class="ot">=</span> <span class="fl">0.975</span></span>
+<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-4"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>d_summ <span class="ot">=</span> d_boot <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-5"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(., <span class="at">.id =</span> <span class="st">'boot'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-7"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n_boots =</span> <span class="fu">n</span>(),</span>
+<span id="annotated-cell-7-8"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_1_lci =</span> <span class="fu">quantile</span>(pr_ev_1, lci_q),</span>
+<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_1_uci =</span> <span class="fu">quantile</span>(pr_ev_1, uci_q),</span>
+<span id="annotated-cell-7-10"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_0_lci =</span> <span class="fu">quantile</span>(pr_ev_0, lci_q),</span>
+<span id="annotated-cell-7-11"><a href="#annotated-cell-7-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_0_uci =</span> <span class="fu">quantile</span>(pr_ev_0, uci_q),</span>
+<span id="annotated-cell-7-12"><a href="#annotated-cell-7-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">cid_lci =</span> <span class="fu">quantile</span>(cid, lci_q),</span>
+<span id="annotated-cell-7-13"><a href="#annotated-cell-7-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">cid_uci =</span> <span class="fu">quantile</span>(cid, uci_q),</span>
+<span id="annotated-cell-7-14"><a href="#annotated-cell-7-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">cir_lci =</span> <span class="fu">quantile</span>(cir, lci_q),</span>
+<span id="annotated-cell-7-15"><a href="#annotated-cell-7-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">cir_uci =</span> <span class="fu">quantile</span>(cir, uci_q)</span>
+<span id="annotated-cell-7-16"><a href="#annotated-cell-7-16" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-7-17" class="code-annotation-target"><a href="#annotated-cell-7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(., d_pe, <span class="at">by=</span><span class="st">'time'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="1,2" data-code-annotation="1">percentile intervals are specified at the conventional points (95%). However any of the typical bootstrapped confidence procedures can be done at this point.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="17" data-code-annotation="2">Joining the computed intervals back with point estimates.</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="cell tbl-cap-location-top">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>IPW-adjusted cumulative incidences, differences and relative risks</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">time</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">CID</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">RR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">12.00</td>
+<td style="text-align: center;">0.07 (0.06, 0.07)</td>
+<td style="text-align: center;">0.07 (0.07, 0.08)</td>
+<td style="text-align: center;">-0.01 (-0.02, 0.00)</td>
+<td style="text-align: center;">0.91 (0.75, 1.00)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">24.00</td>
+<td style="text-align: center;">0.14 (0.12, 0.15)</td>
+<td style="text-align: center;">0.15 (0.14, 0.15)</td>
+<td style="text-align: center;">-0.01 (-0.03, 0.00)</td>
+<td style="text-align: center;">0.93 (0.82, 1.03)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">60.00</td>
+<td style="text-align: center;">0.41 (0.34, 0.45)</td>
+<td style="text-align: center;">0.42 (0.41, 0.43)</td>
+<td style="text-align: center;">-0.01 (-0.07, 0.03)</td>
+<td style="text-align: center;">0.97 (0.84, 1.08)</td>
+</tr>
+</tbody>
+</table>
+
+
 </div>
 </div>
 </section>
