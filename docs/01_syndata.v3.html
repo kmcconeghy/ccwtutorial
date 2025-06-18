@@ -209,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="causal-directed-acyclic-graph" class="level1">
 <h1>Causal Directed Acyclic Graph</h1>
-<p>We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through another random variable. The DAG includes <code>age</code>, <code>X</code> a confounder, gender defined through a binary variable <code>F</code> for female. X is both a baseline variable, and a time-varying confounder. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done.</p>
+<p>We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through another random variable. The DAG includes <code>age</code>, <code>X</code> a confounder, sex defined through a binary variable <code>F</code> for female. X is both a baseline variable, and a time-varying confounder. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done.</p>
 <div class="cell fig-cap-location-top">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -283,7 +283,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_panel[, X_shift <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fl">0.05</span>)]</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>d_panel[, X_shift <span class="sc">:</span><span class="er">=</span> <span class="fu">cumsum</span>(X_shift), by <span class="ot">=</span> <span class="fu">list</span>(id)]</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>d_panel[, X_t <span class="sc">:</span><span class="er">=</span> X<span class="sc">+</span>(X_shift<span class="sc">*</span>(<span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>d_panel[, X_t <span class="sc">:</span><span class="er">=</span> X <span class="sc">+</span> (X_shift<span class="sc">*</span>(<span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="fl">1.5</span>))), by<span class="ot">=</span> <span class="fu">list</span>(id)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell fig-cap-location-top">
 <div class="cell-output-display">
@@ -301,7 +301,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>  d_panel_2 <span class="ot">=</span> d_panel <span class="sc">%&gt;%</span> </span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-4" class="code-annotation-target"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Treat event</span></span>
-<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="fl">4.1</span> <span class="sc">+</span> <span class="fl">0.0001</span><span class="sc">*</span>time <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.00001</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X_t,</span>
+<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="fl">4.1</span> <span class="sc">+</span> <span class="fl">0.0001</span><span class="sc">*</span>time <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.00001</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.2</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.3</span><span class="sc">*</span>X_t,</span>
 <span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
 <span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
 <span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">treat =</span> <span class="fu">if_else</span>(treat<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="cn">NA_integer_</span>)</span>
@@ -311,7 +311,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="annotated-cell-3-12"><a href="#annotated-cell-3-12" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
 <span id="annotated-cell-3-13"><a href="#annotated-cell-3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">treat =</span> <span class="fu">coalesce</span>(treat, <span class="dv">0</span>L)) <span class="sc">%&gt;%</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-14" class="code-annotation-target"><a href="#annotated-cell-3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Outcome event</span></span>
-<span id="annotated-cell-3-15"><a href="#annotated-cell-3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="dv">5</span> <span class="sc">+</span> <span class="fl">0.009</span><span class="sc">*</span>time <span class="sc">+</span> <span class="fl">0.0003</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.4</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.3</span><span class="sc">*</span>X_t <span class="sc">+</span> </span>
+<span id="annotated-cell-3-15"><a href="#annotated-cell-3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">log_odds =</span> <span class="sc">-</span><span class="dv">5</span> <span class="sc">+</span> <span class="fl">0.007</span><span class="sc">*</span>time <span class="sc">+</span> <span class="fl">0.0002</span><span class="sc">*</span>(time<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fl">0.3</span><span class="sc">*</span>X <span class="sc">+</span> <span class="fl">0.5</span><span class="sc">*</span>X_t <span class="sc">+</span> </span>
 <span id="annotated-cell-3-16"><a href="#annotated-cell-3-16" aria-hidden="true" tabindex="-1"></a>                                  <span class="sc">-</span><span class="fl">0.2</span><span class="sc">*</span>female <span class="sc">+</span> <span class="fl">0.07</span><span class="sc">*</span>age <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.001</span><span class="sc">*</span>(age<span class="sc">^</span><span class="dv">2</span>),</span>
 <span id="annotated-cell-3-17"><a href="#annotated-cell-3-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">p =</span> <span class="fu">exp</span>(log_odds) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(log_odds)),</span>
 <span id="annotated-cell-3-18"><a href="#annotated-cell-3-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">outcome =</span> <span class="fu">rbinom</span>(<span class="fu">n</span>(), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p),</span>
@@ -351,7 +351,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      19      49     Inf     Inf     Inf </code></pre>
+      1      18      50     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 </section>
@@ -360,7 +360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-      1      58      77     Inf     Inf     Inf </code></pre>
+      1      57     Inf     Inf     Inf     Inf </code></pre>
 </div>
 </div>
 <div class="cell fig-cap-location-top">
@@ -390,7 +390,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Summary of survival dataset</h1>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 486,944
+<pre><code>Rows: 473,183
 Columns: 16
 $ id        &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 $ age       &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, …
@@ -402,8 +402,8 @@ $ enter     &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
 $ time      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
 $ X_shift   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, …
 $ X_t       &lt;dbl&gt; -0.7311102, -0.7311102, -0.7311102, -0.7311102, -0.7311102, …
-$ log_odds  &lt;dbl&gt; -5.502477, -5.492577, -5.482077, -5.470977, -5.459277, -5.44…
-$ p         &lt;dbl&gt; 0.004060109, 0.004100338, 0.004143439, 0.004189494, 0.004238…
+$ log_odds  &lt;dbl&gt; -5.577688, -5.570088, -5.562088, -5.553688, -5.544888, -5.53…
+$ p         &lt;dbl&gt; 0.003767053, 0.003795682, 0.003826053, 0.003858203, 0.003892…
 $ treat     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 $ outcome   &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
 $ t_outcome &lt;dbl&gt; 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, …
@@ -500,23 +500,23 @@ Note
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total treat (ever)</td>
-<td style="text-align: right;">5116</td>
-<td style="text-align: right;">5116</td>
+<td style="text-align: right;">5048</td>
+<td style="text-align: right;">5048</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total treat (t&lt;=12)</td>
-<td style="text-align: right;">1768</td>
-<td style="text-align: right;">1768</td>
+<td style="text-align: right;">1839</td>
+<td style="text-align: right;">1839</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Total events</td>
-<td style="text-align: right;">2380</td>
-<td style="text-align: right;">1364</td>
+<td style="text-align: right;">2178</td>
+<td style="text-align: right;">1538</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Total censored</td>
-<td style="text-align: right;">5116</td>
-<td style="text-align: right;">7659</td>
+<td style="text-align: right;">5048</td>
+<td style="text-align: right;">7512</td>
 </tr>
 </tbody>
 </table>

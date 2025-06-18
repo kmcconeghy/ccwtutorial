@@ -26,13 +26,13 @@ set.seed(42)
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds'))
 ```
 
-# Evaluation of Target Trial Design Elements  
+# Evaluation of Target Trial Design Elements
 
 ## Evaluation of Grace Period
 
-The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases. 
+The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.
 
-Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn't change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results. 
+Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn't change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results.
 
 # Computational issues
 
@@ -109,7 +109,7 @@ print(d_summ, signif=3)
 
 Even in a small example, `parglm()` significantly outperforms base `glm()`. This will scale considerably with multiple cores and larger datasets as well.
 
-`parglm()` may be more unstable (convergence issues), but should be sufficient for most problems. 
+`parglm()` may be more unstable (convergence issues), but should be sufficient for most problems.
 
 ```{r }
 #| label: summ-benchmark-glm
@@ -222,8 +222,56 @@ boot_it_2 = function(x) {
 }
 ```
 
-1. Generate a frequency weight by group ID from a Poisson distribution with mean 1
-2. Note the use of `weighted.mean()` versus `mean()` in other code.
+1.  Generate a frequency weight by group ID from a Poisson distribution with mean 1
+2.  Note the use of `weighted.mean()` versus `mean()` in other code.
+
+### Bayesian Bootstrap
+
+In addition to use of weighting, a Bayesian bootstrap which assigns weights from a uniform Dirichlet prior may also avoid some issues by smoothing out the distribution of weights, where the Poisson counts may fail due to collinearity issues from dropping observations in various bootstrap iterations.[@rubin1981]
+
+We initiate one bootstrap at a time. The uniform Dirichlet is then $~Gamma(1, 1)$ the same as $~exp(1)$, so the function uses random draws from an exponential distribution, then normalized. 
+
+```{r }
+#| label: bayeboot-ex
+boot_it_3 = function(x) {
+  
+  setDT(x)
+  
+  i_list = distinct(x, id) %>%
+  mutate(prior = rexp(n=n(), rate=1), # <1>
+         freqwt = prior / sum(prior)) # <2>
+
+  x = inner_join(x, i_list, by = 'id')
+
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=x[x$assign==1, ], 
+                     family=binomial(), weights = freqwt) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=x[x$assign==0, ], 
+                     family=binomial(), weights = freqwt) 
+  
+  x$pr_1 = predict(d_glm_pe_1, newdata = x, 
+                              type='response') 
+  x$pr_0 = predict(d_glm_pe_0, newdata = x, 
+                             type='response') 
+
+  x[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  x[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_res = x %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), 
+              pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt),
+              .groups = 'drop') %>% 
+    ungroup %>%
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res$cid[d_res$time==60])
+}
+```
+1.  Dirichlet uniform prior (which is same as normalized vector drawm from exponential distribution with mean 1).
 
 ### Benchmarking GLM methods
 
@@ -233,6 +281,7 @@ boot_it_2 = function(x) {
 d_summ = microbenchmark(
   `Resampling bootstrap` = boot_it_1(dta_c_panel),
   `Poisson bootstrap` = boot_it_2(dta_c_panel),
+  `Bayesian bootstrap` = boot_it_3(dta_c_panel),
   times = 5,
   unit = "seconds"
 ) 
@@ -240,13 +289,13 @@ d_summ = microbenchmark(
 print(d_summ, signif=3)
 ```
 
-### Parallel computation  
+### Parallel computation
 
-The next thing to work on is parallel computation steps. The efficiency depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each. 
+The next thing to work on is parallel computation steps. The efficiency depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each.
 
 If you don't believe this provides similar coverage estimates, here are the intervals from 50 bootstraps with both procedures:
 
-Here is a simple example for a Dell Laptop using the `Furrr` package with 10 workers: 
+Here is a simple example for a Dell Laptop using the `Furrr` package with 10 workers:
 
 ```{r }
 #| label: bootproc-futureplan
@@ -264,10 +313,14 @@ poisson_res = future_map_dbl(1:boots,
                                 function(x) boot_it_2(dta_c_panel), 
                                 .options = furrr_options(seed=T)) # <2>
 
+bayes_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_3(dta_c_panel), 
+                                .options = furrr_options(seed=T)) # <2>
+
 ```
 
-1. Assign number of CPU workers to job
-2. The `seed=T` option is important because the bootstrap function uses RNG. 
+1.  Assign number of CPU workers to job
+2.  The `seed=T` option is important because the bootstrap function uses RNG.
 
 ```{r }
 #| label: bootproc-compare
@@ -275,8 +328,10 @@ poisson_res = future_map_dbl(1:boots,
 #| tbl-cap: Distribution of risk differences by either bootstrap methods
 #| tbl-cap-location: bottom
 
-tibble(Resampling = resampling_res, Poisson = poisson_res) %>%
-  pivot_longer(cols = c(Resampling, Poisson), names_to = 'Method', values_to = 'CID') %>%
+tibble(Resampling = resampling_res, 
+       Poisson = poisson_res,
+       Bayesian = bayes_res) %>%
+  pivot_longer(cols = c(Resampling, Poisson, Bayesian), names_to = 'Method', values_to = 'CID') %>%
   group_by(Method) %>%
   summarize(
     min = min(CID),
@@ -290,4 +345,3 @@ tibble(Resampling = resampling_res, Poisson = poisson_res) %>%
   kable(digits = 4, align = 'c') %>%
   kable_styling()
 ```
-

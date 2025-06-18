@@ -283,7 +283,7 @@ d_gg_ci = d_ci_cmp %>%
 d_gg_1
 ```
 
-So the PLR model using a simple polynomial can reasonably approximate the KM estimate. This should work because the underlying synthetic data was generated with an exponential distribution for time, but real-world data will not play so nicely. There is some noise between the KM estimator risk differences across certain time-points. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:
+So the PLR model using a simple polynomial can reasonably approximate the KM estimate. There is some noise between the KM estimator risk differences across certain time-points. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:
 
 1.  It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.
 
@@ -298,12 +298,16 @@ Another approach is to compare a pooled logistic regression analysis to a time-i
 ```{r }
 #| label: glm-plr-covadj
  
-# defined above
-  d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + female + age + X, # <1>
-              data=dta_c_panel, family=binomial()) # <1>
-
-  dta_c_panel$p.noevent0 <- predict(d_glm, mutate(dta_c_panel, assign=0), type="response") # <2>
-  dta_c_panel$p.noevent1 <- predict(d_glm, mutate(dta_c_panel, assign=1), type="response") # <2>
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T) + age + female + X, # <1>
+                     data=dta_c_panel[dta_c_panel$assign==1, ], # <1>
+                     family=binomial()) # <1>
+    # <1>
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T) + age + female + X, # <1>
+                     data=dta_c_panel[dta_c_panel$assign==0, ], # <1>
+                       family=binomial()) # <1>
+  
+  dta_c_panel$p.noevent0 <- predict(d_glm_pe_0, dta_c_panel, type="response") # <2>
+  dta_c_panel$p.noevent1 <- predict(d_glm_pe_1, dta_c_panel, type="response") # <2>
   
   setDT(dta_c_panel)
     dta_c_panel[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
@@ -578,11 +582,11 @@ Now with the estimated weights, it is simple to generate weighted cumulative inc
 #| label: est-plr-wt
 #| warning: FALSE  
   d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
-                   data=dta_c_panel[assign==1, ], # <1>
+                   data=dta_c_panel[dta_c_panel$assign==1, ], # <1>
                    family=binomial(), weights = ipw) # <1>
   # <1>
   d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
-                   data=dta_c_panel[assign==0, ], # <1>
+                   data=dta_c_panel[dta_c_panel$assign==0, ], # <1>
                      family=binomial(), weights = ipw) # <1>
   
   dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, # <2>

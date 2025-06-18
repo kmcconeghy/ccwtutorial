@@ -19,7 +19,7 @@ set.seed(42)
 
 # Causal Directed Acyclic Graph  
 
-We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through another random variable. The DAG includes `age`, `X` a confounder, gender defined through a binary variable `F` for female. X is both a baseline variable, and a time-varying confounder. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done. 
+We assume a generic treatment, A, has no causal effect on generic outcome, Y. However, confounding is present through another random variable. The DAG includes `age`, `X` a confounder, sex defined through a binary variable `F` for female. X is both a baseline variable, and a time-varying confounder. Below we assign effects of these variables that will lead to identification of a causal effect between A and Y, if no controlling for the confounding is done. 
 
 ```{r }
 #| label: gg-dag
@@ -37,8 +37,8 @@ outc_treat_dag <- dagify(
   labels = c(
     "Age" = "Age",
     "F" = "Female",
-    "A" = "Treatment",
-    "Y" = "Outcome",
+    "A" = "A",
+    "Y" = "Y",
     "X" = "X"
   ),
   exposure = "A",
@@ -119,7 +119,7 @@ For `X`, further include `X_t` which varies across time. A change in X_t is trig
 
 d_panel[, X_shift := rbinom(.N, 1, 0.05)]
 d_panel[, X_shift := cumsum(X_shift), by = list(id)]
-d_panel[, X_t := X+(X_shift*(rnorm(1, 0, 1)))]
+d_panel[, X_t := X + (X_shift*(rnorm(1, 0, 1.5))), by= list(id)]
 ```
 
 ```{r }
@@ -150,7 +150,7 @@ Time to treatment and outcome is simulated in a longitudinal dataset, to allow f
   
   d_panel_2 = d_panel %>% 
     # Treat event # <1>
-    mutate(log_odds = -4.1 + 0.0001*time + -0.00001*(time^2) + 0.2*X + 0.2*X_t,
+    mutate(log_odds = -4.1 + 0.0001*time + -0.00001*(time^2) + 0.2*X + 0.3*X_t,
            p = exp(log_odds) / (1 + exp(log_odds)),
            treat = rbinom(n(), size = 1, prob = p),
            treat = if_else(treat==1, 1, NA_integer_)
@@ -160,7 +160,7 @@ Time to treatment and outcome is simulated in a longitudinal dataset, to allow f
     ungroup %>%
     mutate(treat = coalesce(treat, 0L)) %>% # <1>
     # Outcome event # <2>
-    mutate(log_odds = -5 + 0.009*time + 0.0003*(time^2) + 0.4*X + 0.3*X_t + 
+    mutate(log_odds = -5 + 0.007*time + 0.0002*(time^2) + 0.3*X + 0.5*X_t + 
                                   -0.2*female + 0.07*age + -0.001*(age^2),
            p = exp(log_odds) / (1 + exp(log_odds)),
            outcome = rbinom(n(), size = 1, prob = p),
