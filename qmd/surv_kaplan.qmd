@@ -1,0 +1,52 @@
+---
+title: "Kaplan-Meier Estimator"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here)
+library(ggdag)
+library(corrplot)
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+```
+
+# Introduction  
+
+Time is almost always discretely measured. 
+
+Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.
+
+It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.  
+
+## Time-to-event  
+
+It is assumed here that the basic measurement of the outcome includes a failure time (time at which follow-up ceases) and a binary indicator for whether the event occurred or not by that time point. The measure presumes a clear origin or time zero, and knowledge of the scale or unit of time (days, years etc.). In most applied work, the event can only occur once. For those with no observed event-time, meaning the event did not occur through the last-observable time point, the observed time is some other endpoint (death, administrative end, loss-to-follow-up), these non-events are referred to as "censored" meaning follow-up ceased at that time. The observed time for a person must be the minimum of event or censoring time.
+
+## Definitions and Notation  
+
+The outcome need not be death, but often is, and individuals must be alive to experience events, censoring etc. so most of the terminology and notation refer to "survival". 
+
+The letter T/t is typically used to denote time, where *T* may refer to total time observed, and *t* an individual time-period, $T = {1, ..., t}$. Since time is usually discretely defined, for example as days, then $t$ can be thought of as an interval, $t=1$ meaning from the end of the prior interval (day 0) through the next (but not including) interval, day 2. $T=t$ would mean a event or censor time occurred in interval $t$. A binary indicator for whether the event occured $E = {0, 1}$. 
+
+Survival probability, $S(t) = Pr(T>t)$, is the probability of survival beyond time-point *t*.
+
+Cumulative incidence, $R(t) = Pr(T<=t)$, is the 1-probability of survival, the probability the event occurred up to and including time-point *t*.
+
+Hazard, $h(t) = Pr(E_t=1|E_{t-1}=0)$, the probability of an event at time *t*, conditional on event-free survival up to that point, sometimes described as the "instantaneuous hazard".
+
+Cumulative Hazard, $H(t)$
+
+The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
+
+# References
+
+::: {#refs}
+
+:::

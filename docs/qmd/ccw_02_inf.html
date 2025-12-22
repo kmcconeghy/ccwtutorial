@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Inference – Tutorial on Clone-Censor-Weight</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5d2e30ad26079c1dae90a1fd11eba2b9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../site_libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Tutorial on Clone-Censor-Weight
+      </li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+  <div id="quarto-announcement" data-announcement-id="3973cc0e9e77730972a08b31df6e0a48" class="alert alert-primary hidden"><i class="bi bi-info-circle quarto-announcement-icon"></i><div class="quarto-announcement-content">
+<p><strong>Alert</strong> - This is a work-in-progress, errors may exist in code</p>
+</div><i class="bi bi-x-lg quarto-announcement-action"></i></div>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Tutorial on Clone-Censor-Weight</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../surv_summ.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+ <span class="menu-text">surv_kaplan.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">surv_disctime.qmd</span>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Cloning-Censoring-Weighting</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Appendix</span></span>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description-of-cohort-table-1" id="toc-description-of-cohort-table-1" class="nav-link active" data-scroll-target="#description-of-cohort-table-1">Description of cohort, “Table 1”</a>
+  <ul class="collapse">
+  <li><a href="#cloning-grace-period" id="toc-cloning-grace-period" class="nav-link" data-scroll-target="#cloning-grace-period">Cloning &amp; Grace Period</a></li>
+  <li><a href="#table-1" id="toc-table-1" class="nav-link" data-scroll-target="#table-1">Table 1</a></li>
+  <li><a href="#presentation-of-weighted-differences" id="toc-presentation-of-weighted-differences" class="nav-link" data-scroll-target="#presentation-of-weighted-differences">Presentation of weighted differences</a>
+  <ul class="collapse">
+  <li><a href="#computation-of-distances" id="toc-computation-of-distances" class="nav-link" data-scroll-target="#computation-of-distances">Computation of distances</a></li>
+  <li><a href="#table-1-with-differences" id="toc-table-1-with-differences" class="nav-link" data-scroll-target="#table-1-with-differences">Table 1 with differences</a></li>
+  <li><a href="#table-1-with-weighted-differences" id="toc-table-1-with-weighted-differences" class="nav-link" data-scroll-target="#table-1-with-weighted-differences">Table 1 with weighted differences</a></li>
+  </ul></li>
+  <li><a href="#figure-of-differences-across-time" id="toc-figure-of-differences-across-time" class="nav-link" data-scroll-target="#figure-of-differences-across-time">Figure of differences across time</a></li>
+  </ul></li>
+  <li><a href="#uncertainty-estimates" id="toc-uncertainty-estimates" class="nav-link" data-scroll-target="#uncertainty-estimates">Uncertainty estimates</a>
+  <ul class="collapse">
+  <li><a href="#bootstrapping" id="toc-bootstrapping" class="nav-link" data-scroll-target="#bootstrapping">Bootstrapping</a></li>
+  <li><a href="#influence-statistics" id="toc-influence-statistics" class="nav-link" data-scroll-target="#influence-statistics">Influence statistics</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Inference</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="description-of-cohort-table-1" class="level1">
+<h1>Description of cohort, “Table 1”</h1>
+<p>In both randomized trials and observational studies comparing interventions/treatments there is typically a presentation of the overall cohort, or comparison of those receiving treatment versus alternatives. The table will present basic demographics and some additional characteristics of interest (confounders, important predictors/causes of outcome etc.). I generally do not present inferential statistics between groups in this table (i.e.&nbsp;no p-values or confidence intervals) but will provide a standardized mean difference.</p>
+<p>Some special considerations are needed when presenting target trial emulations.</p>
+<section id="cloning-grace-period" class="level2">
+<h2 class="anchored" data-anchor-id="cloning-grace-period">Cloning &amp; Grace Period</h2>
+<p>The cloning presents an interesting problem for a “Table 1” because the groups are identical at baseline. Artificial censoring may change the distribution of covariates over time if censoring is correlated with these covariates. It probably makes sense for most projects using a clone-sensor-weight approach to present a “baseline” cohort column, and then columns describing the intervention groups at a key follow-up time point. The end of the grace period is a good standard choice. It makes sense to present the time-invariant covariates as well as time-varying covariates.</p>
+<p>Assume a simple example where the design of the study includes a baseline period, “time zero” and two treatment strategies, with a grace period or interval where one strategy allows some time for treatment to occur.There being two main periods: 1) Baseline time zero, 2) End of the grace period.</p>
+<p>Here is one approach:</p>
+<ol type="1">
+<li>Present the baseline characteristics for everyone (prior to cloning) at time zero.</li>
+<li>Present the characteristics for both treatment groups at the end of the grace period.</li>
+</ol>
+<p>This would lead to a “Table 1” with three columns.</p>
+</section>
+<section id="table-1" class="level2">
+<h2 class="anchored" data-anchor-id="table-1">Table 1</h2>
+<p>Many R packages will construct a “Table 1” for users. I manually code below for transparency.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Many packages can do this for you, I write out manually for transparency</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>d_cbase <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Take one obs for the baseline column</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">N =</span> <span class="fu">prettyNum</span>(<span class="fu">n</span>(), <span class="at">big.mark=</span><span class="st">','</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_t =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X_t), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X_t), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">floor</span>(<span class="fu">mean</span>(age)), <span class="st">' ('</span>, <span class="fu">floor</span>(<span class="fu">sd</span>(age)), <span class="st">')'</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">mean</span>(female)<span class="sc">*</span><span class="dv">100</span>,<span class="dv">1</span>), <span class="st">')'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>()</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>d_c0 <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># End of grace period</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time<span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">N =</span> <span class="fu">prettyNum</span>(<span class="fu">n</span>(), <span class="at">big.mark=</span><span class="st">','</span>),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_t =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X_t), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X_t), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">floor</span>(<span class="fu">mean</span>(age)), <span class="st">' ('</span>, <span class="fu">floor</span>(<span class="fu">sd</span>(age)), <span class="st">')'</span>),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Gender, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">mean</span>(female)<span class="sc">*</span><span class="dv">100</span>,<span class="dv">1</span>), <span class="st">')'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>()</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>d_c1 <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># End of grace period</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time<span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">N =</span> <span class="fu">prettyNum</span>(<span class="fu">n</span>(), <span class="at">big.mark=</span><span class="st">','</span>),</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            <span class="at">X =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            <span class="at">X_t =</span> <span class="fu">paste0</span>(<span class="fu">round</span>(<span class="fu">mean</span>(X_t), <span class="dv">2</span>), <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">sd</span>(X_t), <span class="dv">2</span>), <span class="st">')'</span>),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">floor</span>(<span class="fu">mean</span>(age)), <span class="st">' ('</span>, <span class="fu">floor</span>(<span class="fu">sd</span>(age)), <span class="st">')'</span>),</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, % Female</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">paste0</span>(<span class="fu">prettyNum</span>(<span class="fu">sum</span>(female<span class="sc">==</span><span class="dv">1</span>), <span class="at">big.mark =</span> <span class="st">','</span>), </span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">' ('</span>, <span class="fu">round</span>(<span class="fu">mean</span>(female)<span class="sc">*</span><span class="dv">100</span>,<span class="dv">1</span>), <span class="st">')'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>()</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>d_tab1 <span class="ot">=</span> <span class="fu">bind_cols</span>(<span class="at">Variables =</span> <span class="fu">c</span>(<span class="st">'N'</span>, <span class="st">'X, mean (SD)'</span>, <span class="st">'Xt, mean (SD)'</span>, <span class="st">'Age, years (SD)'</span>, <span class="st">'Sex, female'</span>),</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Baseline</span><span class="st">`</span> <span class="ot">=</span> d_cbase, <span class="st">`</span><span class="at">Assign=0</span><span class="st">`</span> <span class="ot">=</span> d_c0, <span class="st">`</span><span class="at">Assign=1</span><span class="st">`</span> <span class="ot">=</span> d_c1) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Table 1. Example of presentation of characteristics of a CCW Cohort">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table 1. Example of presentation of characteristics of a CCW Cohort</caption>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; empty-cells: hide; border-bottom: hidden;"></th>
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; border-bottom: hidden; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Uncensored at end of grace period
+</div></th>
+</tr>
+<tr class="even">
+<th style="text-align: center;" data-quarto-table-cell-role="th">Variables</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Baseline</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">N</td>
+<td style="text-align: center;">2,000</td>
+<td style="text-align: center;">1,323</td>
+<td style="text-align: center;">530</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">X, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.07 (0.25)</td>
+<td style="text-align: center;">0.48 (0.5)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Xt, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.13 (0.33)</td>
+<td style="text-align: center;">0.53 (0.5)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Age, years (SD)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">76 (9)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Sex, female</td>
+<td style="text-align: center;">1,330 (66.5)</td>
+<td style="text-align: center;">887 (67)</td>
+<td style="text-align: center;">358 (67.5)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="presentation-of-weighted-differences" class="level2">
+<h2 class="anchored" data-anchor-id="presentation-of-weighted-differences">Presentation of weighted differences</h2>
+<p>Most researchers would provide the naive differences between groups, and then present some adjusted difference. Most commonly the standardized mean differences (aSMD) or a P-value from a univariate test (not recommended).</p>
+<p>So you could add one column for the SMD to the “Table 1”, but there are also other approaches such as reporting Mahalanobis distance.</p>
+<section id="computation-of-distances" class="level3">
+<h3 class="anchored" data-anchor-id="computation-of-distances">Computation of distances</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_smd <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time<span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">X, mean (SD)</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(X[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(X[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(X),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Xt, mean (SD)</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(X_t[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(X_t[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(X_t),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Age, years (SD)</span><span class="st">`</span>  <span class="ot">=</span> (<span class="fu">mean</span>(age[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(age[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(age),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Sex, female</span><span class="st">`</span> <span class="ot">=</span> (<span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(female[assign<span class="sc">==</span><span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(female)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(<span class="at">rownames =</span> <span class="st">'Variable'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">aSMD</span><span class="st">`</span> <span class="ot">=</span> V1)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>d_tab1 <span class="ot">=</span> <span class="fu">left_join</span>(d_tab1, d_smd, <span class="at">by=</span><span class="fu">c</span>(<span class="st">'Variables'</span> <span class="ot">=</span> <span class="st">'Variable'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute pooled covariance matrix</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>cov_pooled <span class="ot">&lt;-</span> (<span class="fu">var</span>(dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, <span class="fu">c</span>(<span class="st">'X'</span>, <span class="st">'X_t'</span>, <span class="st">'age'</span>, <span class="st">'female'</span>)]) <span class="sc">+</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">var</span>(dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, <span class="fu">c</span>(<span class="st">'X'</span>, <span class="st">'X_t'</span>, <span class="st">'age'</span>, <span class="st">'female'</span>)])) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute Mahalanobis distance</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>mahal_dist <span class="ot">&lt;-</span> <span class="fu">mahalanobis</span>(<span class="fu">colMeans</span>(dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                                               <span class="fu">c</span>(<span class="st">'X'</span>, <span class="st">'X_t'</span>, <span class="st">'age'</span>, <span class="st">'female'</span>)]), </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">center =</span> <span class="fu">colMeans</span>(dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                                                        <span class="fu">c</span>(<span class="st">'X'</span>, <span class="st">'X_t'</span>, <span class="st">'age'</span>, <span class="st">'female'</span>)]), </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                          <span class="at">cov =</span> cov_pooled)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="table-1-with-differences" class="level3">
+<h3 class="anchored" data-anchor-id="table-1-with-differences">Table 1 with differences</h3>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Table 1 + aSMD (unweighted)">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table 1 + aSMD (unweighted)</caption>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; empty-cells: hide; border-bottom: hidden;"></th>
+<th colspan="3" data-quarto-table-cell-role="th" style="text-align: center; border-bottom: hidden; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Uncensored at end of grace period
+</div></th>
+</tr>
+<tr class="even">
+<th style="text-align: center;" data-quarto-table-cell-role="th">Variables</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Baseline</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">aSMD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">N</td>
+<td style="text-align: center;">2,000</td>
+<td style="text-align: center;">1,323</td>
+<td style="text-align: center;">530</td>
+<td style="text-align: center;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">X, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.07 (0.25)</td>
+<td style="text-align: center;">0.48 (0.5)</td>
+<td style="text-align: center;">1.060</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Xt, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.13 (0.33)</td>
+<td style="text-align: center;">0.53 (0.5)</td>
+<td style="text-align: center;">0.947</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Age, years (SD)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">76 (9)</td>
+<td style="text-align: center;">0.114</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Sex, female</td>
+<td style="text-align: center;">1,330 (66.5)</td>
+<td style="text-align: center;">887 (67)</td>
+<td style="text-align: center;">358 (67.5)</td>
+<td style="text-align: center;">0.011</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Note: Mahalanobis distance between groups, Naive: 0.445</p>
+</section>
+<section id="table-1-with-weighted-differences" class="level3">
+<h3 class="anchored" data-anchor-id="table-1-with-weighted-differences">Table 1 with weighted differences</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>See <a href="02_est.v2.qmd">Estimators</a> for full description of weight estimation</p>
+</div>
+</div>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Table 1 + aSMD (unweighted)">
+
+</div>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Table 1 + aSMD (unweighted)">
+
+</div>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Table 1 + aSMD (unweighted)">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table 1 + aSMD (unweighted)</caption>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; empty-cells: hide; border-bottom: hidden;"></th>
+<th colspan="4" data-quarto-table-cell-role="th" style="text-align: center; border-bottom: hidden; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Uncensored at end of grace period
+</div></th>
+</tr>
+<tr class="even">
+<th style="text-align: center;" data-quarto-table-cell-role="th">Variables</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Baseline</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">aSMD</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">IPW aSMD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">N</td>
+<td style="text-align: center;">2,000</td>
+<td style="text-align: center;">1,323</td>
+<td style="text-align: center;">530</td>
+<td style="text-align: center;">NA</td>
+<td style="text-align: center;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">X, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.07 (0.25)</td>
+<td style="text-align: center;">0.48 (0.5)</td>
+<td style="text-align: center;">1.060</td>
+<td style="text-align: center;">-0.638</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Xt, mean (SD)</td>
+<td style="text-align: center;">0.2 (0.4)</td>
+<td style="text-align: center;">0.13 (0.33)</td>
+<td style="text-align: center;">0.53 (0.5)</td>
+<td style="text-align: center;">0.947</td>
+<td style="text-align: center;">-0.696</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Age, years (SD)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">75 (10)</td>
+<td style="text-align: center;">76 (9)</td>
+<td style="text-align: center;">0.114</td>
+<td style="text-align: center;">0.211</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Sex, female</td>
+<td style="text-align: center;">1,330 (66.5)</td>
+<td style="text-align: center;">887 (67)</td>
+<td style="text-align: center;">358 (67.5)</td>
+<td style="text-align: center;">0.011</td>
+<td style="text-align: center;">0.109</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Note. Mahalanobis distance between groups, Naive: 0.445, IPW: 0.605</p>
+</section>
+</section>
+<section id="figure-of-differences-across-time" class="level2">
+<h2 class="anchored" data-anchor-id="figure-of-differences-across-time">Figure of differences across time</h2>
+<p>These differences can also be presented in a modified “Love” plot, with panels for each period of follow-up. It doesn’t really make sense to do one at baseline because the differences will be small/none. But we can pick a few follow-up periods to evaluate:</p>
+<div class="cell fig-cap-location-top">
+<div class="sourceCode cell-code" id="cb4" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># aSMD Figure ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  i_SMD_grps <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">12</span>, <span class="dv">24</span>, <span class="dv">60</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  d_time <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">%in%</span> <span class="fu">c</span>(i_SMD_grps) <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>(<span class="at">.by =</span> time) </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  d_time<span class="sc">$</span>SMD_naive <span class="ot">=</span> <span class="fu">map</span>(d_time<span class="sc">$</span>data, <span class="sc">~</span><span class="fu">f_cpt_dist</span>(.))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  d_time<span class="sc">$</span>SMD_ipw <span class="ot">=</span> <span class="fu">map</span>(d_time<span class="sc">$</span>data, <span class="sc">~</span><span class="fu">f_cpt_dist_wt</span>(.))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  gg_bal <span class="ot">=</span> <span class="fu">select</span>(d_time, time, SMD_naive, SMD_ipw) <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>Variable1) <span class="sc">%&gt;%</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">Naive</span><span class="st">`</span> <span class="ot">=</span> SMD,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>           <span class="st">`</span><span class="at">IPW</span><span class="st">`</span> <span class="ot">=</span> SMD1) <span class="sc">%&gt;%</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">'Naive'</span>, <span class="st">'IPW'</span>), </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                   <span class="at">names_to =</span> <span class="st">'Model'</span>, <span class="at">values_to =</span> <span class="st">'SMD'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">flag =</span> <span class="fu">if_else</span>(<span class="fu">abs</span>(SMD)<span class="sc">&gt;</span><span class="fl">0.1</span>, cbbPalette[<span class="dv">1</span>], cbbPalette[<span class="dv">2</span>])) <span class="sc">%&gt;%</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">y =</span> Variable, <span class="at">x =</span> SMD, <span class="at">group =</span> Model)) <span class="sc">+</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape=</span>Model, <span class="at">color =</span> flag), <span class="at">size=</span><span class="fl">1.8</span>) <span class="sc">+</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fl">0.2</span>, <span class="at">linetype=</span><span class="dv">2</span>, <span class="at">color=</span>cbbPalette[<span class="dv">3</span>]) <span class="sc">+</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_identity</span>() <span class="sc">+</span> </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(time)) <span class="sc">+</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'SMD'</span>, <span class="at">y =</span> <span class="st">'Variable'</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>           <span class="at">caption =</span> <span class="st">'M-dist = Mahalanobis distance for overall groups covariate means'</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  gg_bal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-1-smdwtd" class="quarto-float quarto-figure quarto-figure-center anchored" data-cap-location="top">
+<figure class="quarto-float quarto-float-fig figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-1-smdwtd-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Baseline and Time-varying Differences by Treatment Group
+</figcaption>
+<div aria-describedby="fig-1-smdwtd-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ccw_02_inf_files/figure-html/fig-1-smdwtd-1.png" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can see the weighted between group differences are significantly reduced by the unstabilized IPW. However, caution is advised in interpretation of the differences. If the treatment/exposure of interest has a causal relationship with the outcome (or some other censoring mechanism besides the artificial censoring the weights account for), then you might expect there to be differences between groups. This is because the groups are conditional on remaining alive, uncensored at each time-point, which may occur after treatment/exposure. In effect you are conditioning on a collider (outcome).</p>
+</div>
+</div>
+</section>
+</section>
+<section id="uncertainty-estimates" class="level1">
+<h1>Uncertainty estimates</h1>
+<p>Several steps in the analysis make the assumptions of conventional standard errors invalid. The use of cloning or repeated use of persons across sequential target trial dates complicates the statistical properties of the estimand (due to correlated data), additionally the uncertainty in estimation of probability weights must be accounted for.</p>
+<p>Currently, most researchers are using bootstrapping to obtain confidence limits via percentile method. It is critical that: 1. The bootstrapping step occur prior to sequential repeated sampling, cloning or estimation of weights 2. The bootstrap sampling with replacement must be at the cluster-level (person).</p>
+<p>Also consider, bootstrapping may fail to produce valid estimates in cases of matching procedures, or penalized regression procedures.[<span class="citation" data-cites="camponovo2015">Camponovo (<a href="#ref-camponovo2015" role="doc-biblioref">2015</a>)</span>]<span class="citation" data-cites="abadie2008">(<a href="#ref-abadie2008" role="doc-biblioref">Abadie and Imbens 2008</a>)</span> Other bootstrapping failures may arise due to limited sample size or values on the boundary of a parameter space.</p>
+<section id="bootstrapping" class="level2">
+<h2 class="anchored" data-anchor-id="bootstrapping">Bootstrapping</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Poisson bootstrap procedure is used here, see:<a href="04_advanced.qmd">Additional Topics</a> for some notes on this.</p>
+</div>
+</div>
+<p>Bootstrapping is fairly straightforward, but for specific projects the procedure may need to be modified because of computing resources. Here we execute the entire procedure in one step, but it may make sense for your project to generate a single bootstrapped data first, then run each estimation step sequentially and store the results in a file before executing the next one. This would make sense if 1) one bootstrap takes a very long time, 2) there is a decent chance that the procedure may be interrupted (like a cloud server cuts off user etc.).</p>
+<p>The function generates a frequency weight from a random Poisson distribution with mean=1. This weight is used through the IPW estimation and outcome model steps.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>boot_ipw <span class="ot">=</span> <span class="cf">function</span>(x, <span class="at">point=</span>F) {</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setDT</span>(x)</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-5" class="code-annotation-target"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  x[, freqwt<span class="sc">:</span><span class="er">=</span><span class="fu">rpois</span>(<span class="at">n=</span><span class="dv">1</span>, <span class="at">lambda=</span><span class="dv">1</span>), by <span class="ot">=</span> <span class="fu">factor</span>(id)]</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-7" class="code-annotation-target"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (point) x[, freqwt<span class="sc">:</span><span class="er">=</span><span class="dv">1</span>]</span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Numerator (margin probability)</span></span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>(),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-12" class="code-annotation-target"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
+<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_censnum <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Denominator </span></span>
+<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t, </span>
+<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>(),</span>
+<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
+<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-21"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_censdenom <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-23"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>  x[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
+<span id="annotated-cell-5-24"><a href="#annotated-cell-5-24" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom), </span>
+<span id="annotated-cell-5-25"><a href="#annotated-cell-5-25" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,</span>
+<span id="annotated-cell-5-26"><a href="#annotated-cell-5-26" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-5-27"><a href="#annotated-cell-5-27" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-5-28"><a href="#annotated-cell-5-28" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_censdenom), </span>
+<span id="annotated-cell-5-29"><a href="#annotated-cell-5-29" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">0</span>, <span class="dv">0</span>,  </span>
+<span id="annotated-cell-5-30"><a href="#annotated-cell-5-30" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>,  </span>
+<span id="annotated-cell-5-31"><a href="#annotated-cell-5-31" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
+<span id="annotated-cell-5-32"><a href="#annotated-cell-5-32" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="annotated-cell-5-33"><a href="#annotated-cell-5-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-34"><a href="#annotated-cell-5-34" aria-hidden="true" tabindex="-1"></a>  x[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>( </span>
+<span id="annotated-cell-5-35"><a href="#annotated-cell-5-35" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, (<span class="dv">1</span><span class="sc">-</span>pr_censnum) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom), </span>
+<span id="annotated-cell-5-36"><a href="#annotated-cell-5-36" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span> <span class="sc">&amp;</span> t_treat   <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, pr_censnum <span class="sc">/</span> (pr_censdenom), </span>
+<span id="annotated-cell-5-37"><a href="#annotated-cell-5-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">default =</span> ipw </span>
+<span id="annotated-cell-5-38"><a href="#annotated-cell-5-38" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="annotated-cell-5-39"><a href="#annotated-cell-5-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-40"><a href="#annotated-cell-5-40" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw), </span>
+<span id="annotated-cell-5-41"><a href="#annotated-cell-5-41" aria-hidden="true" tabindex="-1"></a>           <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)), </span>
+<span id="annotated-cell-5-42"><a href="#annotated-cell-5-42" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-43"><a href="#annotated-cell-5-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-44"><a href="#annotated-cell-5-44" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-45"><a href="#annotated-cell-5-45" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ], </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-5-46" class="code-annotation-target"><a href="#annotated-cell-5-46" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> freqwt<span class="sc">*</span>ipw)</span>
+<span id="annotated-cell-5-47"><a href="#annotated-cell-5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-48"><a href="#annotated-cell-5-48" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), </span>
+<span id="annotated-cell-5-49"><a href="#annotated-cell-5-49" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], </span>
+<span id="annotated-cell-5-50"><a href="#annotated-cell-5-50" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> freqwt<span class="sc">*</span>ipw)</span>
+<span id="annotated-cell-5-51"><a href="#annotated-cell-5-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-52"><a href="#annotated-cell-5-52" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-5-53"><a href="#annotated-cell-5-53" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-54"><a href="#annotated-cell-5-54" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-5-55"><a href="#annotated-cell-5-55" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-5-56"><a href="#annotated-cell-5-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-57"><a href="#annotated-cell-5-57" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-58"><a href="#annotated-cell-5-58" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-5-59"><a href="#annotated-cell-5-59" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-60"><a href="#annotated-cell-5-60" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> x <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-61"><a href="#annotated-cell-5-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-5-62" class="code-annotation-target"><a href="#annotated-cell-5-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1, freqwt),</span>
+<span id="annotated-cell-5-63"><a href="#annotated-cell-5-63" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0, freqwt),</span>
+<span id="annotated-cell-5-64"><a href="#annotated-cell-5-64" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-5-65"><a href="#annotated-cell-5-65" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-5-66"><a href="#annotated-cell-5-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0, </span>
+<span id="annotated-cell-5-67"><a href="#annotated-cell-5-67" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
+<span id="annotated-cell-5-68"><a href="#annotated-cell-5-68" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-69"><a href="#annotated-cell-5-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res)</span>
+<span id="annotated-cell-5-70"><a href="#annotated-cell-5-70" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="5" data-code-annotation="1">The random Poisson draw is representing the number of times that observation would have appeared in dataset resampled with equal size and replacement (i.e.&nbsp;on average would appear 1 time).</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="7" data-code-annotation="2">This option allows estimating the point estimate (not bootstrapped).</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="12,19" data-code-annotation="3">Note the <code>freqwt</code> used in the <code>glm()</code> procedure.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="46,50" data-code-annotation="4">Note the <code>freqwt*ipw</code> used in the <code>glm()</code> procedure.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="62,63" data-code-annotation="5">Note the use of <code>weighted.mean()</code> and <code>freqwt</code>.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The function can be run iteratively, with <code>replicate()</code> or purrr/furrr or many other options.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
+<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a>boots <span class="ot">=</span> <span class="dv">20</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-3" class="code-annotation-target"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">10</span>)</span>
+<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-6-5" class="code-annotation-target"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>d_pe <span class="ot">=</span> <span class="fu">boot_ipw</span>(dta_c_panel, <span class="at">point=</span>T)</span>
+<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a>d_boot <span class="ot">=</span> <span class="fu">future_map</span>(<span class="dv">1</span><span class="sc">:</span>boots, </span>
+<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">function</span>(x) <span class="fu">boot_ipw</span>(dta_c_panel), </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-6-9" class="code-annotation-target"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed=</span>T))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="3" data-code-annotation="1">Set 10 CPU workers for parallel computation</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="5" data-code-annotation="2">Obtain point estimates first (no bootstrapping)</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="9" data-code-annotation="3">Run bootstraps in parallel, note the <code>furrr_options(seed=T)</code> is important because of the RNG functions and is needed to ensure reproducibility and some funny quirks of generating random numbers in parallel. See <code>furrr</code> for explanation.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>After the bootstraps, summarizing is straightforward as well:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-7-1" class="code-annotation-target"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a>lci_q <span class="ot">=</span> <span class="fl">0.025</span></span>
+<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a>uci_q <span class="ot">=</span> <span class="fl">0.975</span></span>
+<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-4"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>d_summ <span class="ot">=</span> d_boot <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-5"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(., <span class="at">.id =</span> <span class="st">'boot'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-7-7"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n_boots =</span> <span class="fu">n</span>(),</span>
+<span id="annotated-cell-7-8"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_1_lci =</span> <span class="fu">quantile</span>(pr_ev_1, lci_q),</span>
+<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_1_uci =</span> <span class="fu">quantile</span>(pr_ev_1, uci_q),</span>
+<span id="annotated-cell-7-10"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_0_lci =</span> <span class="fu">quantile</span>(pr_ev_0, lci_q),</span>
+<span id="annotated-cell-7-11"><a href="#annotated-cell-7-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">pr_ev_0_uci =</span> <span class="fu">quantile</span>(pr_ev_0, uci_q),</span>
+<span id="annotated-cell-7-12"><a href="#annotated-cell-7-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">cid_lci =</span> <span class="fu">quantile</span>(cid, lci_q),</span>
+<span id="annotated-cell-7-13"><a href="#annotated-cell-7-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">cid_uci =</span> <span class="fu">quantile</span>(cid, uci_q),</span>
+<span id="annotated-cell-7-14"><a href="#annotated-cell-7-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">cir_lci =</span> <span class="fu">quantile</span>(cir, lci_q),</span>
+<span id="annotated-cell-7-15"><a href="#annotated-cell-7-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">cir_uci =</span> <span class="fu">quantile</span>(cir, uci_q)</span>
+<span id="annotated-cell-7-16"><a href="#annotated-cell-7-16" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-7-17" class="code-annotation-target"><a href="#annotated-cell-7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(., d_pe, <span class="at">by=</span><span class="st">'time'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="1,2" data-code-annotation="1">percentile intervals are specified at the conventional points (95%). However any of the typical bootstrapped confidence procedures can be done at this point.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="17" data-code-annotation="2">Joining the computed intervals back with point estimates.</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="cell tbl-cap-location-top" data-tbl-cap="IPW-adjusted cumulative incidences, differences and relative risks">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>IPW-adjusted cumulative incidences, differences and relative risks</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">time</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">CID</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">RR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">12.00</td>
+<td style="text-align: center;">0.03 (0.01, 0.06)</td>
+<td style="text-align: center;">0.26 (0.14, 0.38)</td>
+<td style="text-align: center;">-0.23 (-0.35, -0.11)</td>
+<td style="text-align: center;">0.13 (0.04, 0.25)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">24.00</td>
+<td style="text-align: center;">0.04 (0.02, 0.09)</td>
+<td style="text-align: center;">0.43 (0.25, 0.60)</td>
+<td style="text-align: center;">-0.39 (-0.55, -0.22)</td>
+<td style="text-align: center;">0.09 (0.04, 0.18)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">60.00</td>
+<td style="text-align: center;">0.05 (0.03, 0.16)</td>
+<td style="text-align: center;">0.62 (0.45, 0.76)</td>
+<td style="text-align: center;">-0.57 (-0.72, -0.41)</td>
+<td style="text-align: center;">0.08 (0.04, 0.22)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="influence-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="influence-statistics">Influence statistics</h2>
+<p>Under development…</p>
+</section>
+</section>
+<section id="references" class="level1">
+
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-abadie2008" class="csl-entry" role="listitem">
+Abadie, Alberto, and Guido W. Imbens. 2008. <span>“On the Failure of the Bootstrap for Matching Estimators.”</span> <em>Econometrica</em> 76 (6): 1537–57. https://doi.org/<a href="https://doi.org/10.3982/ECTA6474">https://doi.org/10.3982/ECTA6474</a>.
+</div>
+<div id="ref-camponovo2015" class="csl-entry" role="listitem">
+Camponovo, L. 2015. <span>“On the Validity of the Pairs Bootstrap for Lasso Estimators.”</span> <em>Biometrika</em> 102 (4): 981–87. <a href="https://doi.org/10.1093/biomet/asv039">https://doi.org/10.1093/biomet/asv039</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

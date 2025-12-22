@@ -1,0 +1,219 @@
+---
+title: "Cloning, Censoring, Weighting"
+subtite: "Introduction"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+```
+
+# Grace windows  
+
+::: callout-note
+Grace period case example
+For working through concepts below, assume we are emulating a trial where eligible individuals are followed for up to 60 time periods from an arbitrary calendar date, and are randomly assigned to two treatment strategies: 
+
+1) Do not receive treatment through the end of follow-up (60 time periods, e.g. 60 months ~ 5 years)
+2) Initiate treatment within 12 periods of index time zero
+
+Individuals are followed from the index date through the end of follow-up as long as the observed data is consistent with their assigned treatment strategy. When the observed data becomes inconsistent, they are artificially censored at that point in time (i.e. our emulation will estimate per protocol effects from an RCT with perfect adherence).
+:::
+
+It is possible to specify two or more interventions where a single person’s observed data is consistent with multiple strategies at a single point in time. Under both treatment strategies if the person does not get treatment for the first 5 periods, then up to period 12 they are faithfully adherent to both treatment strategies. At t=12, if they still are untreated they would continue to follow-up under the no treatment strategy but be non-adherent to the “treatment in 12 periods” strategy. This 12 period window we outline in our strategy is referred to as a “grace period” or "grace window". Alternatively, if the person was assigned to “no treatment” and received treatment at any point in the 12 periods they would be censored upon initiation of treatment under the 1) “no treatment strategy” but follow-up continue  under the 2) “treat within 12” strategy. 
+
+In a target trial emulation which employs these methods, each person’s observed data may be consistent with 1+ treatment strategies in the same time period, particularly the initial period of time. Because at baseline the person’s observed data is consistent with 1+ more strategies, the typical solution is to clone the person and assign each clone to a treatment strategy, e.g. duplicate or triplicate the person’ data and follow each clone as a unique observation. 
+
+::: callout-note
+The person could also be randomly assigned to one of the interventions (instead of cloned and assigned to both), but simulations suggest this is very statistically inefficient (much less precise estimates than cloning).
+:::
+
+The cloning approach has an appealing effect of eliminating confounding at baseline (time zero). This is true because the observations in each treatment group are identical at baseline. However, as each clone is followed across time periods, their adherence to the assigned treatment strategy is monitored and each clone is censored (follow-up ends) when the observed data is no longer consistent with the assigned treatment strategy.
+
+This censoring is *artificial* because we can still observe data for that person but we choose to ignore it because of their non-adherence to the assigned strategy. So although identical at baseline the groups observed characteristics (distributions of covariates) will diverge across time if the artificial censoring is informative and non-random (almost always true). Usually the artificial censoring is intrinsically linked to initiation of treatment, so the artificial censoring will introduce bias if the initiation of treatment also has common causes with the outcome of interest.
+
+In order to adjust for this bias, inverse probability weighting is used. However, proper application of the weights requires some consideration of the probability of treatment initiation, grace periods and the artificial censoring mechanism.
+
+# Weight assignments in CCW design {#sec-weightscheme}  
+
+## Simple example: Probability weighting with a grace period
+
+Assume three persons are assigned to a treatment strategy as follows: Get the treatment within 2 time periods, if you don’t get it by the second period you are censored for non-adherence. The goal of weighting is to create a *pseudo*-population that can estimate the effect in a counterfactual world where all those assigned to treatment take treatment by the end of the grace period, and all those assigned to not take treatment do not take it. In other words, we are estimating the causal effects of treatment in a trial where there is perfect adherence to study assignment, also known as a “per protocol” effect.  
+
+::: callout-note
+Observed treatments:
+
+A: treated at last period	
+B: never treated	
+C: treated at first period
+:::
+
+```{r }
+#| label: simple-ex-wt
+#| echo: false
+#| message: false
+#| tbl-cap: "Simple Weighting Example"
+#| tbl-cap-location: top
+ 
+d_ex = tibble(Person = c('A', 'A', 'B', 'B', 'C', 'C'), 
+              Period = rep(c(1:2), 3),
+              Treat  = c(0, 1, 0, 0, 1, 0),
+              Censor = rep(c(0, 0, 0, 1, 0, 0))
+              )
+
+kable(d_ex, align = 'c') %>%
+  kable_styling()
+```
+
+Three persons have observed data in our trial emulation. Persons A & C get the treatment and are not censored, Person B doesn’t get the treatment and is censored.
+
+Now adding censoring probabilities `Pr(C=1)` to the table:
+
+```{r }
+#| label: simple-ex-wt-2
+#| echo: false
+#| message: false
+#| tbl-cap: "Simple Weighting Example - Censoring Probabilities"
+#| tbl-cap-location: top
+ 
+d_ex$`Pr(C=1)` = c('0', '1/2', '0', '1/2', '0', '-')
+
+kable(d_ex, align = 'c') %>%
+  kable_styling()
+```
+
+Because people have 2 periods to get treatment, the `Pr(C=1)` in period 1 is 0 for all persons. In other words, people cannot be artificially censored in the first period, because by design we are allowing a grace of 2 periods. The `Pr(C=1)`= ½ for person A and B even though there are three people (i.e. ⅓)? Because person C already received the treatment in period 1, they are immutably uncensored from that point forward. So the only two who can censor are persons A and B, since person B censors in period 2, the `Pr(C=1)` = ½. 
+
+The probability of not censoring, `Pr(C=0)` is simply 1 - `Pr(C=1`. 
+
+```{r }
+#| label: simple-ex-wt-3
+#| echo: false
+#| message: false
+#| tbl-cap: "Simple Weighting Example - Censoring Probabilities"
+#| tbl-cap-location: top
+ 
+d_ex$`Pr(C=0)` = c('1', '1/2', '1', '1/2', '1', '1')
+
+kable(d_ex, align = 'c') %>%
+  kable_styling()
+```
+
+The *unstabilized* inverse probability weight is 1 / `Pr(C=0)`; in simple terms people who are likely to censor *but dont* are assigned higher weights and count for more in the analysis. 
+
+```{r }
+#| label: simple-ex-wt-4
+#| echo: false
+#| message: false
+#| tbl-cap: "Simple Weighting Example - IPW"
+#| tbl-cap-location: top
+ 
+d_ex$`IPW` = c('1', '2', '1', '0', '1', '1')
+
+kable(d_ex, align = 'c') %>%
+  kable_styling()
+```
+
+Person A is given a weight of 2, making up for the loss of censored person B. Person C is given a weight of 1 because they received treatment in the first period, and so couldn't censor at the end of the grace period. Three person, and the sum of the weights in both periods is 3. 
+
+::: callout-note
+How does one carry the IPW weight forward after the grace period?
+In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point. However, if another censoring mechanism was important (i.e. censor due to death or loss to follow-up), then you might compute that probability separately and take the product of the two.
+:::
+
+# Introduction
+
+## Case Study  
+
+For the following, I simulated a dataset with treatment, `treat` or A, and treatment strategy `assign` which is either 1) receive treatment by time period 12, or 2) never receive treatment through follow-up. The outcome `Y` is designed to be a function of `treat`, `X`, `age` and gender (`female`) in model 'xy', and in model 'ay' there is a direct causal effect of A (`treat`) on Y. The effect is in opposite direction to the confounder. `X` is recorded as the baseline value at time zero, and `X_t` which varies across time. 
+
+So the naive estimate, not adjusting for `X` should identify a positive association between treatment and outcome in model 'xy' but little to no association in 'ay', while adjustment for `X` and `X_t` should find a null association in 'xy' but an association in 'ay'. This data and assumptions are used to validate the code procedures below. The sample size is 1000, so associations may not be statistically significant. 
+
+See: [Data](01_syndata.v3.qmd) for full explanation of procedure for generating data.  
+
+## Stepwise approach
+
+I recommend the following stepwise procedure in estimation:
+
+PLR
+
+:   Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.
+
+KM
+
+:   Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
+
+1.  Estimate unweighted/unadjusted cumulative incidences with KM method
+2.  Estimate a PLR model without weights
+
+<!-- -->
+
+i)  Compare KM vs PLR
+
+<!-- -->
+
+3.  Estimate censoring weights
+
+<!-- -->
+
+i)  Estimate PLR for treatment initiation
+
+    A. Estimate treatment model
+
+    B. Compare KM / PLR estimates
+
+    C. Compute IPCW
+
+    D. Examine IPCW weights for extreme values, non-sensical values
+
+    E. Examine balance in covariates across time
+
+ii) Generate "table 1" with some weighted difference statistic (e.g. wSMD)
+
+<!-- -->
+
+4.  Estimate weighted outcome models
+
+<!-- -->
+
+i)  Estimate a weighted outcome model, no covariate adjustment
+ii) Estimate a weighted outcome + covariates (usually main estimate)
+
+<!-- -->
+
+5.  Once satisfied with stability from steps 1-4, execute bootstraps
+6.  Finalize report
+
+<!-- -->
+
+i)  provide KM, Cox unweighted, and PLR unweighted estimates in an appendix
+ii) main results reported should be the IPCW-weighted PLR analysis
+
+::: callout-note
+Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf), which explains why the odds approximates the hazard at a given time-point *k*, as long as the hazard is small (i.e. rare event) at time *k*.
+:::
+
+### Censoring dataset
+
+In our example, artificial censoring is tied to whether treatment is initiated within a grace window or not. This is specific to a project's definitions of treatment so proceed with caution. The basic idea is that since clones censor according to whether treatments starts (or not), the probability of censoring is essentially the probability of initiating treatment. So we can use the clones assigned to no treatment across all follow-up timepoints.
+
+1.  This may be a little confusing, but I am taking clones where assign=0 from the `dta_c_panel` dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.
+2.  We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this but for other projects this step will have to be modified if the comparator is different. 
+
+## Estimation of weights
+
+The probability weight, AKA inverse probability censoring weight (IPCW) or inverse probability of no loss to follow-up is estimated in this way:
+
+$$
+W^C_i = \prod^{T}_{t_0} \frac{P(C_t = 0| \overline{C}_{t-1} = 0)}{P(C_t=0 | X=x, \overline{L}_{t-1}=l_{i, t-1}, \overline{C}_{t-1}=0)}
+$$
+
+C in this case means censoring, but censoring occurs according to treatment strategy, so it really is the probability of adhering to the treatment you were assigned to. Stabilized weights are tricky, here we are using the marginal stabilized weight which is the probability of no censoring at each timepoint. The denominator is the conditional probability accounting for fixed, i.e. baseline, (X) and time-varying (L) covariates.
+
+We fit a model with the outcome of censoring, including the key variables. Then we add fitted probabilities back to the outcome dataset, and calculate cumulative probabilities and weights.

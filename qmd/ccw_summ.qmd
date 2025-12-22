@@ -1,0 +1,15 @@
+---
+title: "Full tutorial for executing a Cloning-Censoring-Weighting Analysis"
+bibliography: references.bib
+---
+
+# Sections {#sec-sections}
+
+1. [Introduction](ccw_00_explain.qmd): I review the applied example, weighting scheme and basic approach.
+2. [Estimator](ccw_01_est.qmd): Estimation of CCW analyses executed in step-wise fashion
+3. [Inference](ccw_02_inf.qmd): Explanation of bootstrap procedure for inference
+4. [Diagnostics](ccw_03_diag.qmd): Additional sensitivity and model checks recommended for applied examples.
+
+::: {#refs}
+
+:::

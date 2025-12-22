@@ -1,0 +1,117 @@
+---
+title: "Computational methods for speed"
+subtitle: "Wild, Poisson and Bayesian methods"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+
+library(here())
+library(microbenchmark)
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+
+#increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+  
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
+  dplyr::filter(model == 'ay')
+```
+
+# Computational issues
+
+Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.
+
+## Benchmarked Estimation Step
+
+```{r }
+#| label: compare-glm
+#| eval: false 
+glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel, family=binomial())
+```
+
+### Speeding up GLM ML procedure
+
+There are two main things that can be done to speed up GLM, 1) initialize parameters based on prior estimation procedure. 2) Use efficient matrix functions and parallel computation.
+
+#### Initialization hack
+
+This is a simple trick, either 1) run the GLM once and store est, or 2) run the GLM on a 10% sample.
+
+```{r }
+#| label: init-glm
+
+d_fit = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+            data=dta_c_panel, family=binomial()) # <1>
+
+d_fit_2 = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+              data=dta_c_panel, family=binomial(), 
+              start = d_fit$coefficients) # <2>
+```
+
+1.  GLM procedure with automatic initialization step.
+2.  GLM with `start=` option using coefficients from prior step.
+
+#### BLAS/LAPACK and Parallel computation
+
+The `parglm` package provides much faster computations (but somewhat more unstable).
+
+```{r }
+#| label: par-glm
+library(parglm)
+
+d_fit_3 = parglm(event==0 ~ poly(time, 2, raw=T)*assign, 
+       family=binomial(), data=dta_c_panel, 
+       start = d_fit$coefficients,
+       control = parglm.control(method = "FAST", nthreads = 8L)) # <1>
+```
+
+1.  `parglm()` function works mostly as `glm()`, the `parglm.control()` allows some additional options for parallel computing and QR decomposition.
+
+### Benchmarking GLM methods
+
+```{r }
+#| label: benchmark-glm
+#| echo: false
+d_summ = microbenchmark(
+  `base GLM` = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                   data=dta_c_panel, family=binomial()),
+  `GLM with inits` = glm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                         data=dta_c_panel, family=binomial(), 
+                         start = d_fit$coefficients),
+  `PARGLM` = parglm(event==0 ~ poly(time, 2, raw=T)*assign, 
+                    family=binomial(), data = dta_c_panel, 
+                    start = d_fit$coefficients,
+                    control = parglm.control(method = "FAST", nthreads = 8L)),
+  times = 20,
+  unit = "seconds"
+) 
+
+print(d_summ, signif=3)
+```
+
+Even in a small example, `parglm()` significantly outperforms base `glm()`. This will scale considerably with multiple cores and larger datasets as well.
+
+`parglm()` may be more unstable (convergence issues), but should be sufficient for most problems.
+
+```{r }
+#| label: summ-benchmark-glm
+#| echo: false
+#| tab-cap: "Comparison of glm() and parglm() results"
+#| tab-cap-location: top
+bind_cols(Coefficient = names(d_fit$coefficients), 
+          `glm()` = d_fit$coefficients, `parglm()` = d_fit_3$coefficients) %>%
+kable(digits = 5) %>%
+  kable_styling()
+```
+
+Finally parallel computation is an option. The efficiency of this depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each. However, parglm breaks up the dataset into chunks and uses parallel processing to evaluate each subset which can be very efficient. 

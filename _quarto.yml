@@ -10,23 +10,30 @@ website:
     content: "**Alert** - This is a work-in-progress, errors may exist in code"
     type: primary
     position: below-navbar
-  navbar:
-    title: "Section"
-    left:
-      - href: index.qmd
-        text: Home
-      - href: 02_est.v2.qmd
-        text: Estimators  
-      - href: 03_inference.qmd
-        text: Inference
-      - href: 04_advanced.qmd
-        text: Additional Topics
-      - href: 05_appendix.qmd
-        text: Appendix
-      - href: 01_syndata.v3.qmd
-        text: Data
-      - href: about.qmd
-        text: About
+  sidebar: 
+    style: 'docked'
+    search: true
+    contents:
+      - text: Home
+        href: index.qmd
+      - section: 'Survival Analysis'
+        href: 'surv_summ.qmd'
+        contents:
+        - surv_kaplan.qmd
+        - surv_disctime.qmd
+      - section: 'Cloning-Censoring-Weighting'
+      - href: 'ccw_summ.qmd'
+        contents:
+        - ccw_00_intro.qmd
+        - ccw_01_est.qmd
+        - ccw_02_inf.qmd
+        #- ccw_03_diag.qmd
+      - section: 'Appendix' 
+      - href: 'app_summ.qmd'
+        contents: 
+        - app_01_syndata.qmd
+        - app_02_boot.qmd
+        - app_03_speed.qmd
 format:
   html:
     theme: cosmo

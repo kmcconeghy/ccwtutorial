@@ -1,0 +1,251 @@
+---
+title: "Bootstrapping methods"
+subtitle: "Wild, Poisson and Bayesian methods"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+
+library(here())
+library(microbenchmark)
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+
+#increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+  
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
+  dplyr::filter(model == 'ay')
+```
+
+# Bootstrapping procedure
+
+Bootstrapping is the main option  for this type of analysis, the statistical properties are not well-described, but some use influence-based statistics.
+
+The typical bootstrap procedure resamples an entire dataset iteratively, but this can be very inefficient depending on how you set it up because it may involve holding the original dataset and the bootstrapped dataset in memory, also potentially a matrix in a regression optimization step. However some clever use of matrices and shortcuts can work around this.
+
+::: callout-note
+The bootstrap procedure must sample at the person level to account for the cloning.
+:::
+
+### Inefficient Bootstrap
+
+```{r }
+#| label: bad-bootstrap-ex
+boot_it_1 = function(x) {
+  
+  setDT(x)
+  
+  d_ids = distinct(x, id) # <1>
+  
+  d_boot = slice_sample(d_ids, prop=1, replace=T) # <2>
+  
+  d_panel_outc_2 = left_join(d_boot, # <3>
+                             x, by = join_by(id),
+                             relationship = "many-to-many") # <3>
+  
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=d_panel_outc_2[d_panel_outc_2$assign==1, ], 
+                     family=binomial()) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=d_panel_outc_2[d_panel_outc_2$assign==0, ], 
+                     family=binomial())
+  
+  d_panel_outc_2$pr_1 = predict(d_glm_pe_1, newdata = d_panel_outc_2, 
+                              type='response') 
+  d_panel_outc_2$pr_0 = predict(d_glm_pe_0, newdata = d_panel_outc_2, 
+                             type='response') 
+
+  d_panel_outc_2[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  d_panel_outc_2[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_res = d_panel_outc_2 %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0)
+  
+  return(d_res$cid[d_res$time==60])
+}
+```
+
+1.  Generate a list of unique person IDs
+2.  Sample from list with replacement
+3.  Perform left-join on resampled list back to dataset
+
+### More efficient bootstrap
+
+Rather than sampling rows of the matrix with replacement, an alternative is to approximate the sampling with a frequency weight. If you randomly assign every observation a value drawn from a Poisson distribution with mean 1, and use this value as a frequency weight in estimators you will closely approximate the full bootstrap procedure as long as the overall sample size is \>100.[@hanley2006] This is very computationally efficient because you do not need to know the dataset size prior to assigning the frequency weight, and do not join or work with multiple large matrices.
+
+```{r }
+#| label: goodbootstrap-ex
+boot_it_2 = function(x) {
+  
+  setDT(x)
+  
+  x[, freqwt:=rpois(n=1, lambda=1), by = factor(id)] # <1>
+
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=x[x$assign==1, ], 
+                     family=binomial(), weights = freqwt) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=x[x$assign==0, ], 
+                     family=binomial(), weights = freqwt) 
+  
+  x$pr_1 = predict(d_glm_pe_1, newdata = x, 
+                              type='response') 
+  x$pr_0 = predict(d_glm_pe_0, newdata = x, 
+                             type='response') 
+
+  x[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  x[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_res = x %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), # <2>
+              pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt), # <2>
+              .groups = 'drop') %>% 
+    ungroup %>%
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res$cid[d_res$time==60])
+}
+```
+
+1.  Generate a frequency weight by group ID from a Poisson distribution with mean 1
+2.  Note the use of `weighted.mean()` versus `mean()` in other code.
+
+### Bayesian Bootstrap
+
+In addition to use of weighting, a Bayesian bootstrap which assigns weights from a uniform Dirichlet prior may also avoid some issues by smoothing out the distribution of weights, where the Poisson counts may fail due to collinearity issues from dropping observations in various bootstrap iterations.[@rubin1981]
+
+We initiate one bootstrap at a time. The uniform Dirichlet is then $~Gamma(1, 1)$ the same as $~exp(1)$, so the function uses random draws from an exponential distribution, then normalized. 
+
+```{r }
+#| label: bayeboot-ex
+boot_it_3 = function(x) {
+  
+  setDT(x)
+  
+  i_list = distinct(x, id) %>%
+  mutate(prior = rexp(n=n(), rate=1), # <1>
+         freqwt = prior / sum(prior)) # <2>
+
+  x = inner_join(x, i_list, by = 'id')
+
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=x[x$assign==1, ], 
+                     family=binomial(), weights = freqwt) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=x[x$assign==0, ], 
+                     family=binomial(), weights = freqwt) 
+  
+  x$pr_1 = predict(d_glm_pe_1, newdata = x, 
+                              type='response') 
+  x$pr_0 = predict(d_glm_pe_0, newdata = x, 
+                             type='response') 
+
+  x[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  x[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_res = x %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), 
+              pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt),
+              .groups = 'drop') %>% 
+    ungroup %>%
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  return(d_res$cid[d_res$time==60])
+}
+```
+1.  Dirichlet uniform prior (which is same as normalized vector drawm from exponential distribution with mean 1).
+
+### Benchmarking GLM methods
+
+```{r }
+#| label: benchmark-bs
+#| echo: false
+#| warning: false
+d_summ = microbenchmark(
+  `Resampling bootstrap` = boot_it_1(dta_c_panel),
+  `Poisson bootstrap` = boot_it_2(dta_c_panel),
+  `Bayesian bootstrap` = boot_it_3(dta_c_panel),
+  times = 20,
+  unit = "seconds"
+) 
+
+print(d_summ, signif=3)
+```
+
+### Comparison
+
+If you don't believe this provides similar coverage estimates, here are the intervals from 200 bootstraps with both procedures:
+
+```{r }
+#| label: bootproc-futureplan
+#| warning: false
+#| message: false
+#| echo: false
+library(furrr)
+boots = 500
+
+plan(multisession, workers = 10) # <1>
+
+resampling_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_1(dta_c_panel), 
+                                .options = furrr_options(seed=T)) # <2>
+
+poisson_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_2(dta_c_panel), 
+                                .options = furrr_options(seed=T)) # <2>
+
+bayes_res = future_map_dbl(1:boots, 
+                                function(x) boot_it_3(dta_c_panel), 
+                                .options = furrr_options(seed=T)) # <2>
+
+```
+
+1.  Assign number of CPU workers to job
+2.  The `seed=T` option is important because the bootstrap function uses RNG.
+
+```{r }
+#| label: bootproc-compare
+#| echo: FALSE
+#| tbl-cap: Distribution of risk differences by either bootstrap methods
+#| tbl-cap-location: bottom
+
+tibble(Resampling = resampling_res, 
+       Poisson = poisson_res,
+       Bayesian = bayes_res) %>%
+  pivot_longer(cols = c(Resampling, Poisson, Bayesian), names_to = 'Method', values_to = 'CID') %>%
+  group_by(Method) %>%
+  summarize(
+    min = min(CID),
+    `Lower CI` = quantile(CID, 0.025),
+    mean = mean(CID),
+    q50th = median(CID),
+    `Upper CI` = quantile(CID, 0.975),
+    max = max(CID),
+    SD = sd(CID)
+  ) %>%
+  kable(digits = 4, align = 'c') %>%
+  kable_styling()
+```

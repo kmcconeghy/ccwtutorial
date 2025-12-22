@@ -1,0 +1,556 @@
+---
+title: "Additional Topics"
+subtitle: "Reporting CCW results, and troubleshooting"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+
+library(here())
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+
+#increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+
+dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds')) 
+
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) 
+```
+
+# Evaluation of Target Trial Design Elements
+
+## Evaluation of Grace Period
+
+The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.
+
+Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn't change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results.
+
+# Model misspefication 
+
+## Kaplan-Meier Estimator
+
+A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is "naive" in that the artificial censoring is not considered, it is useful for the following reasons:
+
+1)  It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low.
+
+2)  The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g. more likely to be an error in coding than real).
+
+Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.
+
+## Estimation
+
+```{r }
+#| label: KM-est
+  d_mods = dta_c_person %>%
+  nest(data = -model) %>%
+  mutate(est_km = map(data, 
+                   ~broom::tidy(
+    survfit(Surv(time, event) ~ assign, data=.)) %>% # <1>
+    mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
+    ) %>%
+    arrange(time) %>%
+    select(-strata) %>%
+    mutate(pr_ev = 1-estimate) %>% # <2>
+    rename(pr_s = estimate) %>% # <2>
+    pivot_wider(id_cols = c(time), # <3>
+                names_from = assign, # <3>
+                values_from = c(pr_ev, pr_s, # <3>
+                                n.risk, n.event)) %>% # <3>
+    mutate(cir = pr_ev_1 / pr_ev_0, # <4>
+           cid = (pr_ev_1 - pr_ev_0)))) # <4>
+```
+
+1.  Naive estimator, K-M estimator, assignment is by clone (not person). `t_clone` is the follow-up time for each clone, taking into account artificial censoring.
+2.  `estimate` from the model is the survival probability, so probability of event is 1 - estimate
+3.  Data is in long form, so one colum per group with cumulative incidence/survival
+4.  Estimands, `cir` is ratio analogous to relative risk, and `cid` is analogous to risk difference
+
+## Summarize KM estimator
+
+```{r }
+#| label: gg-km
+#| fig-cap: "Figure 1. Naive Kaplan-Meier Estimator"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#|  - 'A not a cause of Y'
+#| layout-ncol: 2
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| echo: false
+  
+d_gg = d_mods %>%
+  mutate(km_gg = map(data, ~ggsurvplot(survfit(Surv(time, event) ~ assign, data=.),
+                            data=dta_c_person,
+                            fun = 'event',
+                            xlim = c(1, 60),
+                            xlab = 'Follow-up',
+                            break.time.by=6,
+                            palette = cbbPalette,
+                            linetype = 'strata',
+                            censor=F,
+                            cumevents=T,
+                            conf.int=F, pval=F,
+                            risk.table=T, risk.table.col = 'strata',
+                            risk.table.height=0.25, 
+                            ggtheme = theme_bw())))
+
+d_gg$km_gg[[1]] # A-> Y
+
+d_gg$km_gg[[2]] # X -> Y
+
+```
+
+## Cox model 
+
+For reference a cox model is also estimated, note it does not include X_t.  
+
+```{r }
+#| label: cox-est
+d_mods = d_mods %>%
+  mutate(est_cox = map(data, 
+                     function(x) {
+                       fit = coxph(Surv(time, event) ~ assign + female + age + X, data = x)
+      surv_adjustedcurves(fit = fit, variable = "assign", data = as.data.frame(x)) %>% # <2>
+      group_by(variable, time) %>% 
+        dplyr::filter(row_number()==1) %>% 
+      ungroup %>% 
+      mutate(pr_ev = 1 - surv) %>% 
+      pivot_wider(., id_cols =c('time'), 
+                  names_from = variable, 
+                  names_prefix = 'pr_ev_', 
+                  values_from = pr_ev  
+      ) %>% 
+      mutate(cid = pr_ev_1 - pr_ev_0,  
+             cir = pr_ev_1 / pr_ev_0)}) )
+```   
+
+# Pooled logistic regression
+
+Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. These steps are computationally intensive and so this step is important to test your code. The goal is to ensure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. An unadjusted PLR model should closely approximate the KM curves, if it doesn't then something is wrong. Either the data is too sparse (few events, follow-up exposure time etc.), or the code is wrong. 
+
+```{r }
+#| label: nest-dta
+d_mods_pnl = dta_c_panel %>%
+  nest(data = -model)
+```
+
+## Estimation
+
+The PLR model requires specification of a function of time. Many start with a quadratic polynomial (i.e. time + time\^2). In my own work, I have found this insufficient, and interestingly have found that linear splines work the best. You must decide for yourself. You could compute AIC or some other model fit statistic to select it empirically. I often compare the PLR estimates to the non-parametric estimates for validity. However this doesn't completely avoid issues, because the weighted estimates (time-varying covariates, interactions with time etc.) could conceivably diverge quite a bit from the unadjusted KM estimator. You can either estimate the outcome in a model with both clones combined in one dataset OR estimate cumulative incidences separately (two models with data limited to `assign==1` & `assign==0` respectively). In the combined data, you must specify an interaction between treatment (clone assignment) and f(time), e.g. `time + time^2 + treat + treat*time + treat*time^2`, shorthand below is `poly(time, 2, raw=T)*assign`.
+
+```{r }
+#| label: plr-naive-est
+d_mods_pnl = d_mods_pnl %>%
+  mutate(est_plr_nv = 
+           map(data, 
+               function(x) {
+                 d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=x, family=binomial()) # <1>
+                 d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
+                 d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
+                 d_plr_naive_est %>%
+                   group_by(assign) %>%
+                   mutate(pr_cumsurv = cumprod(pr_surv),
+                          pr_cumev = 1 - pr_cumsurv) %>% # <2>
+                   ungroup %>% # <3>
+                   pivot_wider(., id_cols =c('time'), # <3>
+                               names_from = assign, # <3>
+                               names_prefix = 'pr_ev_', # <3>
+                               values_from = pr_cumev # <3>
+                               ) %>%
+                   mutate(cid = pr_ev_1 - pr_ev_0, # <3>
+                          cir = pr_ev_1 / pr_ev_0)
+                 }))
+```
+
+1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
+2.  The cumulative incidence is 1 - cumulative event-free survival probability. To compute, you take the cumulative product by assignment group.
+3.  Reorganize data and summarize by group/time similar to above for the KM estimator.
+
+```{r }
+#| label: gg-plr-naive
+#| fig-cap-location: top
+#| echo: false
+#| eval: false
+#| fig-cap: "Figure 2. Unadjusted, unweighted cumulative incidences by treatment group (PLR)"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#|  - 'A not a cause of Y'
+#| layout-ncol: 2
+#| message: false
+#| warning: false
+
+d_gg = mutate(d_mods_pnl, km_gg = map(est_plr_nv, function(x) {
+    x %>%
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
+      scale_x_continuous(breaks = seq(0, 60, 6),
+                         limits = c(0, 60)) +
+      theme_bw() +
+      labs(x = 'Follow-up', y = 'Cumulative incidence')
+  }))
+    
+d_gg$km_gg[[1]] # A -> Y
+
+d_gg$km_gg[[2]] # X -> Y
+```
+
+```{r }
+#| label: gg-cmp-naive-models
+#| fig-cap-location: top
+#| fig-cap: "Figure 3. Comparison of Naive PLR versus KM estimator"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#|  - 'A not a cause of Y'
+#| layout-ncol: 2
+#| message: false
+#| warning: false
+
+d_ci_cmp = bind_rows(
+  select(d_mods, model, est_km) %>% unnest(cols = c(est_km)) %>%
+    mutate(Est = 'KM-Naive') %>%
+    select(model, Est, time, pr_ev_1, pr_ev_0, cid),
+  select(d_mods_pnl, model, est_plr_nv) %>% unnest(cols = c(est_plr_nv)) %>%
+    mutate(Est = 'PLR-Naive') %>%
+    select(model, Est, time, pr_ev_0, pr_ev_1, cid)
+) %>%
+    pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', 
+                 names_prefix = 'pr_ev_', values_to = 'pr_ev') %>%
+  nest(data = -model)
+  
+d_gg = mutate(d_ci_cmp, km_gg = map(data, function(x) {
+    d_gg_ci = x %>%
+      ggplot(aes(x=time, color = Est, Group = Est)) +
+      geom_line(aes(y = pr_ev, linetype=assign), linewidth=0.9) +
+      geom_point(aes(y = pr_ev, shape=assign), size=1.2) +
+      scale_x_continuous(breaks = seq(0, 60, 6),
+                         limits = c(0, 60)) +
+      scale_color_manual(values = cbbPalette) +
+      theme_bw() +
+      labs(x = '', y = 'Cumulative incidence') 
+    
+d_gg_rr = x %>%
+        ggplot(aes(x=time, color = Est, Group = Est)) +
+        geom_line(aes(y = cid), linewidth=1.1) +
+        scale_x_continuous(breaks = seq(0, 60, 6),
+                           limits = c(0, 60)) +
+        scale_color_manual(values = cbbPalette) +
+        theme_bw() +
+        labs(x = 'Follow-up', y = 'Risk Differences') 
+   
+   ggarrange(d_gg_ci, d_gg_rr, nrow=2, common.legend = T)
+  }))
+    
+d_gg$km_gg[[1]] # A -> Y
+
+d_gg$km_gg[[2]] # X -> Y
+```
+
+So the PLR model using a simple polynomial approximates the KM estimator. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:
+
+1.  It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.
+
+2.  The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the random noise of the KM estimator.
+
+3.  These initial steps will not guarantee a good fit after weighting is applied, it is only a first-look for diagnostic purposes.
+
+4. If the fit is not satisfying, then simply pick a different function of time. Many others to choose from, basis splines, `bs::splines(time, df=6, degree=1)`, or you can use a `mgcv()` for penalized splines etc. Also, consider specifying knots at specific time-points like the end of a grace period. 
+
+## Comparison of Covariate-adjusted PLR with Cox model
+
+Another approach is to compare a pooled logistic regression analysis to a time-invariant Cox model. If time-varying confounding not an issue, this should give a similar result. However, censoring weights are still necessary in final analysis even if no confounding.[@cain2010]
+
+```{r }
+#| label: glm-plr-covadj
+d_mods_pnl = d_mods_pnl %>%
+  mutate(est_plr_adj = 
+           map(data, 
+               function(x) {
+                 d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign + age + female + X, 
+                             data=x, family=binomial()) # <1>
+                 x$p.noevent0 <- predict(d_glm , x %>%
+                                      mutate(assign =1), type="response") # <2>
+                 x$p.noevent1 <- predict(d_glm, x %>%
+                                      mutate(assign =0), type="response") # <2>
+                setDT(x)
+                  x[, `:=`(pr_surv_1 = cumprod(p.noevent1)), by=list(id, assign)] # <3>
+                  x[, `:=`(pr_surv_0 = cumprod(p.noevent0)), by=list(id, assign)] # <3>
+                setDF(x)
+  
+                 x %>% # <4>
+                   group_by(time) %>% # <4>
+                   summarize(pr_ev_1 = mean(1-pr_surv_1),
+                             pr_ev_0 = mean(1-pr_surv_0), 
+                             .groups = 'drop') %>% # <4>
+                   ungroup %>% # <4>
+                   mutate(cid = pr_ev_1 - pr_ev_0, # <4>
+                          cir = pr_ev_1 / pr_ev_0) # <4>
+                 }))
+```
+
+1.  PLR model with some covariates for adjustment. (model fit for each treatment group)
+2.  Predict outcome under each assignment strategy.
+3.  Estimate cumulative survival using cumulative product, within person-clone
+4.  Summarize mean survival rates by time-period
+
+::: callout-note
+Note the outcome regression without weights is just for comparison and understanding, the final analysis must include probability weights for artificial censoring even if no confounding.
+:::
+
+```{r }
+#| label: time-dependent-cox
+#| message: FALSE
+#| warning: FALSE
+
+d_mods_pnl = d_mods_pnl %>%
+  mutate(est_cox_adj = 
+           map(data, 
+               function(x) {
+                 d_cox = coxph(Surv(enter, exit, event) ~ 
+                                 assign + female + age + X, 
+                               data = x) # <1>
+                 d_cox_est = surv_adjustedcurves(fit = d_cox, 
+                                                 variable = "assign", 
+                                                 data = as.data.frame(x)) %>% # <2>
+                   group_by(variable, time) %>% # <3>
+                     dplyr::filter(row_number()==1) %>% # <3>
+                   ungroup %>% # <3>
+                   mutate(pr_ev = 1 - surv) %>% # <3>
+                   pivot_wider(., id_cols =c('time'), # <3>
+                               names_from = variable, # <3> 
+                               names_prefix = 'pr_ev_', # <3>
+                               values_from = pr_ev) %>%  # <3> 
+      mutate(cid = pr_ev_1 - pr_ev_0, # <3> 
+             cir = pr_ev_1 / pr_ev_0) # <3> 
+               }))
+```
+
+For comparison, A time-dependent Cox model is fit.
+
+1.  Cox model, with time1, time2 parameters which represent the start and stop time of each interval. Note that althought the cox model is time-dependent and you could adjust for `X_t` this could be problematic, because X_t also includes time-points post treatment. In our synthetic data, X_t is not a collider (Treat -> X_t <- Outcome) or on the causal path (Treat -> X_t -> Outcome). 
+
+2.  Estimation of adjusted survival curves by treatment group, with subpopulations balanced using `conditional` method.[@acompar]
+3.  Summarizing survival probabilities by time
+
+```{r }
+#| label: gg-cmp-adj-models
+#| fig-cap-location: top
+#| fig-cap: "Figure 4. Comparison of adjusted PLR versus Cox estimator"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#|  - 'A not a cause of Y'
+#| layout-ncol: 2
+#| message: false
+#| warning: false
+
+d_ci_cmp = bind_rows(
+  select(d_mods_pnl, model, est_cox_adj) %>% unnest(cols = c(est_cox_adj)) %>%
+    mutate(Est = 'Cox-adj') %>%
+    select(model, Est, time, pr_ev_1, pr_ev_0, cid),
+  select(d_mods_pnl, model, est_plr_adj) %>% unnest(cols = c(est_plr_adj)) %>%
+    mutate(Est = 'PLR-adj') %>%
+    select(model, Est, time, pr_ev_0, pr_ev_1, cid)
+) %>%
+    pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', 
+                 names_prefix = 'pr_ev_', values_to = 'pr_ev') %>%
+  nest(data = -model)
+  
+d_gg = mutate(d_ci_cmp, cox_gg = map(data, function(x) {
+    d_gg_ci = x %>%
+      ggplot(aes(x=time, color = Est, Group = Est)) +
+      geom_line(aes(y = pr_ev, linetype=assign), linewidth=0.9) +
+      geom_point(aes(y = pr_ev, shape=assign), size=1.2) +
+      scale_x_continuous(breaks = seq(0, 60, 6),
+                         limits = c(0, 60)) +
+      scale_color_manual(values = cbbPalette) +
+      theme_bw() +
+      labs(x = '', y = 'Cumulative incidence') 
+    
+d_gg_rr = x %>%
+        ggplot(aes(x=time, color = Est, Group = Est)) +
+        geom_line(aes(y = cid), linewidth=1.1) +
+        scale_x_continuous(breaks = seq(0, 60, 6),
+                           limits = c(0, 60)) +
+        scale_color_manual(values = cbbPalette) +
+        theme_bw() +
+        labs(x = 'Follow-up', y = 'Risk Differences') 
+   
+   ggarrange(d_gg_ci, d_gg_rr, nrow=2, common.legend = T)
+  }))
+    
+d_gg$cox_gg[[1]] # A -> Y
+
+d_gg$cox_gg[[2]] # X -> Y
+```
+
+# Final Comparison
+
+```{r }
+#| label: tbl-compare-est
+#| tbl-cap-location: top
+#| tbl-cap: 'Comparison of estimates by model, cumulative incidences, risk differences and relative risks'
+#| warning: false
+#| message: false
+#| echo: false
+#| eval: false
+
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=dta_c_panel[assign==1, ], 
+                     family=binomial(), weights = marg_ipw) 
+
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[assign==0, ], 
+                     family=binomial(), weights = marg_ipw) 
+  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                             type='response') 
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') 
+
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_plrstabwt_est = dta_c_panel %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+ d_all_est = 
+  bind_rows(
+    select(d_km_est, time, pr_ev_0, pr_ev_1, cid, cir) %>%
+        mutate(Model = 'Kaplan-Meier'),
+    select(d_plr_naive_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'PLR-Naive'),
+    select(d_cox_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Cox'),
+    select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'PLR-Wtd'),
+    select(d_plrstabwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'PLR-Stab-Wtd'),
+    
+  ) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60))
+
+kables(
+  list(d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_0) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Incidence: No treatment initiation ever" = 6)),
+       d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_1) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Incidence: Treatment initiation at 12 months" = 6)),
+       d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Risk Differences" = 6)),
+       d_all_est %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cir) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Relative Risks" = 6))
+))
+
+```
+Note. The IPW-PLR finds a null effect, and similar results to a time-dependent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.
+
+# Weight distributions  
+### Overall IPW Distribution  
+
+#### Unstabilized weights  
+
+```{r }
+#| label: desc-ipw
+#| echo: false
+#| eval: false
+  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0])
+```
+
+#### Marginal Stabilized weights  
+
+```{r }
+#| label: desc-marg_ipw
+#| echo: false
+  summary(dta_c_panel$marg_ipw[dta_c_panel$marg_ipw!=0])
+```
+
+The unstabilized weights floor at 1, and we see high weights assigned to some. The marginal weights have a mean of 1 (expected). 
+
+### IPW Distribution at end of grace period for treatment clones
+
+The weights at the end of the grace period are key so its good to examine them directly: 
+
+```{r }
+#| label: desc-ipw-grace
+#| echo: false
+#| eval: false
+  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0 & dta_c_panel$assign==1 & dta_c_panel$time==12])
+```
+
+You can also plot weights across time for diagnostics:
+
+```{r }
+#| label: desc-ipw-time
+#| fig-cap: Distribution of Censoring Weights Across Time
+#| fig-cap-location: top
+#| eval: false
+
+dta_c_panel %>%
+    dplyr::filter(marg_ipw!=0) %>%
+ ggplot(., aes(x = cut_width(time, 12), y = marg_ipw)) +
+  geom_violin(aes(group = cut_width(time, 12)), 
+               scale = "width", fill = cbbPalette[1], alpha = 0.5) +
+  stat_summary(fun = "mean",
+               geom = "point",
+               color = cbbPalette[2], size=2) +
+  geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
+  scale_x_discrete(labels = seq(0, 60, 12)) +
+  labs(x = "Follow-up", y = "IPW", ) +
+  theme_bw()
+```
+
+Another way to examine the weights is to look at the weighted counts of individuals at risk, and number of events pre- and post-weighting:
+
+```{r }
+#| label: weight-table
+#| tbl-cap: Unweighted and Weighted Counts, N at risk
+#| tbl-cap-location: top
+#| eval: false
+dta_c_panel %>%
+  group_by(time, assign) %>%
+  summarize(n = sum(ipw!=0), 
+            n_wt = sum(ipw),
+            .groups = 'drop') %>%
+  pivot_wider(id_cols = time, names_from = assign, values_from = c(n, n_wt)) %>%
+  dplyr::filter(time %in% c(1, 12, 30, 60)) %>%
+  rename(`Time` = time,
+         `Unweighted, assign=0` = n_0,
+         `Unweighted, assign=1` = n_1,
+         `Weighted, assign=0` = n_wt_0,
+         `Weighted, assign=1` = n_wt_1,
+         ) %>%
+  kable(align='c', digits =0) %>%
+  kable_styling()
+```
+
+The size of the unweighted, and weighted counts may identify problems. 

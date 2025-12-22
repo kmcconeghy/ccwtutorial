@@ -1,0 +1,14 @@
+---
+title: "Appendix"
+bibliography: references.bib
+---
+
+# Sections {#sec-sections}
+
+1. [Synthetic Data](app_01_syndata.qmd): Explanation of simulation data
+2. [Bootstrap](app_02_boot.qmd): Some comparisons of bootstrap methods
+3. [Computation efficiency](app_03_speed.qmd): Some comparisons of bootstrap methods
+
+::: {#refs}
+
+:::

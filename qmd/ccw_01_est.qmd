@@ -1,0 +1,177 @@
+---
+title: "Estimation"
+bibliography: references.bib
+---
+
+```{r }
+#| label: setup
+#| echo: false
+#| message: false
+#| 
+library(here)
+library(purrr)
+
+source(here('scripts', 'setup.R'), echo=F)
+# Set seed for reproducibility
+set.seed(42)
+
+ #increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+  
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
+  dplyr::filter(model == 'ay')
+```
+
+# Data
+
+We continue the below using the cloned dataset panel generated in [Data](01_syndata.v3.qmd).
+
+# IPCW Pooled Logistic Regression {#ipcwplr}  
+
+::: callout-note
+There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.
+:::
+
+## Build a longitudinal panel
+
+The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.
+
+```{r }
+#| label: est-censor-prob
+#| warning: FALSE
+  
+  # Numerator (margin probability)
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T), # <1>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
+  
+  dta_c_panel$pr_censnum = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <1>
+
+  # Denominator 
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t, # <2>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <2>
+  
+  dta_c_panel$pr_censdenom = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+```
+
+1.  Marginal probability of no censoring. 
+2.  Conditional probability (covariate-adjusted) for no censoring
+
+::: callout-note
+There is some controversy in this procedure. Others have not modeled the censoring probability off of a person-unique (no clones) dataset with treatment times, but rather directly in the cloned dataset with the outcome of "censoring" where that may mean treatment initiation or some other thing.[@gaber2024]
+:::
+
+## Calculation of weights
+
+This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to the [Weighting scheme](ccw_00_intro.qmd) section for further discussion.
+
+```{r }
+#| label: cpt-weights
+  setDT(dta_c_panel)
+  
+  dta_c_panel[, ipw := fcase(
+    assign==0 & censor==0, 1 / (1-pr_censdenom), # <1>
+    assign==0 & censor==1, 0,
+    assign==1 & time < 12, 1, # <2>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <3> 
+    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_censdenom), # <4> 
+    assign==1 & time == 12  & t_treat  >12 & event==0, 0, # <5> 
+    assign==1 & time == 12  & t_treat  >12 & event==1, 1, # <6> 
+    assign==1 & time > 12, 1 # <7>
+  )]
+  
+  dta_c_panel[, marg_ipw := fcase( # <8>
+    assign==0 & censor==0, (1-pr_censnum) / (1-pr_censdenom), # <8>
+    assign==1 & time == 12 & t_treat   ==12 & censor==0, pr_censnum / (pr_censdenom), # <8>
+    default = ipw # <8>
+  )]
+  
+  dta_c_panel[, `:=`(ipw = cumprod(ipw), # <9>
+                     marg_ipw = cumprod(marg_ipw)), # <9>
+               by=list(id, assign)] # <9>
+```
+
+1.  (assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored
+2.  (assign=1) Clones cannot artificially censor prior to grace period
+3.  (assign=1) If treatment started prior to grace window ending, the clone cannot censor
+4.  (assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window).
+5.  (assign=1) If a clone is not treated, and does not die (`event=1`) they censor at the end of the window
+6. If died in last interval (`event=1`), do not set weight to zero. This is a misstep others have done, if the person dies at the end of the interval, then that is still consistent with treatment strategy (i.e. they died before end of grace window when they were supposed to recieve treatment) so they are not censor=1 and death is counted.
+7. (assign=1) Set post-grace period weights = 1 for all.
+8.  For a marginal IPW, numerator of 1 is replaced with marginal probability of censoring at each tiempoint.
+9.  After setting these conditions, compute the cumulative product of the weights.
+
+::: callout-note
+Be very careful with IPW truncation with this design. If the probability of treatment is very low, then those treated at the end of the grace period will have very large weights. If you truncate at 99% for example, it could mostly just truncate the weights of those treated at the end of the grace period, and this could severely bias estimates. These persons are meant to account for all those being artificially censored in the treatment group for non-treatment and so will likely have large weights by design. 
+:::
+
+Now with the estimated weights, it is simple to generate weighted cumulative incidences:
+
+```{r }
+#| label: est-plr-wt
+#| warning: FALSE  
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
+                   data=dta_c_panel[dta_c_panel$assign==1, ], # <1>
+                   family=binomial(), weights = ipw) # <1>
+  # <1>
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
+                   data=dta_c_panel[dta_c_panel$assign==0, ], # <1>
+                     family=binomial(), weights = ipw) # <1>
+  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, # <2>
+                             type='response') # <2>
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, # <2>
+                             type='response') # <2>
+```
+
+1.  Estimate for each assignment group separately. This isn't necessary but its good practice, and if you are adjusting for other covariates may give different results. Note the `weights = ipw` argument. R `glm()` will generate a warning message because the weighted counts are "non-integer", but this is expected and not a problem.
+2.  Fitted probabilities from each model
+
+```{r }
+#| label: survprob
+#| 
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  
+  d_plrwt_est = dta_c_panel %>% # <2>
+    group_by(time) %>% # <2>
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% # <2>
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, # <2>
+           cir = pr_ev_1 / pr_ev_0) # <2>
+```
+
+1.  Cumulative product
+2.  Summarize across group, time as before.
+
+```{r }
+#| label: gg-plr-weighted
+#| fig-cap: Weighted PLR Analysis
+#| fig-cap-location: top
+#| echo: false
+#| eval: false
+    d_gg_ci = d_plrwt_est %>%
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
+      scale_x_continuous(breaks = seq(0, 60, 6),
+                         limits = c(0, 60)) +
+      theme_bw() +
+      labs(x = 'Follow-up', y = 'Cumulative incidence')
+    
+    d_gg_ci
+```
+
+
+
+# References
+
+::: {#refs}
+:::

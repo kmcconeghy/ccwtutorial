@@ -46,5 +46,62 @@
   },
   "02_est.v2.qmd": {
     "02_est.v2.html": "c178b338"
+  },
+  "02_disctime.v1.qmd": {
+    "02_disctime.v1.html": "a69f48bc"
+  },
+  "04_diagnostics.qmd": {
+    "04_diagnostics.html": "37d0a932"
+  },
+  "05_advanced.qmd": {
+    "05_advanced.html": "4ceb3901"
+  },
+  "06_appendix.qmd": {
+    "06_appendix.html": "30c0bb5f"
+  },
+  "qmd/app_01_syndata.qmd": {
+    "app_01_syndata.html": "4c35e732"
+  },
+  "qmd/about.qmd": {
+    "about.html": "479595e5"
+  },
+  "qmd/app_02_boot.qmd": {
+    "app_02_boot.html": "41b4c590"
+  },
+  "qmd/app_summ.qmd": {
+    "app_summ.html": "6f59118e"
+  },
+  "qmd/ccw_00_intro.qmd": {
+    "ccw_00_intro.html": "55cab110"
+  },
+  "qmd/app_03_speed.qmd": {
+    "app_03_speed.html": "5e172541"
+  },
+  "qmd/ccw_01_est.qmd": {
+    "ccw_01_est.html": "cbcfcd68"
+  },
+  "qmd/ccw_02_inf.qmd": {
+    "ccw_02_inf.html": "5bffff5f"
+  },
+  "qmd/ccw_03_diag.qmd": {
+    "ccw_03_diag.html": "84764a4f"
+  },
+  "qmd/ccw_summ.qmd": {
+    "ccw_summ.html": "ca7cf620"
+  },
+  "qmd/index.qmd": {
+    "index.html": "80054f0d"
+  },
+  "qmd/NEWS.md": {
+    "NEWS.html": "5e6f6196"
+  },
+  "qmd/surv_disctime.qmd": {
+    "surv_disctime.html": "d55f25c2"
+  },
+  "qmd/surv_kaplan.qmd": {
+    "surv_kaplan.html": "74ffa44a"
+  },
+  "qmd/surv_summ.qmd": {
+    "surv_summ.html": "99cb68f6"
   }
 }
