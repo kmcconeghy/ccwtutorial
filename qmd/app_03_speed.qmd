@@ -114,4 +114,4 @@ kable(digits = 5) %>%
   kable_styling()
 ```
 
-Finally parallel computation is an option. The efficiency of this depends on how the data is setup and what steps are running in parallel, it is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each. However, parglm breaks up the dataset into chunks and uses parallel processing to evaluate each subset which can be very efficient. 
+Parallel computation is also an option to speed up workflow. The efficiency of this depends on how the data is setup and what steps are running in parallel. It is not efficient to hold several very large datasets in memory at once so that a CPU worker can be assigned to each. However, parglm breaks up the dataset into chunks and uses parallel processing to evaluate each subset which can be very efficient. 

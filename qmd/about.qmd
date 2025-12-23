@@ -1,23 +1,17 @@
 ---
-title: "About"
+title: "Homepage"
 links:
   text: Brown University
   href: https://vivo.brown.edu/display/kmcconeg
 ---
 
-About this site
+# About this site {.unnumbered}
 
-# Preface to current version {.unnumbered}
+The current tutorial version demonstrates a basic start to finish example of the "Clone-Censor-Weight" approach. The tutorial is a work in progress, and continually updated based on feedback, advances in science or as solutions to particular problems become known. 
 
-The current tutorial version should show a basic start to finish example of the "Clone-Censor-Weight" approach. It is performed on a simulated dataset with no particular consideration for different types of confounding, or specialized cases etc. The tutorial will be updated when possible based on feedback, advances in science or as solutions to particular problems become known. 
+# About the author
 
-The synthetic data was manually created for this project. 
-
-*Some planned guides:*
-
-1. Aggregation of continuous times into discrete intervals
-2. Assessment of covariate balance in weighted sample
-3. Covariate selection
+I am a pharmacoepidemiologist, and infectious diseases-trained pharmacist. My primary appointment is with the Providence VA Healthcare System. I am an investigator at the [THRIVE COIN](https://hsrd.research.va.gov/centers/thrive/investigators.cfm). I also am an adjunct assistant professor at Brown University [Link](https://vivo.brown.edu/display/kmcconeg). 
 
 # Versions {.unnumbered}  
 

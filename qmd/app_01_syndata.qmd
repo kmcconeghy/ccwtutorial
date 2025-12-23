@@ -330,7 +330,7 @@ saveRDS(d_sv, here('dta', 'dta_cohort.Rds'))
 
 # Cloning procedure {#sec-cloning}
 
-The cloning procedure is very project specific, tied to how the treatment strategy is defined so it is hard to give general recommendations here. For this tutorial, we describe an arbitrary window in which treatment is expected to initiate and outline strategies around this:
+The cloning procedure is very project specific, tied to how the treatment strategy is defined so it is hard to give general recommendations here. For this tutorial, we describe an arbitrary window in which treatment is expected to initiate within 12 time periods and outline strategies around this:
 
 **Treatment Strategies: **  
 
@@ -339,7 +339,7 @@ The cloning procedure is very project specific, tied to how the treatment strate
 2) Initiate treatment within 12 time periods (days, weeks etc.) and if not then treatment will initiate on week 12  
 
 ::: callout-note
-The grace window is a funny concept when you first consider it. This does not reflect any trial I have ever heard of actually being done but may identify an interesting or important effect. It is essentially outlying a treatment "protocol" and saying what if everyone adhered to this protocol counterfactual to what was observed.
+The grace window is a funny concept when you first consider it. This does not reflect any trial I have ever heard of actually being done but may identify an interesting or important effect. It is essentially outlying a treatment "protocol" and saying what if everyone adhered to this protocol counterfactual to what was observed or some other intervention (i.e. no one initiates treatment).
 :::
 
 To clone, you make two copies of the data, and make a new `artifical censoring` variable, which is a censoring time for the period when clones observed data are no longer consistent with their assigned strategy.  
@@ -373,7 +373,7 @@ data_cloned = bind_rows( # <1>
 3. Update failure times and events counting for artificial censoring
 
 ::: callout-note
-Note how we do not specific death or some other censoring event, these complicate things and are common in applied work. I keep it simple here. 
+Note how we do not specify death or some other competing  event, competing events complicate things but are common in applied work. I keep it simple here. 
 :::
 
 # Summary of simulated, cloned data-set  

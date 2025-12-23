@@ -14,26 +14,29 @@ website:
     style: 'docked'
     search: true
     contents:
-      - text: Home
-        href: index.qmd
+      - text: "Introduction"
+        href: qmd/index.qmd
       - section: 'Survival Analysis'
-        href: 'surv_summ.qmd'
+        href: qmd/surv_00_summ.qmd
         contents:
-        - surv_kaplan.qmd
-        - surv_disctime.qmd
+        - text: 'Kaplan-Meier Estimator'
+          href: qmd/surv_01_kaplan.qmd
+        - qmd/surv_02_disctime.qmd
       - section: 'Cloning-Censoring-Weighting'
-      - href: 'ccw_summ.qmd'
+        href: qmd/ccw_00_summ.qmd
         contents:
-        - ccw_00_intro.qmd
-        - ccw_01_est.qmd
-        - ccw_02_inf.qmd
-        #- ccw_03_diag.qmd
-      - section: 'Appendix' 
-      - href: 'app_summ.qmd'
-        contents: 
-        - app_01_syndata.qmd
-        - app_02_boot.qmd
-        - app_03_speed.qmd
+        - qmd/ccw_01_intro.qmd
+        - qmd/ccw_02_est.qmd
+        - qmd/ccw_03_inf.qmd
+        - qmd/ccw_04_diag.qmd
+      - section: 'Appendix'
+        href: qmd/app_00_summ.qmd
+        contents:
+        - qmd/app_01_syndata.qmd
+        - qmd/app_02_boot.qmd
+        - qmd/app_03_speed.qmd
+      - text: 'About'
+        href: qmd/about.qmd
 format:
   html:
     theme: cosmo

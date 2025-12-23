@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Appendix – Tutorial on Clone-Censor-Weight</title>
+<title>Cloning, Censoring, Weighting – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,29 +23,29 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5d2e30ad26079c1dae90a1fd11eba2b9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
+  "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
+  "panel-placement": "start",
+  "type": "textbox",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -67,73 +67,184 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<script src="../site_libs/kePrint-0.0.1/kePrint.js"></script>
 
-<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link href="../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-sidebar docked quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Section</span>
-    </a>
-  </div>
-            <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./02_est.v2.html"> 
-<span class="menu-text">Estimators</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./03_inference.html"> 
-<span class="menu-text">Inference</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./04_advanced.qmd"> 
-<span class="menu-text">Additional Topics</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./05_appendix.qmd"> 
-<span class="menu-text">Appendix</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./01_syndata.v3.html"> 
-<span class="menu-text">Data</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
-</div>
-      </div> <!-- /container-fluid -->
-    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Cloning-Censoring-Weighting</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Cloning, Censoring, Weighting</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
   <div id="quarto-announcement" data-announcement-id="3973cc0e9e77730972a08b31df6e0a48" class="alert alert-primary hidden"><i class="bi bi-info-circle quarto-announcement-icon"></i><div class="quarto-announcement-content">
 <p><strong>Alert</strong> - This is a work-in-progress, errors may exist in code</p>
 </div><i class="bi bi-x-lg quarto-announcement-action"></i></div>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Tutorial on Clone-Censor-Weight</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/surv_01_kaplan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Discrete Time Analysis</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_02_est.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Estimation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_03_inf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inference</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_04_diag.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Additional Topics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/app_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_01_syndata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate data for CCW project</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_02_boot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bootstrapping methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_03_speed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational methods for speed</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -141,9 +252,18 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#grace-windows" id="toc-grace-windows" class="nav-link active" data-scroll-target="#grace-windows">Grace windows</a></li>
-  <li><a href="#weight-assignments-in-ccw-design" id="toc-weight-assignments-in-ccw-design" class="nav-link" data-scroll-target="#weight-assignments-in-ccw-design">Weight assignments in CCW design</a>
+  <li><a href="#sec-weightscheme" id="toc-sec-weightscheme" class="nav-link" data-scroll-target="#sec-weightscheme">Weight assignments in CCW design</a>
   <ul class="collapse">
   <li><a href="#simple-example-probability-weighting-with-a-grace-period" id="toc-simple-example-probability-weighting-with-a-grace-period" class="nav-link" data-scroll-target="#simple-example-probability-weighting-with-a-grace-period">Simple example: Probability weighting with a grace period</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#case-study" id="toc-case-study" class="nav-link" data-scroll-target="#case-study">Case Study</a></li>
+  <li><a href="#stepwise-approach" id="toc-stepwise-approach" class="nav-link" data-scroll-target="#stepwise-approach">Stepwise approach</a>
+  <ul class="collapse">
+  <li><a href="#censoring-dataset" id="toc-censoring-dataset" class="nav-link" data-scroll-target="#censoring-dataset">Censoring dataset</a></li>
+  </ul></li>
+  <li><a href="#estimation-of-weights" id="toc-estimation-of-weights" class="nav-link" data-scroll-target="#estimation-of-weights">Estimation of weights</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -151,9 +271,9 @@ ul.task-list li input[type="checkbox"] {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Cloning-Censoring-Weighting</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Cloning, Censoring, Weighting</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Appendix</h1>
+<h1 class="title">Cloning, Censoring, Weighting</h1>
 </div>
 
 
@@ -209,7 +329,7 @@ Note
 <p>This censoring is <em>artificial</em> because we can still observe data for that person but we choose to ignore it because of their non-adherence to the assigned strategy. So although identical at baseline the groups observed characteristics (distributions of covariates) will diverge across time if the artificial censoring is informative and non-random (almost always true). Usually the artificial censoring is intrinsically linked to initiation of treatment, so the artificial censoring will introduce bias if the initiation of treatment also has common causes with the outcome of interest.</p>
 <p>In order to adjust for this bias, inverse probability weighting is used. However, proper application of the weights requires some consideration of the probability of treatment initiation, grace periods and the artificial censoring mechanism.</p>
 </section>
-<section id="weight-assignments-in-ccw-design" class="level1">
+<section id="sec-weightscheme" class="level1">
 <h1>Weight assignments in CCW design</h1>
 <section id="simple-example-probability-weighting-with-a-grace-period" class="level2">
 <h2 class="anchored" data-anchor-id="simple-example-probability-weighting-with-a-grace-period">Simple example: Probability weighting with a grace period</h2>
@@ -503,6 +623,100 @@ Note
 <p>How does one carry the IPW weight forward after the grace period? In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point. However, if another censoring mechanism was important (i.e.&nbsp;censor due to death or loss to follow-up), then you might compute that probability separately and take the product of the two.</p>
 </div>
 </div>
+</section>
+</section>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<section id="case-study" class="level2">
+<h2 class="anchored" data-anchor-id="case-study">Case Study</h2>
+<p>For the following, I simulated a dataset with treatment, <code>treat</code> or A, and treatment strategy <code>assign</code> which is either 1) receive treatment by time period 12, or 2) never receive treatment through follow-up. The outcome <code>Y</code> is designed to be a function of <code>treat</code>, <code>X</code>, <code>age</code> and gender (<code>female</code>) in model ‘xy’, and in model ‘ay’ there is a direct causal effect of A (<code>treat</code>) on Y. The effect is in opposite direction to the confounder. <code>X</code> is recorded as the baseline value at time zero, and <code>X_t</code> which varies across time.</p>
+<p>So the naive estimate, not adjusting for <code>X</code> should identify a positive association between treatment and outcome in model ‘xy’ but little to no association in ‘ay’, while adjustment for <code>X</code> and <code>X_t</code> should find a null association in ‘xy’ but an association in ‘ay’. This data and assumptions are used to validate the code procedures below. The sample size is 1000, so associations may not be statistically significant.</p>
+<p>See: <a href="01_syndata.v3.qmd">Data</a> for full explanation of procedure for generating data.</p>
+</section>
+<section id="stepwise-approach" class="level2">
+<h2 class="anchored" data-anchor-id="stepwise-approach">Stepwise approach</h2>
+<p>I recommend the following stepwise procedure in estimation:</p>
+<dl>
+<dt>PLR</dt>
+<dd>
+<p>Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.</p>
+</dd>
+<dt>KM</dt>
+<dd>
+<p>Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.</p>
+</dd>
+</dl>
+<ol type="1">
+<li>Estimate unweighted/unadjusted cumulative incidences with KM method</li>
+<li>Estimate a PLR model without weights</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Compare KM vs PLR</li>
+</ol>
+<!-- -->
+<ol start="3" type="1">
+<li>Estimate censoring weights</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li><p>Estimate PLR for treatment initiation</p>
+<p>A. Estimate treatment model</p>
+<p>B. Compare KM / PLR estimates</p>
+<p>C. Compute IPCW</p>
+<p>D. Examine IPCW weights for extreme values, non-sensical values</p>
+<p>E. Examine balance in covariates across time</p></li>
+<li><p>Generate “table 1” with some weighted difference statistic (e.g.&nbsp;wSMD)</p></li>
+</ol>
+<!-- -->
+<ol start="4" type="1">
+<li>Estimate weighted outcome models</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Estimate a weighted outcome model, no covariate adjustment</li>
+<li>Estimate a weighted outcome + covariates (usually main estimate)</li>
+</ol>
+<!-- -->
+<ol start="5" type="1">
+<li>Once satisfied with stability from steps 1-4, execute bootstraps</li>
+<li>Finalize report</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>provide KM, Cox unweighted, and PLR unweighted estimates in an appendix</li>
+<li>main results reported should be the IPCW-weighted PLR analysis</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of <a href="https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf">Causal Inference: What If</a>, which explains why the odds approximates the hazard at a given time-point <em>k</em>, as long as the hazard is small (i.e.&nbsp;rare event) at time <em>k</em>.</p>
+</div>
+</div>
+<section id="censoring-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="censoring-dataset">Censoring dataset</h3>
+<p>In our example, artificial censoring is tied to whether treatment is initiated within a grace window or not. This is specific to a project’s definitions of treatment so proceed with caution. The basic idea is that since clones censor according to whether treatments starts (or not), the probability of censoring is essentially the probability of initiating treatment. So we can use the clones assigned to no treatment across all follow-up timepoints.</p>
+<ol type="1">
+<li>This may be a little confusing, but I am taking clones where assign=0 from the <code>dta_c_panel</code> dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.</li>
+<li>We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this but for other projects this step will have to be modified if the comparator is different.</li>
+</ol>
+</section>
+</section>
+<section id="estimation-of-weights" class="level2">
+<h2 class="anchored" data-anchor-id="estimation-of-weights">Estimation of weights</h2>
+<p>The probability weight, AKA inverse probability censoring weight (IPCW) or inverse probability of no loss to follow-up is estimated in this way:</p>
+<p><span class="math display">\[
+W^C_i = \prod^{T}_{t_0} \frac{P(C_t = 0| \overline{C}_{t-1} = 0)}{P(C_t=0 | X=x, \overline{L}_{t-1}=l_{i, t-1}, \overline{C}_{t-1}=0)}
+\]</span></p>
+<p>C in this case means censoring, but censoring occurs according to treatment strategy, so it really is the probability of adhering to the treatment you were assigned to. Stabilized weights are tricky, here we are using the marginal stabilized weight which is the probability of no censoring at each timepoint. The denominator is the conditional probability accounting for fixed, i.e.&nbsp;baseline, (X) and time-varying (L) covariates.</p>
+<p>We fit a model with the outcome of censoring, including the key variables. Then we add fitted probabilities back to the outcome dataset, and calculate cumulative probabilities and weights.</p>
 
 
 </section>

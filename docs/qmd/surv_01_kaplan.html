@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>news – Tutorial on Clone-Censor-Weight</title>
+<title>Kaplan-Meier Estimator – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,32 +20,51 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-5d2e30ad26079c1dae90a1fd11eba2b9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
+  "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
+  "panel-placement": "start",
+  "type": "textbox",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -68,130 +87,241 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-sidebar docked quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Section</span>
-    </a>
-  </div>
-            <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./02_est.v2.html"> 
-<span class="menu-text">Estimators</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./03_inference.html"> 
-<span class="menu-text">Inference</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./04_advanced.qmd"> 
-<span class="menu-text">Additional Topics</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./05_appendix.qmd"> 
-<span class="menu-text">Appendix</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./01_syndata.v3.html"> 
-<span class="menu-text">Data</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
-</div>
-      </div> <!-- /container-fluid -->
-    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
   <div id="quarto-announcement" data-announcement-id="3973cc0e9e77730972a08b31df6e0a48" class="alert alert-primary hidden"><i class="bi bi-info-circle quarto-announcement-icon"></i><div class="quarto-announcement-content">
 <p><strong>Alert</strong> - This is a work-in-progress, errors may exist in code</p>
 </div><i class="bi bi-x-lg quarto-announcement-action"></i></div>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Tutorial on Clone-Censor-Weight</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/surv_01_kaplan.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Kaplan-Meier Estimator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Discrete Time Analysis</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_02_est.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Estimation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_03_inf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inference</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_04_diag.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Additional Topics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../qmd/app_00_summ.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Appendix</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_01_syndata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulate data for CCW project</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_02_boot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bootstrapping methods</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/app_03_speed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational methods for speed</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#version-0.0.1-02-19-2025" id="toc-version-0.0.1-02-19-2025" class="nav-link active" data-scroll-target="#version-0.0.1-02-19-2025">Version 0.0.1 02-19-2025</a></li>
-  <li><a href="#version-0.1-05-12-2025" id="toc-version-0.1-05-12-2025" class="nav-link" data-scroll-target="#version-0.1-05-12-2025">Version 0.1 05-12-2025</a></li>
-  <li><a href="#version-0.2-05-13-2025" id="toc-version-0.2-05-13-2025" class="nav-link" data-scroll-target="#version-0.2-05-13-2025">Version 0.2 05-13-2025</a></li>
-  <li><a href="#version-0.3-05-21-2025" id="toc-version-0.3-05-21-2025" class="nav-link" data-scroll-target="#version-0.3-05-21-2025">Version 0.3 05-21-2025</a></li>
-  <li><a href="#version-0.5-05-22-2025" id="toc-version-0.5-05-22-2025" class="nav-link" data-scroll-target="#version-0.5-05-22-2025">Version 0.5 05-22-2025</a></li>
-  <li><a href="#version-0.6-07102025" id="toc-version-0.6-07102025" class="nav-link" data-scroll-target="#version-0.6-07102025">Version 0.6 07/10/2025</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#time-to-event" id="toc-time-to-event" class="nav-link" data-scroll-target="#time-to-event">Time-to-event</a></li>
+  <li><a href="#definitions-and-notation" id="toc-definitions-and-notation" class="nav-link" data-scroll-target="#definitions-and-notation">Definitions and Notation</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Kaplan-Meier Estimator</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
 
-<section id="version-0.0.1-02-19-2025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.0.1-02-19-2025">Version 0.0.1 02-19-2025</h2>
-<p>Project set-up</p>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Time is almost always discretely measured.</p>
+<p>Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.</p>
+<p>It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.</p>
+<section id="time-to-event" class="level2">
+<h2 class="anchored" data-anchor-id="time-to-event">Time-to-event</h2>
+<p>It is assumed here that the basic measurement of the outcome includes a failure time (time at which follow-up ceases) and a binary indicator for whether the event occurred or not by that time point. The measure presumes a clear origin or time zero, and knowledge of the scale or unit of time (days, years etc.). In most applied work, the event can only occur once. For those with no observed event-time, meaning the event did not occur through the last-observable time point, the observed time is some other endpoint (death, administrative end, loss-to-follow-up), these non-events are referred to as “censored” meaning follow-up ceased at that time. The observed time for a person must be the minimum of event or censoring time.</p>
 </section>
-<section id="version-0.1-05-12-2025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.1-05-12-2025">Version 0.1 05-12-2025</h2>
-<ul>
-<li>Synthetic data set-up for observed effect by treatment due to confounding; no effect after appropriate adjustment</li>
-<li>Estimator file complete; additional edits for clarity and alternative approaches</li>
-<li>Inference file TBD</li>
-<li>Advanced file discusses some bootstrap and computation approaches</li>
-<li>Appendix TBD</li>
-</ul>
+<section id="definitions-and-notation" class="level2">
+<h2 class="anchored" data-anchor-id="definitions-and-notation">Definitions and Notation</h2>
+<p>The outcome need not be death, but often is, and individuals must be alive to experience events, censoring etc. so most of the terminology and notation refer to “survival”.</p>
+<p>The letter T/t is typically used to denote time, where <em>T</em> may refer to total time observed, and <em>t</em> an individual time-period, <span class="math inline">\(T = {1, ..., t}\)</span>. Since time is usually discretely defined, for example as days, then <span class="math inline">\(t\)</span> can be thought of as an interval, <span class="math inline">\(t=1\)</span> meaning from the end of the prior interval (day 0) through the next (but not including) interval, day 2. <span class="math inline">\(T=t\)</span> would mean a event or censor time occurred in interval <span class="math inline">\(t\)</span>. A binary indicator for whether the event occured <span class="math inline">\(E = {0, 1}\)</span>.</p>
+<p>Survival probability, <span class="math inline">\(S(t) = Pr(T&gt;t)\)</span>, is the probability of survival beyond time-point <em>t</em>.</p>
+<p>Cumulative incidence, <span class="math inline">\(R(t) = Pr(T&lt;=t)\)</span>, is the 1-probability of survival, the probability the event occurred up to and including time-point <em>t</em>.</p>
+<p>Hazard, <span class="math inline">\(h(t) = Pr(E_t=1|E_{t-1}=0)\)</span>, the probability of an event at time <em>t</em>, conditional on event-free survival up to that point, sometimes described as the “instantaneuous hazard”.</p>
+<p>Cumulative Hazard, <span class="math inline">\(H(t)\)</span></p>
+<p>The terms are related, <span class="math inline">\(S(t) = 1 – R(t)\)</span>. <span class="math inline">\(h(t)=R(t)/S(t)\)</span>, <span class="math inline">\(H(t) = -log[S(t)]\)</span> and <span class="math inline">\(S(t) = e –H(t)\)</span>.</p>
 </section>
-<section id="version-0.2-05-13-2025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.2-05-13-2025">Version 0.2 05-13-2025</h2>
-<ul>
-<li>Added Parallel computation step to Advanced Topics page</li>
-<li>Setup for the inference page (WIP)</li>
-</ul>
 </section>
-<section id="version-0.3-05-21-2025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.3-05-21-2025">Version 0.3 05-21-2025</h2>
-<ul>
-<li>Revamped synthetic data for time-varying confounding</li>
-<li>Added cox models to estimator page</li>
-<li>switched to color-blind friendly color-scheme</li>
-</ul>
-</section>
-<section id="version-0.5-05-22-2025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.5-05-22-2025">Version 0.5 05-22-2025</h2>
-<ul>
-<li>Tutorial appears to work as expected, some edits to text and code to be more concise</li>
-</ul>
-</section>
-<section id="version-0.6-07102025" class="level2">
-<h2 class="anchored" data-anchor-id="version-0.6-07102025">Version 0.6 07/10/2025</h2>
-<ul>
-<li>Included Bayesian bootstrap</li>
-<li>Added diagnostic section, and moved some of the old estimation steps to this section</li>
-</ul>
+<section id="references" class="level1">
+<h1>References</h1>
+<div id="refs" role="list">
+
+</div>
 
 
 </section>

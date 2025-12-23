@@ -4,15 +4,15 @@ bibliography: references.bib
 ---
 # Sections {#sec-sections}
 
-1. [Survival Analysis](surv_summ.qmd): Background for statistical analysis
-2. [Cloning-Censoring-Weighting](ccw_summ.qmd): Primary section which conducts an in-depth CCW analysis with detailed explanations.
-3. [Appendix](app_summ.qmd): Additional sections describing data, computation and some related methods.
+1. [Survival Analysis](surv_00_summ.qmd): Background for statistical analysis
+2. [Cloning-Censoring-Weighting](ccw_00_summ.qmd): Primary section which conducts an in-depth CCW analysis with detailed explanations.
+3. [Appendix](app_00_summ.qmd): Additional sections describing data, computation and some related methods.
 
 For production notes and future efforts see [About](about.qmd).
 
 # Troubleshooting your own project
 
-For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Cloning-Censoring-Weighting](ccw_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
+For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Cloning-Censoring-Weighting](ccw_00_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
 
 # Background reading {#sec-background}
 

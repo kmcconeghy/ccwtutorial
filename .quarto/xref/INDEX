@@ -103,5 +103,32 @@
   },
   "qmd/surv_summ.qmd": {
     "surv_summ.html": "99cb68f6"
+  },
+  "qmd/ccw_00_summ.qmd": {
+    "ccw_00_summ.html": "3e40ad0d"
+  },
+  "qmd/ccw_01_intro.qmd": {
+    "ccw_01_intro.html": "89911d9d"
+  },
+  "qmd/ccw_02_est.qmd": {
+    "ccw_02_est.html": "a4eb53ba"
+  },
+  "qmd/ccw_03_inf.qmd": {
+    "ccw_03_inf.html": "11c9c07b"
+  },
+  "qmd/ccw_04_diag.qmd": {
+    "ccw_04_diag.html": "d4d48ae6"
+  },
+  "qmd/app_00_summ.qmd": {
+    "app_00_summ.html": "8a43f591"
+  },
+  "qmd/surv_00_summ.qmd": {
+    "surv_00_summ.html": "94c823cb"
+  },
+  "qmd/surv_01_kaplan.qmd": {
+    "surv_01_kaplan.html": "e912bf67"
+  },
+  "qmd/surv_02_disctime.qmd": {
+    "surv_02_disctime.html": "16091aa6"
   }
 }
