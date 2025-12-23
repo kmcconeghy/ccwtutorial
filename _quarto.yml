@@ -3,25 +3,46 @@ project:
   output-dir: docs
 
 website:
+  page-navigation: true
   title: "Tutorial on Clone-Censor-Weight"
+  description: 'Homepage for Tutorial on CCW Methods'
+  site-url: "https://kmcconeghy.github.io/ccwtutorial/qmd/"
+  repo-url: "https://github.com/kmcconeghy/ccwtutorial"
+  repo-actions: [edit, issue]
+  
+  page-footer:
+    right: "This page built with [Quarto](https://quarto.org/)."
+    left: "&copy; Copyright 2025, Kevin W. McConeghy"
+    background: "#D9E3E4"
+    
   announcement: 
     icon: info-circle
     dismissable: true
     content: "**Alert** - This is a work-in-progress, errors may exist in code"
     type: primary
     position: below-navbar
+    
   sidebar: 
+    background: "#D9E3E4"
+    pinned: true
+    align: center
+    tools:
+      - icon: github
+        href: "https://github.com/kmcconeghy/ccwtutorial"
     style: 'docked'
     search: true
+    collapse-level: 1
     contents:
       - text: "Introduction"
         href: qmd/index.qmd
+        
       - section: 'Survival Analysis'
         href: qmd/surv_00_summ.qmd
         contents:
         - text: 'Kaplan-Meier Estimator'
           href: qmd/surv_01_kaplan.qmd
         - qmd/surv_02_disctime.qmd
+        
       - section: 'Cloning-Censoring-Weighting'
         href: qmd/ccw_00_summ.qmd
         contents:
@@ -29,6 +50,7 @@ website:
         - qmd/ccw_02_est.qmd
         - qmd/ccw_03_inf.qmd
         - qmd/ccw_04_diag.qmd
+        
       - section: 'Appendix'
         href: qmd/app_00_summ.qmd
         contents:
