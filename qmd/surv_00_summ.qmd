@@ -3,10 +3,21 @@ title: "Exploration of Survival Analyses, Continuous and Discrete Time"
 bibliography: references.bib
 ---
 
-# Sections {#sec-sections}
+## Survival Analyses
 
-1. [Kaplan-Meier Estimator](surv_01_kaplan.qmd): Very brief example of how to execute K-M estimator.
-2. [Discrete Time Estimator](surv_02_disctime.qmd): Explanation for how to set up a discrete time analysis.
+There are many references that will explain how the product-limit estimator works, and I do not revisit these basic topics. Any standard survival analysis course will cover this in detail, and countless books, youtube lectures are available to help readers learn. However, I demonstrate how to use this simple technique in the context of a CCW analysis.  
+
+## Kaplan-Meier Analysis {#km}
+
+The [Kaplan-Meier Estimator](surv_01_kaplan.qmd) section walks through a simple example specifically for CCW analyses.
+
+## Parametric survival analyses
+
+The [Discrete Time Estimator](surv_02_disctime.qmd) section explains a general approach for this estimator for CCW analyses.
+
+While non-parametric methods (Kaplan-Meier estimator) are commonly taught, the parametric methods tend to be given a simple overview in introductory courses. When they are taught, I have found the presentation often is framed as "this method could be done but has significant limitations". However, parametric analyses have significant advantages as well, a text and R package goes over the topic in greater detail.[@tutzdte2016;@discSurv] 
+
+## Useful readings  
 
 ::: {#refs}
 

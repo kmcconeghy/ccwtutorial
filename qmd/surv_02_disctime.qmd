@@ -1,5 +1,5 @@
 ---
-title: "Discrete Time Analysis"
+title: "Parametric Discrete Time Analyses"
 bibliography: references.bib
 ---
 
@@ -17,11 +17,13 @@ source(here('scripts', 'setup.R'), echo=F)
 set.seed(42)
 ```
 
+# WORK IN PROGRESS
+
 # Introduction  
 
 Time is almost always discretely measured. 
 
-Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.
+Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic.[@tutzdte2016;@discSurv]
 
 It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.  
 
@@ -44,6 +46,9 @@ Hazard, $h(t) = Pr(E_t=1|E_{t-1}=0)$, the probability of an event at time *t*, c
 Cumulative Hazard, $H(t)$
 
 The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
+
+
+
 
 # References
 

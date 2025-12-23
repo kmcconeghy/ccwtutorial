@@ -24,6 +24,7 @@ website:
     
   sidebar: 
     background: "#D9E3E4"
+    logo: "ccwicon.png"
     pinned: true
     align: center
     tools:
@@ -36,14 +37,15 @@ website:
       - text: "Introduction"
         href: qmd/index.qmd
         
-      - section: 'Survival Analysis'
+      - section: 'Survival Analysis Background'
         href: qmd/surv_00_summ.qmd
         contents:
         - text: 'Kaplan-Meier Estimator'
           href: qmd/surv_01_kaplan.qmd
-        - qmd/surv_02_disctime.qmd
+        - text: 'Discrete Time Estimators'
+          href: qmd/surv_02_disctime.qmd
         
-      - section: 'Cloning-Censoring-Weighting'
+      - section: 'Clone-Censor-Weight'
         href: qmd/ccw_00_summ.qmd
         contents:
         - qmd/ccw_01_intro.qmd

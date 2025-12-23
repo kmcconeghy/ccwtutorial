@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Full tutorial for executing a Cloning-Censoring-Weighting Analysis – Tutorial on Clone-Censor-Weight</title>
+<title>Clone-Censor-Weight Guide – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,6 +24,7 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -101,7 +102,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Cloning-Censoring-Weighting</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -118,12 +119,12 @@ div.csl-indent {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">Tutorial on Clone-Censor-Weight</a> 
-        <div class="sidebar-tools-main">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../ccwicon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
     <a href="https://github.com/kmcconeghy/ccwtutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
-    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -141,7 +142,7 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival Analysis</span></a>
+ <span class="menu-text">Survival Analysis Background</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -156,7 +157,7 @@ div.csl-indent {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Discrete Time Analysis</span></a>
+ <span class="menu-text">Discrete Time Estimators</span></a>
   </div>
 </li>
       </ul>
@@ -164,7 +165,7 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+ <span class="menu-text">Clone-Censor-Weight</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -173,7 +174,7 @@ div.csl-indent {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -241,7 +242,9 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#sec-sections" id="toc-sec-sections" class="nav-link active" data-scroll-target="#sec-sections">Sections</a></li>
+  <li><a href="#clone-censor-weight" id="toc-clone-censor-weight" class="nav-link active" data-scroll-target="#clone-censor-weight">Clone-Censor-Weight</a></li>
+  <li><a href="#sec-sections" id="toc-sec-sections" class="nav-link" data-scroll-target="#sec-sections">Sections</a></li>
+  <li><a href="#applied-examples-in-the-literature" id="toc-applied-examples-in-the-literature" class="nav-link" data-scroll-target="#applied-examples-in-the-literature">Applied examples in the literature:</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_00_summ.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -250,7 +253,8 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Full tutorial for executing a Cloning-Censoring-Weighting Analysis</h1>
+<h1 class="title">Clone-Censor-Weight Guide</h1>
+<p class="subtitle lead">Full stepwise tutorial for executing a CCW Analysis</p>
 </div>
 
 
@@ -267,16 +271,36 @@ div.csl-indent {
 </header>
 
 
-<section id="sec-sections" class="level1">
-<h1>Sections</h1>
-<ol type="1">
-<li><a href="../qmd/ccw_01_intro.html">Introduction</a>: I review the applied example, weighting scheme and basic approach.</li>
-<li><a href="../qmd/ccw_02_est.html">Estimator</a>: Estimation of CCW analyses executed in step-wise fashion</li>
-<li><a href="../qmd/ccw_03_inf.html">Inference</a>: Explanation of bootstrap procedure for inference</li>
-<li><a href="../qmd/ccw_04_diag.html">Diagnostics</a>: Additional sensitivity and model checks recommended for applied examples.</li>
-</ol>
-<div id="refs" role="list">
-
+<section id="clone-censor-weight" class="level2">
+<h2 class="anchored" data-anchor-id="clone-censor-weight">Clone-Censor-Weight</h2>
+<p>This is a huge topic, and the main purpose of the guide.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I originally learned this as ‘clone-censor-weight’, but I am seeing ‘cloning-censoring-weighting’ also being used more frequently, I like the former.</p>
+</div>
+</div>
+</section>
+<section id="sec-sections" class="level2">
+<h2 class="anchored" data-anchor-id="sec-sections">Sections</h2>
+<p>The <a href="../qmd/ccw_01_intro.html">Introduction</a> section reviews the basic target trial emulation protocol, treatment assignments and cloning. This is a key first step that establishes all the subsequent analytical choices. It is also very project specific, so what is done here may not generalize well to others.</p>
+<p>After establishing the TTE, the <a href="../qmd/ccw_02_est.html">Estimator</a> step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in <a href="../qmd/ccw_04_diag.html">Diagnostics</a>. <a href="../qmd/ccw_03_inf.html">Inference</a> gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See <a href="../qmd/app_02_boot.html">Bootstrapping</a>).</p>
+</section>
+<section id="applied-examples-in-the-literature" class="level2">
+<h2 class="anchored" data-anchor-id="applied-examples-in-the-literature">Applied examples in the literature:</h2>
+<p>My first CCW application was an evaluation of vaccine effects on all-cause death.<span class="citation" data-cites="McConeghy2024-me">(<a href="#ref-McConeghy2024-me" role="doc-biblioref">McConeghy et al. 2024</a>)</span></p>
+<p>Several other good examples are published.</p>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-McConeghy2024-me" class="csl-entry" role="listitem">
+McConeghy, Kevin W, Kwan Hur, Issa J Dahabreh, Rong Jiang, Lucy Pandey, Walid F Gellad, Peter Glassman, et al. 2024. <span>“Early Mortality After the First Dose of <span>COVID-19</span> Vaccination: A Target Trial Emulation.”</span> <em>Clin. Infect. Dis.</em> 78 (3): 625–32.
+</div>
 </div>
 
 
@@ -684,13 +708,13 @@ div.csl-indent {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../qmd/surv_02_disctime.html" class="pagination-link" aria-label="Discrete Time Analysis">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Discrete Time Analysis</span>
+      <a href="../qmd/surv_02_disctime.html" class="pagination-link" aria-label="Discrete Time Estimators">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Discrete Time Estimators</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../qmd/ccw_01_intro.html" class="pagination-link" aria-label="Cloning, Censoring, Weighting">
-        <span class="nav-page-text">Cloning, Censoring, Weighting</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../qmd/ccw_01_intro.html" class="pagination-link" aria-label="Introduction">
+        <span class="nav-page-text">Introduction</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

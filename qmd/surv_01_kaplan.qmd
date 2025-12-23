@@ -7,43 +7,122 @@ bibliography: references.bib
 #| label: setup
 #| echo: false
 #| message: false
-#| 
-library(here)
-library(ggdag)
-library(corrplot)
+
+library(here())
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
 set.seed(42)
+
+#increase size for bootstrapping procedure
+  options(future.globals.maxSize = 4000*1024^2) 
+
+  grid.draw.ggsurvplot = function(x) {
+    survminer:::print.ggsurvplot(x, newpage=F)
+  }
+
+dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds')) %>%
+  dplyr::filter(model == 'ay')
 ```
 
-# Introduction  
+A brief example of applying a simple Kaplan-Meier estimator to CCW data.
 
-Time is almost always discretely measured. 
+## Data 
 
-Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.
+```{r }
+#| label: data
+#| echo: false
+#| message: false
+#| 
+glimpse(dta_c_person)
+```
 
-It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.  
+This example uses model 'ay', meaning A causes Y but confounding exists ([Data](app_01_syndata.qmd)). `Assign = {0, 1}` , where 1 means initiate treatment by period 12, and so many observations have a censoring time of 12 if they did not initiate treatment. Each person `id` has two observations, one under each assignment strategy. We will disregard `X`, `female` and `age` covariates at this step. Note that this dataset is not expanded to person-period, that is unnecessary in this case.
 
-## Time-to-event  
+## Kaplan-Meier Estimator
 
-It is assumed here that the basic measurement of the outcome includes a failure time (time at which follow-up ceases) and a binary indicator for whether the event occurred or not by that time point. The measure presumes a clear origin or time zero, and knowledge of the scale or unit of time (days, years etc.). In most applied work, the event can only occur once. For those with no observed event-time, meaning the event did not occur through the last-observable time point, the observed time is some other endpoint (death, administrative end, loss-to-follow-up), these non-events are referred to as "censored" meaning follow-up ceased at that time. The observed time for a person must be the minimum of event or censoring time.
+The Kaplan-Meier (KM) estimator will estimate the instantaneous hazard (event rate for some time among those at risk up to that time). I generally will estimate the cumulative incidence for many of my applied projects.
 
-## Definitions and Notation  
+### Definitions and Notation  
 
 The outcome need not be death, but often is, and individuals must be alive to experience events, censoring etc. so most of the terminology and notation refer to "survival". 
 
 The letter T/t is typically used to denote time, where *T* may refer to total time observed, and *t* an individual time-period, $T = {1, ..., t}$. Since time is usually discretely defined, for example as days, then $t$ can be thought of as an interval, $t=1$ meaning from the end of the prior interval (day 0) through the next (but not including) interval, day 2. $T=t$ would mean a event or censor time occurred in interval $t$. A binary indicator for whether the event occured $E = {0, 1}$. 
 
-Survival probability, $S(t) = Pr(T>t)$, is the probability of survival beyond time-point *t*.
+Survival probability, $S(t) = Pr(T>t)$, is the probability of survival (event-free) beyond time-point *t*.
 
 Cumulative incidence, $R(t) = Pr(T<=t)$, is the 1-probability of survival, the probability the event occurred up to and including time-point *t*.
 
-Hazard, $h(t) = Pr(E_t=1|E_{t-1}=0)$, the probability of an event at time *t*, conditional on event-free survival up to that point, sometimes described as the "instantaneuous hazard".
+The Kaplan-Meier estimator is the product of the individual survival probabilities across T. 
 
-Cumulative Hazard, $H(t)$
+$S(t) = \prod_{t_i <= t}(1-/\frac{d_i}{n_i})$
 
-The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
+
+The terms are related to hazard function, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
+
+## Estimation
+
+The KM estimator is available in the base R `survival` package, the function is `survfit()`. I complete the estimator, and then do some post-estimation steps to compute the risk differences and relative differences between groups.
+
+```{r }
+#| label: KM-est
+  d_mods = broom::tidy(
+    survfit(Surv(time, event) ~ assign, data=dta_c_person)) %>% # <1>
+    mutate(assign = str_extract(strata,  '(?<=assign=)\\d')
+    ) %>%
+    arrange(time) %>%
+    select(-strata) %>%
+    mutate(pr_ev = 1-estimate) %>% # <2>
+    rename(pr_s = estimate) %>% # <2>
+    pivot_wider(id_cols = c(time), # <3>
+                names_from = assign, # <3>
+                values_from = c(pr_ev, pr_s, # <3>
+                                n.risk, n.event)) %>% # <3>
+    mutate(cir = pr_ev_1 / pr_ev_0, # <4>
+           cid = (pr_ev_1 - pr_ev_0)) # <4>
+```
+
+1.  Naive estimator, K-M estimator, assignment is by clone (not person). `t_clone` is the follow-up time for each clone, taking into account artificial censoring.
+2.  `estimate` from the model is the survival probability, so probability of event is 1 - estimate
+3.  Data is in long form, so one column per group with cumulative incidence/survival
+4.  Estimands, `cir` is ratio analogous to relative risk, and `cid` is analogous to risk difference
+
+## Summarize KM estimator
+ 
+The KM estimator is usually presented in figures of cumulative incidence or event-free survival probability. Often the figure is combined with tables to illustrate follow-up, events or censoring across time. 
+
+```{r }
+#| label: gg-km
+#| fig-cap: "Figure 1. Naive Kaplan-Meier Estimator"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#| fig-cap-location: top
+#| message: false
+#| warning: false
+#| echo: true
+  
+d_gg = ggsurvplot(survfit(Surv(time, event) ~ assign, data=dta_c_person),
+                            data=dta_c_person,
+                            fun = 'event',
+                            xlim = c(1, 60),
+                            xlab = 'Follow-up',
+                            break.time.by=6,
+                            palette = cbbPalette,
+                            linetype = 'strata',
+                            censor=F,
+                            cumevents=T,
+                            conf.int=F, pval=F,
+                            risk.table=T, risk.table.col = 'strata',
+                            risk.table.height=0.25, 
+                            ggtheme = theme_bw())
+
+d_gg
+```
+*Description.* Top panel - cumulative event incidence, stratified by strategy assignment. Middle panel - the number at risk (alive, uncensored) at the start of each follow-up period. Bottom panel - Cumulative number of events.  
+
+## Why can't we use this estimator for CCW? 
+
+The primary issue is that because this non-parametric estimator treats `time` as a continuous random variable, you cannot account for what happens within intervals/periods of time. You must either 1) conduct time-dependent analyses, where you expand the dataset and record start/stop times for each interval, or 2) move on to parametric discrete time analyses, where you also model intervals of time. This is an important step for CCW analyses, because most applied examples are describing a protocol or treatment intervention which may be implemented across a period of time ('grace period'), and so important confounders could exist between the baseline period and initiation of treatment. The KM estimator cannot account for this.
 
 # References
 

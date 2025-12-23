@@ -1,22 +1,24 @@
 ---
-title: "Tutorial for Clone-Censor-Weighting Analyses"
+title: "CCW Tutorial"
+subtitle: "Tutorial for Clone-Censor-Weighting Analyses"
 bibliography: references.bib
 ---
-# Sections {#sec-sections}
 
-1. [Survival Analysis](surv_00_summ.qmd): Background for statistical analysis
-2. [Cloning-Censoring-Weighting](ccw_00_summ.qmd): Primary section which conducts an in-depth CCW analysis with detailed explanations.
-3. [Appendix](app_00_summ.qmd): Additional sections describing data, computation and some related methods.
+## Welcome! {#welcome} 
 
-For production notes and future efforts see [About](about.qmd).
+This website is provided as a guide to help researchers interested in applying target trial emulation methods, specifically use of the "clone-censor-weight" or CCW approach.  
 
-# Troubleshooting your own project
+CCW is popular in the pharmacoepidemiology field, but its execution can be tricky. A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website will provide a step-by-step guide on how to use this method. I also provide some in-depth discussions of particular aspects of the method, best practices, how to overcome common obstacles etc.
 
-For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Cloning-Censoring-Weighting](ccw_00_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
+## Sections of this website {#sections}
 
-# Background reading {#sec-background}
+1. [Survival Analysis](surv_00_summ.qmd). While not strictly about CCW, the first section of website provides some background for the most common statistical analyses techniques that are used when doing CCW in practice. [non-parametric analyses](surv_01_kaplan.qmd) can be used for simple examples but most researchers are using [pooled logistic regressions](surv_02_disctime.qmd) to approximate hazard ratios. I explain this in some detail and provide references to gain further understanding. Being comfortable with parametric discrete survival time analyses is crucial to properly executing more complex CCW analyses with time-varying confounders. 
 
-The "Clone-Censor-Weight" analytical approach is popular in the target trial emulation (TTE) framework. A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website is a tutorial meant to guide researchers and others in how to execute a CCW analysis.
+2. [Cloning-Censoring-Weighting](ccw_00_summ.qmd). The primary section of this website is the stepwise guide on how to do a CCW analysis. This includes: [background discussion](ccw_01_intro.qmd), [estimation](ccw_02_est.qmd), [inference](ccw_03_inf.qmd) and [diagnostics/validation](ccw_04_diag.qmd).
+
+3. [Appendix](app_00_summ.qmd): Additional sections include a description of the [synthetic data](app_01_syndata.qmd), [bootstrapping](app_02_boot.qmd), [computation](app_03_speed.qmd) notes and some related methods.
+
+## Background reading {#reading}
 
 I provide some personal insight into the process, different approaches that can be done, and mainly focus on the analytical methods. In order to actually emulate a target trial, a researcher needs to understand the fundamentals of randomized, controlled trial (RCT) design, causal inference, probability statistics and their practical application with a statistical programming language. I do not go into detail on this.
 
@@ -28,11 +30,11 @@ The following readings are recommended for that background and to prepare for th
 
 3)  Miguel Hernan is a leading expert on TTE and provides a short description of it here: [JAMA 2022](https://doi.org/10.1001/jama.2022.21383). It is a two-step process; first defining the ideal RCT and how it can be emulated in the data, the second step is using TTE methods to perform that emulation (the focus of this guide).
 
-4)  Statistical analysis; depending on the approach used, the researcher will need to understand and execute logistic regression models, matching algorithms, and/or failure time (“survival”) analyses. Additionally, most of these methods do not have known statistical properties in the setting of TTE (due to duplicated data, weighting etc.) and so most applied researchers are using bootstrapping to generate uncertainty intervals. See Causal survival analysis (Chapter 17 of “What If” book linked above).
+## Troubleshooting your own project
 
-## Acknowledgements {.unnumbered}
+For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Cloning-Censoring-Weighting](ccw_00_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
 
-The tutorial represents my gathered and organized notes from research projects and didactic training. Collaborators and mentors include: Issa Dahabreh, Kaley Hayes, Daniel Harris, Donald Miller and Andrew Zullo.
+For developments notes see [About](about.qmd).
 
 ::: {#refs}
 

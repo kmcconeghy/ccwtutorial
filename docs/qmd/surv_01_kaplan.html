@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 /* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
@@ -130,7 +165,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis Background</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -147,12 +182,12 @@ window.Quarto = {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">Tutorial on Clone-Censor-Weight</a> 
-        <div class="sidebar-tools-main">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../ccwicon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
     <a href="https://github.com/kmcconeghy/ccwtutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
-    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -170,7 +205,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival Analysis</span></a>
+ <span class="menu-text">Survival Analysis Background</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -185,7 +220,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Discrete Time Analysis</span></a>
+ <span class="menu-text">Discrete Time Estimators</span></a>
   </div>
 </li>
       </ul>
@@ -193,7 +228,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+ <span class="menu-text">Clone-Censor-Weight</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -202,7 +237,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -270,11 +305,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
+  <li><a href="#kaplan-meier-estimator" id="toc-kaplan-meier-estimator" class="nav-link" data-scroll-target="#kaplan-meier-estimator">Kaplan-Meier Estimator</a>
   <ul class="collapse">
-  <li><a href="#time-to-event" id="toc-time-to-event" class="nav-link" data-scroll-target="#time-to-event">Time-to-event</a></li>
   <li><a href="#definitions-and-notation" id="toc-definitions-and-notation" class="nav-link" data-scroll-target="#definitions-and-notation">Definitions and Notation</a></li>
   </ul></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
+  <li><a href="#summarize-km-estimator" id="toc-summarize-km-estimator" class="nav-link" data-scroll-target="#summarize-km-estimator">Summarize KM estimator</a></li>
+  <li><a href="#why-cant-we-use-this-estimator-for-ccw" id="toc-why-cant-we-use-this-estimator-for-ccw" class="nav-link" data-scroll-target="#why-cant-we-use-this-estimator-for-ccw">Why can’t we use this estimator for CCW?</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/surv_01_kaplan.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -282,7 +320,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis Background</a></li><li class="breadcrumb-item"><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Kaplan-Meier Estimator</h1>
 </div>
@@ -301,25 +339,117 @@ window.Quarto = {
 </header>
 
 
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
-<p>Time is almost always discretely measured.</p>
-<p>Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.</p>
-<p>It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.</p>
-<section id="time-to-event" class="level2">
-<h2 class="anchored" data-anchor-id="time-to-event">Time-to-event</h2>
-<p>It is assumed here that the basic measurement of the outcome includes a failure time (time at which follow-up ceases) and a binary indicator for whether the event occurred or not by that time point. The measure presumes a clear origin or time zero, and knowledge of the scale or unit of time (days, years etc.). In most applied work, the event can only occur once. For those with no observed event-time, meaning the event did not occur through the last-observable time point, the observed time is some other endpoint (death, administrative end, loss-to-follow-up), these non-events are referred to as “censored” meaning follow-up ceased at that time. The observed time for a person must be the minimum of event or censoring time.</p>
+<p>A brief example of applying a simple Kaplan-Meier estimator to CCW data.</p>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 2,000
+Columns: 11
+$ model     &lt;chr&gt; "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", …
+$ id        &lt;int&gt; 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10…
+$ assign    &lt;dbl&gt; 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, …
+$ t_treat   &lt;dbl&gt; Inf, Inf, 20, 20, Inf, Inf, 22, 22, 16, 16, Inf, Inf, 24, 24…
+$ t_outcome &lt;dbl&gt; Inf, Inf, 74, 74, 56, 56, Inf, Inf, Inf, Inf, 5, 5, Inf, Inf…
+$ t_censor  &lt;dbl&gt; Inf, 12, 20, 12, Inf, 12, 22, 12, 16, 12, Inf, Inf, 24, 12, …
+$ time      &lt;dbl&gt; 60, 12, 20, 12, 56, 12, 22, 12, 16, 12, 5, 5, 24, 12, 5, 60,…
+$ event     &lt;dbl&gt; 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, …
+$ X         &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, …
+$ female    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, …
+$ age       &lt;dbl&gt; 70.0, 70.0, 76.3, 76.3, 74.2, 74.2, 83.9, 83.9, 76.2, 76.2, …</code></pre>
+</div>
+</div>
+<p>This example uses model ‘ay’, meaning A causes Y but confounding exists (<a href="../qmd/app_01_syndata.html">Data</a>). <code>Assign = {0, 1}</code> , where 1 means initiate treatment by period 12, and so many observations have a censoring time of 12 if they did not initiate treatment. Each person <code>id</code> has two observations, one under each assignment strategy. We will disregard <code>X</code>, <code>female</code> and <code>age</code> covariates at this step. Note that this dataset is not expanded to person-period, that is unnecessary in this case.</p>
 </section>
-<section id="definitions-and-notation" class="level2">
-<h2 class="anchored" data-anchor-id="definitions-and-notation">Definitions and Notation</h2>
+<section id="kaplan-meier-estimator" class="level2">
+<h2 class="anchored" data-anchor-id="kaplan-meier-estimator">Kaplan-Meier Estimator</h2>
+<p>The Kaplan-Meier (KM) estimator will estimate the instantaneous hazard (event rate for some time among those at risk up to that time). I generally will estimate the cumulative incidence for many of my applied projects.</p>
+<section id="definitions-and-notation" class="level3">
+<h3 class="anchored" data-anchor-id="definitions-and-notation">Definitions and Notation</h3>
 <p>The outcome need not be death, but often is, and individuals must be alive to experience events, censoring etc. so most of the terminology and notation refer to “survival”.</p>
 <p>The letter T/t is typically used to denote time, where <em>T</em> may refer to total time observed, and <em>t</em> an individual time-period, <span class="math inline">\(T = {1, ..., t}\)</span>. Since time is usually discretely defined, for example as days, then <span class="math inline">\(t\)</span> can be thought of as an interval, <span class="math inline">\(t=1\)</span> meaning from the end of the prior interval (day 0) through the next (but not including) interval, day 2. <span class="math inline">\(T=t\)</span> would mean a event or censor time occurred in interval <span class="math inline">\(t\)</span>. A binary indicator for whether the event occured <span class="math inline">\(E = {0, 1}\)</span>.</p>
-<p>Survival probability, <span class="math inline">\(S(t) = Pr(T&gt;t)\)</span>, is the probability of survival beyond time-point <em>t</em>.</p>
+<p>Survival probability, <span class="math inline">\(S(t) = Pr(T&gt;t)\)</span>, is the probability of survival (event-free) beyond time-point <em>t</em>.</p>
 <p>Cumulative incidence, <span class="math inline">\(R(t) = Pr(T&lt;=t)\)</span>, is the 1-probability of survival, the probability the event occurred up to and including time-point <em>t</em>.</p>
-<p>Hazard, <span class="math inline">\(h(t) = Pr(E_t=1|E_{t-1}=0)\)</span>, the probability of an event at time <em>t</em>, conditional on event-free survival up to that point, sometimes described as the “instantaneuous hazard”.</p>
-<p>Cumulative Hazard, <span class="math inline">\(H(t)\)</span></p>
-<p>The terms are related, <span class="math inline">\(S(t) = 1 – R(t)\)</span>. <span class="math inline">\(h(t)=R(t)/S(t)\)</span>, <span class="math inline">\(H(t) = -log[S(t)]\)</span> and <span class="math inline">\(S(t) = e –H(t)\)</span>.</p>
+<p>The Kaplan-Meier estimator is the product of the individual survival probabilities across T.</p>
+<p><span class="math inline">\(S(t) = \prod_{t_i &lt;= t}(1-/\frac{d_i}{n_i})\)</span></p>
+<p>The terms are related to hazard function, <span class="math inline">\(S(t) = 1 – R(t)\)</span>. <span class="math inline">\(h(t)=R(t)/S(t)\)</span>, <span class="math inline">\(H(t) = -log[S(t)]\)</span> and <span class="math inline">\(S(t) = e –H(t)\)</span>.</p>
 </section>
+</section>
+<section id="estimation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<p>The KM estimator is available in the base R <code>survival</code> package, the function is <code>survfit()</code>. I complete the estimator, and then do some post-estimation steps to compute the risk differences and relative differences between groups.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>  d_mods <span class="ot">=</span> broom<span class="sc">::</span><span class="fu">tidy</span>(</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign, <span class="at">data=</span>dta_c_person)) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="fu">str_extract</span>(strata,  <span class="st">'(?&lt;=assign=)</span><span class="sc">\\</span><span class="st">d'</span>)</span>
+<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>strata) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-7" class="code-annotation-target"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pr_ev =</span> <span class="dv">1</span><span class="sc">-</span>estimate) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">pr_s =</span> estimate) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-9" class="code-annotation-target"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(time),</span>
+<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,</span>
+<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> <span class="fu">c</span>(pr_ev, pr_s,</span>
+<span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>                                n.risk, n.event)) <span class="sc">%&gt;%</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-13" class="code-annotation-target"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0,</span>
+<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>           <span class="at">cid =</span> (pr_ev_1 <span class="sc">-</span> pr_ev_0))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="2" data-code-annotation="1">Naive estimator, K-M estimator, assignment is by clone (not person). <code>t_clone</code> is the follow-up time for each clone, taking into account artificial censoring.</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="7,8" data-code-annotation="2"><code>estimate</code> from the model is the survival probability, so probability of event is 1 - estimate</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="9,10,11,12" data-code-annotation="3">Data is in long form, so one column per group with cumulative incidence/survival</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="13,14" data-code-annotation="4">Estimands, <code>cir</code> is ratio analogous to relative risk, and <code>cid</code> is analogous to risk difference</span>
+</dd>
+</dl>
+</div>
+</div>
+</section>
+<section id="summarize-km-estimator" class="level2">
+<h2 class="anchored" data-anchor-id="summarize-km-estimator">Summarize KM estimator</h2>
+<p>The KM estimator is usually presented in figures of cumulative incidence or event-free survival probability. Often the figure is combined with tables to illustrate follow-up, events or censoring across time.</p>
+<div class="cell fig-cap-location-top">
+<div class="sourceCode cell-code" id="cb2" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">ggsurvplot</span>(<span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign, <span class="at">data=</span>dta_c_person),</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">data=</span>dta_c_person,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">fun =</span> <span class="st">'event'</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">60</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">xlab =</span> <span class="st">'Follow-up'</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">break.time.by=</span><span class="dv">6</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">palette =</span> cbbPalette,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">linetype =</span> <span class="st">'strata'</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">censor=</span>F,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cumevents=</span>T,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">conf.int=</span>F, <span class="at">pval=</span>F,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">risk.table=</span>T, <span class="at">risk.table.col =</span> <span class="st">'strata'</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">risk.table.height=</span><span class="fl">0.25</span>, </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">ggtheme =</span> <span class="fu">theme_bw</span>())</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>d_gg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="surv_01_kaplan_files/figure-html/gg-km-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>A causes Y</figcaption>
+</figure>
+</div>
+</div>
+<p>Figure 1. Naive Kaplan-Meier Estimator</p>
+</div>
+<p><em>Description.</em> Top panel - cumulative event incidence, stratified by strategy assignment. Middle panel - the number at risk (alive, uncensored) at the start of each follow-up period. Bottom panel - Cumulative number of events.</p>
+</section>
+<section id="why-cant-we-use-this-estimator-for-ccw" class="level2">
+<h2 class="anchored" data-anchor-id="why-cant-we-use-this-estimator-for-ccw">Why can’t we use this estimator for CCW?</h2>
+<p>The primary issue is that because this non-parametric estimator treats <code>time</code> as a continuous random variable, you cannot account for what happens within intervals/periods of time. You must either 1) conduct time-dependent analyses, where you expand the dataset and record start/stop times for each interval, or 2) move on to parametric discrete time analyses, where you also model intervals of time. This is an important step for CCW analyses, because most applied examples are describing a protocol or treatment intervention which may be implemented across a period of time (‘grace period’), and so important confounders could exist between the baseline period and initiation of treatment. The KM estimator cannot account for this.</p>
 </section>
 <section id="references" class="level1">
 <h1>References</h1>
@@ -732,13 +862,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../qmd/surv_00_summ.html" class="pagination-link" aria-label="Survival Analysis">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Survival Analysis</span>
+      <a href="../qmd/surv_00_summ.html" class="pagination-link" aria-label="Survival Analysis Background">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Survival Analysis Background</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../qmd/surv_02_disctime.html" class="pagination-link" aria-label="Discrete Time Analysis">
-        <span class="nav-page-text">Discrete Time Analysis</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../qmd/surv_02_disctime.html" class="pagination-link" aria-label="Discrete Time Estimators">
+        <span class="nav-page-text">Discrete Time Estimators</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

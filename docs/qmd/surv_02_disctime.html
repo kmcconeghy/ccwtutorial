@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Discrete Time Analysis – Tutorial on Clone-Censor-Weight</title>
+<title>Parametric Discrete Time Analyses – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,6 +24,7 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -130,7 +131,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_02_disctime.html">Discrete Time Analysis</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis Background</a></li><li class="breadcrumb-item"><a href="../qmd/surv_02_disctime.html">Discrete Time Estimators</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -147,12 +148,12 @@ window.Quarto = {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">Tutorial on Clone-Censor-Weight</a> 
-        <div class="sidebar-tools-main">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../ccwicon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
     <a href="https://github.com/kmcconeghy/ccwtutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
-    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -170,7 +171,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival Analysis</span></a>
+ <span class="menu-text">Survival Analysis Background</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -185,7 +186,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Discrete Time Analysis</span></a>
+ <span class="menu-text">Discrete Time Estimators</span></a>
   </div>
 </li>
       </ul>
@@ -193,7 +194,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+ <span class="menu-text">Clone-Censor-Weight</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -202,7 +203,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -270,7 +271,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <li><a href="#work-in-progress" id="toc-work-in-progress" class="nav-link active" data-scroll-target="#work-in-progress">WORK IN PROGRESS</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a>
   <ul class="collapse">
   <li><a href="#time-to-event" id="toc-time-to-event" class="nav-link" data-scroll-target="#time-to-event">Time-to-event</a></li>
   <li><a href="#definitions-and-notation" id="toc-definitions-and-notation" class="nav-link" data-scroll-target="#definitions-and-notation">Definitions and Notation</a></li>
@@ -282,9 +284,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li><li class="breadcrumb-item"><a href="../qmd/surv_02_disctime.html">Discrete Time Analysis</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis Background</a></li><li class="breadcrumb-item"><a href="../qmd/surv_02_disctime.html">Discrete Time Estimators</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Discrete Time Analysis</h1>
+<h1 class="title">Parametric Discrete Time Analyses</h1>
 </div>
 
 
@@ -301,10 +303,13 @@ window.Quarto = {
 </header>
 
 
+<section id="work-in-progress" class="level1">
+<h1>WORK IN PROGRESS</h1>
+</section>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>Time is almost always discretely measured.</p>
-<p>Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic. See citations below.</p>
+<p>Although not directly related to target trial emulation or a clone-censor-weight approach, most TTE/CCW methods require a thorough understanding of how time to event analyses are executed, and in particular parametric discrete-time analyses. I cover some basic procedures and guidance here. There are a number of very comprehensive papers and textbooks which go into this topic.<span class="citation" data-cites="tutzdte2016 discSurv">(<a href="#ref-tutzdte2016" role="doc-biblioref">Tutz and Schmid 2016</a>; <a href="#ref-discSurv" role="doc-biblioref">Welchowski et al. 2022</a>)</span></p>
 <p>It is not necessarily the case that any given project will have a failure time (time to event) outcome, but it is quite common in my field and describes most research projects I am involved with so that is what I focus on.</p>
 <section id="time-to-event" class="level2">
 <h2 class="anchored" data-anchor-id="time-to-event">Time-to-event</h2>
@@ -323,8 +328,13 @@ window.Quarto = {
 </section>
 <section id="references" class="level1">
 <h1>References</h1>
-<div id="refs" role="list">
-
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-tutzdte2016" class="csl-entry" role="listitem">
+Tutz, Gerhard, and Matthias Schmid. 2016. <span>“Modeling Discrete Time-to-Event Data,”</span> January. <a href="https://doi.org/10.1007/978-3-319-28158-2">https://doi.org/10.1007/978-3-319-28158-2</a>.
+</div>
+<div id="ref-discSurv" class="csl-entry" role="listitem">
+Welchowski, Thomas, Moritz Berger, David Koehler, and Matthias Schmid. 2022. <em>discSurv: Discrete Time Survival Analysis</em>. <a href="https://CRAN.R-project.org/package=discSurv">https://CRAN.R-project.org/package=discSurv</a>.
+</div>
 </div>
 
 
@@ -737,8 +747,8 @@ window.Quarto = {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../qmd/ccw_00_summ.html" class="pagination-link" aria-label="Cloning-Censoring-Weighting">
-        <span class="nav-page-text">Cloning-Censoring-Weighting</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../qmd/ccw_00_summ.html" class="pagination-link" aria-label="Clone-Censor-Weight">
+        <span class="nav-page-text">Clone-Censor-Weight</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

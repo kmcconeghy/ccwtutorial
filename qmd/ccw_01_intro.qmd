@@ -1,6 +1,6 @@
 ---
-title: "Cloning, Censoring, Weighting"
-subtite: "Introduction"
+title: "Introduction"
+subtite: "Target Trial Emulation and CCW background"
 bibliography: references.bib
 ---
 

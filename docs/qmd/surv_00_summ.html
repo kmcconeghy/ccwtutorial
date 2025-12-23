@@ -24,6 +24,7 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -101,7 +102,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/surv_00_summ.html">Survival Analysis Background</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -118,12 +119,12 @@ div.csl-indent {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">Tutorial on Clone-Censor-Weight</a> 
-        <div class="sidebar-tools-main">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../ccwicon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
     <a href="https://github.com/kmcconeghy/ccwtutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
-    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -141,7 +142,7 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Survival Analysis</span></a>
+ <span class="menu-text">Survival Analysis Background</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -156,7 +157,7 @@ div.csl-indent {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Discrete Time Analysis</span></a>
+ <span class="menu-text">Discrete Time Estimators</span></a>
   </div>
 </li>
       </ul>
@@ -164,7 +165,7 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+ <span class="menu-text">Clone-Censor-Weight</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -173,7 +174,7 @@ div.csl-indent {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -241,7 +242,10 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#sec-sections" id="toc-sec-sections" class="nav-link active" data-scroll-target="#sec-sections">Sections</a></li>
+  <li><a href="#survival-analyses" id="toc-survival-analyses" class="nav-link active" data-scroll-target="#survival-analyses">Survival Analyses</a></li>
+  <li><a href="#km" id="toc-km" class="nav-link" data-scroll-target="#km">Kaplan-Meier Analysis</a></li>
+  <li><a href="#parametric-survival-analyses" id="toc-parametric-survival-analyses" class="nav-link" data-scroll-target="#parametric-survival-analyses">Parametric survival analyses</a></li>
+  <li><a href="#useful-readings" id="toc-useful-readings" class="nav-link" data-scroll-target="#useful-readings">Useful readings</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/surv_00_summ.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -267,14 +271,28 @@ div.csl-indent {
 </header>
 
 
-<section id="sec-sections" class="level1">
-<h1>Sections</h1>
-<ol type="1">
-<li><a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a>: Very brief example of how to execute K-M estimator.</li>
-<li><a href="../qmd/surv_02_disctime.html">Discrete Time Estimator</a>: Explanation for how to set up a discrete time analysis.</li>
-</ol>
-<div id="refs" role="list">
-
+<section id="survival-analyses" class="level2">
+<h2 class="anchored" data-anchor-id="survival-analyses">Survival Analyses</h2>
+<p>There are many references that will explain how the product-limit estimator works, and I do not revisit these basic topics. Any standard survival analysis course will cover this in detail, and countless books, youtube lectures are available to help readers learn. However, I demonstrate how to use this simple technique in the context of a CCW analysis.</p>
+</section>
+<section id="km" class="level2">
+<h2 class="anchored" data-anchor-id="km">Kaplan-Meier Analysis</h2>
+<p>The <a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a> section walks through a simple example specifically for CCW analyses.</p>
+</section>
+<section id="parametric-survival-analyses" class="level2">
+<h2 class="anchored" data-anchor-id="parametric-survival-analyses">Parametric survival analyses</h2>
+<p>The <a href="../qmd/surv_02_disctime.html">Discrete Time Estimator</a> section explains a general approach for this estimator for CCW analyses.</p>
+<p>While non-parametric methods (Kaplan-Meier estimator) are commonly taught, the parametric methods tend to be given a simple overview in introductory courses. When they are taught, I have found the presentation often is framed as “this method could be done but has significant limitations”. However, parametric analyses have significant advantages as well, a text and R package goes over the topic in greater detail.<span class="citation" data-cites="tutzdte2016 discSurv">(<a href="#ref-tutzdte2016" role="doc-biblioref">Tutz and Schmid 2016</a>; <a href="#ref-discSurv" role="doc-biblioref">Welchowski et al. 2022</a>)</span></p>
+</section>
+<section id="useful-readings" class="level2">
+<h2 class="anchored" data-anchor-id="useful-readings">Useful readings</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-tutzdte2016" class="csl-entry" role="listitem">
+Tutz, Gerhard, and Matthias Schmid. 2016. <span>“Modeling Discrete Time-to-Event Data,”</span> January. <a href="https://doi.org/10.1007/978-3-319-28158-2">https://doi.org/10.1007/978-3-319-28158-2</a>.
+</div>
+<div id="ref-discSurv" class="csl-entry" role="listitem">
+Welchowski, Thomas, Moritz Berger, David Koehler, and Matthias Schmid. 2022. <em>discSurv: Discrete Time Survival Analysis</em>. <a href="https://CRAN.R-project.org/package=discSurv">https://CRAN.R-project.org/package=discSurv</a>.
+</div>
 </div>
 
 

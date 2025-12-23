@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Cloning, Censoring, Weighting – Tutorial on Clone-Censor-Weight</title>
+<title>Introduction – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -115,7 +115,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Cloning-Censoring-Weighting</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Cloning, Censoring, Weighting</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Introduction</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -132,12 +132,12 @@ window.Quarto = {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">Tutorial on Clone-Censor-Weight</a> 
-        <div class="sidebar-tools-main">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../ccwicon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
     <a href="https://github.com/kmcconeghy/ccwtutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
 </div>
-    </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
@@ -155,7 +155,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/surv_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Survival Analysis</span></a>
+ <span class="menu-text">Survival Analysis Background</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -170,7 +170,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/surv_02_disctime.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Discrete Time Analysis</span></a>
+ <span class="menu-text">Discrete Time Estimators</span></a>
   </div>
 </li>
       </ul>
@@ -178,7 +178,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../qmd/ccw_00_summ.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Cloning-Censoring-Weighting</span></a>
+ <span class="menu-text">Clone-Censor-Weight</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -187,7 +187,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../qmd/ccw_01_intro.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Cloning, Censoring, Weighting</span></a>
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -275,9 +275,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Cloning-Censoring-Weighting</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Cloning, Censoring, Weighting</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_01_intro.html">Introduction</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Cloning, Censoring, Weighting</h1>
+<h1 class="title">Introduction</h1>
 </div>
 
 
@@ -1128,8 +1128,8 @@ W^C_i = \prod^{T}_{t_0} \frac{P(C_t = 0| \overline{C}_{t-1} = 0)}{P(C_t=0 | X=x,
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../qmd/ccw_00_summ.html" class="pagination-link" aria-label="Cloning-Censoring-Weighting">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Cloning-Censoring-Weighting</span>
+      <a href="../qmd/ccw_00_summ.html" class="pagination-link" aria-label="Clone-Censor-Weight">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Clone-Censor-Weight</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

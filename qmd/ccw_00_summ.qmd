@@ -1,15 +1,29 @@
 ---
-title: "Full tutorial for executing a Cloning-Censoring-Weighting Analysis"
+title: "Clone-Censor-Weight Guide"
+subtitle: "Full stepwise tutorial for executing a CCW Analysis"
 bibliography: references.bib
 ---
 
-# Sections {#sec-sections}
+## Clone-Censor-Weight  
 
-1. [Introduction](ccw_01_intro.qmd): I review the applied example, weighting scheme and basic approach.
-2. [Estimator](ccw_02_est.qmd): Estimation of CCW analyses executed in step-wise fashion
-3. [Inference](ccw_03_inf.qmd): Explanation of bootstrap procedure for inference
-4. [Diagnostics](ccw_04_diag.qmd): Additional sensitivity and model checks recommended for applied examples.
+This is a huge topic, and the main purpose of the guide. 
 
+::: callout-note
+I originally learned this as 'clone-censor-weight', but I am seeing 'cloning-censoring-weighting' also being used more frequently, I like the former.
+:::
+
+## Sections {#sec-sections}
+
+The [Introduction](ccw_01_intro.qmd) section reviews the basic target trial emulation protocol, treatment assignments and cloning. This is a key first step that establishes all the subsequent analytical choices. It is also very project specific, so what is done here may not generalize well to others. 
+
+After establishing the TTE, the [Estimator](ccw_02_est.qmd) step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in [Diagnostics](ccw_04_diag.qmd). [Inference](ccw_03_inf.qmd) gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See [Bootstrapping](app_02_boot.qmd)).
+
+## Applied examples in the literature:
+
+My first CCW application was an evaluation of vaccine effects on all-cause death.[@McConeghy2024-me] 
+
+Several other good examples are published.
+  
 ::: {#refs}
 
 :::
