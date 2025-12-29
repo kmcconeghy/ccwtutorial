@@ -30,6 +30,64 @@ dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
 
 We continue the below using the cloned dataset panel generated in [Data](01_syndata.v3.qmd).
 
+## Stepwise approach
+
+I recommend the following stepwise procedure in estimation:
+
+PLR
+
+:   Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.
+
+KM
+
+:   Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
+
+1.  Estimate unweighted/unadjusted cumulative incidences with KM method
+2.  Estimate a PLR model without weights
+
+<!-- -->
+
+i)  Compare KM vs PLR
+
+<!-- -->
+
+3.  Estimate censoring weights
+
+<!-- -->
+
+i)  Estimate PLR for treatment initiation
+
+    A. Estimate treatment model
+
+    B. Compare KM / PLR estimates
+
+    C. Compute IPCW
+
+    D. Examine IPCW weights for extreme values, non-sensical values
+
+    E. Examine balance in covariates across time
+
+ii) Generate "table 1" with some weighted difference statistic (e.g. wSMD)
+
+<!-- -->
+
+4.  Estimate weighted outcome models
+
+<!-- -->
+
+i)  Estimate a weighted outcome model, no covariate adjustment
+ii) Estimate a weighted outcome + covariates (usually main estimate)
+
+<!-- -->
+
+5.  Once satisfied with stability from steps 1-4, execute bootstraps
+6.  Finalize report
+
+<!-- -->
+
+i)  provide KM, Cox unweighted, and PLR unweighted estimates in an appendix
+ii) main results reported should be the IPCW-weighted PLR analysis
+
 # IPCW Pooled Logistic Regression {#ipcwplr}  
 
 ::: callout-note
@@ -39,6 +97,10 @@ There is no consideration here to model training, causal DAGs or covariate selec
 ## Build a longitudinal panel
 
 The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.
+
+1.  This may be a little confusing, but I am taking clones where assign=0 from the `dta_c_panel` dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.
+
+2.  We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this but for other projects this step will have to be modified if the comparator is different. 
 
 ```{r }
 #| label: est-censor-prob

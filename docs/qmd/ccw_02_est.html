@@ -277,7 +277,10 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a>
+  <ul class="collapse">
+  <li><a href="#stepwise-approach" id="toc-stepwise-approach" class="nav-link" data-scroll-target="#stepwise-approach">Stepwise approach</a></li>
+  </ul></li>
   <li><a href="#ipcwplr" id="toc-ipcwplr" class="nav-link" data-scroll-target="#ipcwplr">IPCW Pooled Logistic Regression</a>
   <ul class="collapse">
   <li><a href="#build-a-longitudinal-panel" id="toc-build-a-longitudinal-panel" class="nav-link" data-scroll-target="#build-a-longitudinal-panel">Build a longitudinal panel</a></li>
@@ -312,6 +315,61 @@ div.csl-indent {
 <section id="data" class="level1">
 <h1>Data</h1>
 <p>We continue the below using the cloned dataset panel generated in <a href="01_syndata.v3.qmd">Data</a>.</p>
+<section id="stepwise-approach" class="level2">
+<h2 class="anchored" data-anchor-id="stepwise-approach">Stepwise approach</h2>
+<p>I recommend the following stepwise procedure in estimation:</p>
+<dl>
+<dt>PLR</dt>
+<dd>
+<p>Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.</p>
+</dd>
+<dt>KM</dt>
+<dd>
+<p>Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.</p>
+</dd>
+</dl>
+<ol type="1">
+<li>Estimate unweighted/unadjusted cumulative incidences with KM method</li>
+<li>Estimate a PLR model without weights</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Compare KM vs PLR</li>
+</ol>
+<!-- -->
+<ol start="3" type="1">
+<li>Estimate censoring weights</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li><p>Estimate PLR for treatment initiation</p>
+<p>A. Estimate treatment model</p>
+<p>B. Compare KM / PLR estimates</p>
+<p>C. Compute IPCW</p>
+<p>D. Examine IPCW weights for extreme values, non-sensical values</p>
+<p>E. Examine balance in covariates across time</p></li>
+<li><p>Generate “table 1” with some weighted difference statistic (e.g.&nbsp;wSMD)</p></li>
+</ol>
+<!-- -->
+<ol start="4" type="1">
+<li>Estimate weighted outcome models</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Estimate a weighted outcome model, no covariate adjustment</li>
+<li>Estimate a weighted outcome + covariates (usually main estimate)</li>
+</ol>
+<!-- -->
+<ol start="5" type="1">
+<li>Once satisfied with stability from steps 1-4, execute bootstraps</li>
+<li>Finalize report</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>provide KM, Cox unweighted, and PLR unweighted estimates in an appendix</li>
+<li>main results reported should be the IPCW-weighted PLR analysis</li>
+</ol>
+</section>
 </section>
 <section id="ipcwplr" class="level1">
 <h1>IPCW Pooled Logistic Regression</h1>
@@ -331,6 +389,10 @@ Note
 <section id="build-a-longitudinal-panel" class="level2">
 <h2 class="anchored" data-anchor-id="build-a-longitudinal-panel">Build a longitudinal panel</h2>
 <p>The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.</p>
+<ol type="1">
+<li><p>This may be a little confusing, but I am taking clones where assign=0 from the <code>dta_c_panel</code> dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.</p></li>
+<li><p>We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this but for other projects this step will have to be modified if the comparator is different.</p></li>
+</ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Numerator (margin probability)</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>

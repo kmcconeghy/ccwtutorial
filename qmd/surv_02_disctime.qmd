@@ -47,8 +47,17 @@ Cumulative Hazard, $H(t)$
 
 The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
 
+# Pooled Logistic Regression  
 
+::: callout-note
+Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf), which explains why the odds approximates the hazard at a given time-point *k*, with weak assumption the hazard is small (i.e. rare event) at time *k*.
+:::
 
+# Other modeling approaches
+
+## TMLE
+
+## Survival RF
 
 # References
 

@@ -277,6 +277,12 @@ window.Quarto = {
   <li><a href="#time-to-event" id="toc-time-to-event" class="nav-link" data-scroll-target="#time-to-event">Time-to-event</a></li>
   <li><a href="#definitions-and-notation" id="toc-definitions-and-notation" class="nav-link" data-scroll-target="#definitions-and-notation">Definitions and Notation</a></li>
   </ul></li>
+  <li><a href="#pooled-logistic-regression" id="toc-pooled-logistic-regression" class="nav-link" data-scroll-target="#pooled-logistic-regression">Pooled Logistic Regression</a></li>
+  <li><a href="#other-modeling-approaches" id="toc-other-modeling-approaches" class="nav-link" data-scroll-target="#other-modeling-approaches">Other modeling approaches</a>
+  <ul class="collapse">
+  <li><a href="#tmle" id="toc-tmle" class="nav-link" data-scroll-target="#tmle">TMLE</a></li>
+  <li><a href="#survival-rf" id="toc-survival-rf" class="nav-link" data-scroll-target="#survival-rf">Survival RF</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/surv_02_disctime.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -324,6 +330,31 @@ window.Quarto = {
 <p>Hazard, <span class="math inline">\(h(t) = Pr(E_t=1|E_{t-1}=0)\)</span>, the probability of an event at time <em>t</em>, conditional on event-free survival up to that point, sometimes described as the “instantaneuous hazard”.</p>
 <p>Cumulative Hazard, <span class="math inline">\(H(t)\)</span></p>
 <p>The terms are related, <span class="math inline">\(S(t) = 1 – R(t)\)</span>. <span class="math inline">\(h(t)=R(t)/S(t)\)</span>, <span class="math inline">\(H(t) = -log[S(t)]\)</span> and <span class="math inline">\(S(t) = e –H(t)\)</span>.</p>
+</section>
+</section>
+<section id="pooled-logistic-regression" class="level1">
+<h1>Pooled Logistic Regression</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of <a href="https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf">Causal Inference: What If</a>, which explains why the odds approximates the hazard at a given time-point <em>k</em>, with weak assumption the hazard is small (i.e.&nbsp;rare event) at time <em>k</em>.</p>
+</div>
+</div>
+</section>
+<section id="other-modeling-approaches" class="level1">
+<h1>Other modeling approaches</h1>
+<section id="tmle" class="level2">
+<h2 class="anchored" data-anchor-id="tmle">TMLE</h2>
+</section>
+<section id="survival-rf" class="level2">
+<h2 class="anchored" data-anchor-id="survival-rf">Survival RF</h2>
 </section>
 </section>
 <section id="references" class="level1">
