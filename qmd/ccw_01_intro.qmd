@@ -22,7 +22,69 @@ For the following, I simulated a dataset with treatment, `treat` or A, and treat
 
 So a naive estimator, not adjusting for `X` should identify a positive association between treatment and outcome in model 'xy' but little to no association in 'ay', while adjustment for `X` and `X_t` should find a null association in 'xy' but an association in 'ay'. This helps interpret results from the code procedures below. The sample size is 1000, so associations may not be statistically significant. 
 
-See: [Data](01_syndata.v3.qmd) for full explanation of procedure for generating data.  
+See: [Data](app_01_syndata.qmd) for full explanation of procedure for generating data.  
+
+## Target Trial Specification  
+
+The full design of a TTE is a not a goal of this guide, but it is essential to start with a clear idea of research question, intervention/treatment, cohort to study and statistical analysis. It it is typical to present these elements in a table and compare the idealized 'target' trial to the emulation in the observational data. 
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-1wig{font-weight:bold;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-1wig">Aim</th>
+    <th class="tg-0lax" colspan="2">Estimate and contrast risk of death under two different treatment strategies</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0lax"></td>
+    <td class="tg-1wig">Target Trial</td>
+    <td class="tg-1wig">Emulation</td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Eligibility criteria</td>
+    <td class="tg-0lax">Time periods, Inclusion(s); Exclusion(s);</td>
+    <td class="tg-0lax">Note differences</td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Treatment</td>
+    <td class="tg-0lax">Two strategies: <br>1) Initiate treatment in 12 months, <br>2) Do no initiate treatment ever</td>
+    <td class="tg-baqh">""</td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Assignment</td>
+    <td class="tg-0lax">Randomly assigned, assigned within strata etc.</td>
+    <td class="tg-0lax">Generally described as assumed no confounding within <br>strata of observed covariates, and weighted estimates <br>are as good as randomly assigned</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax"><span style="font-weight:bold">Outcomes</span></td>
+    <td class="tg-0lax">Death</td>
+    <td class="tg-0lax">""</td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Follow-up</td>
+    <td class="tg-0lax">Death, non-adherence to treatment, or 60 time periods</td>
+    <td class="tg-0lax"></td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Causal contrasts</td>
+    <td class="tg-0lax">Intention to treat; per-protocol effects weighted by inverse <br>probability of treatment adherence</td>
+    <td class="tg-0lax">Observational analogue of per protocol effect</td>
+  </tr>
+  <tr>
+    <td class="tg-1wig">Statistical Analysis</td>
+    <td class="tg-0lax">Cumulative incidences, Kaplan-Meier or Cox regression</td>
+    <td class="tg-0lax">Pooled logistic regression with probability weighting <br>to adjust for confounder</td>
+  </tr>
+</tbody></table>
 
 # Grace windows  
 
@@ -137,7 +199,7 @@ The `Pr(C=1)`= ½ for person A and B.
 Why is it 1/2 even though there are three people (i.e. not ⅓)? This is because person C already received the treatment in period 1. They are immutably uncensored from that point forward. So the only two who can censor are persons A and B, since person B censors in period 2, the `Pr(C=1)` = ½. 
 :::
 
-The probability of not censoring, `Pr(C=0)` is simply 1 - `Pr(C=1`. 
+The probability of not censoring, `Pr(C=0)` is simply 1 - `Pr(C=1)`. 
 
 ```{r }
 #| label: simple-ex-wt-3
@@ -167,10 +229,25 @@ kable(d_ex, align = 'c') %>%
   kable_styling()
 ```
 
-Person A is given a weight of 2, making up for the loss of censored person B. Person C is given a weight of 1 because they received treatment in the first period, and so couldn't censor at the end of the grace period. Three person, and the sum of the weights in both periods is 3. 
+Person A is given a weight of 2, making up for the loss of censored person B. Person C is given a weight of 1 because they received treatment in the first period, and so couldn't censor at the end of the grace period. Three persons, and the sum of the weights in both periods is 3. 
 
-::: callout-note
-How does one carry the IPW weight forward after the grace period?
-In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point. However, if another censoring mechanism was important (i.e. censor due to death or loss to follow-up), then you might compute that probability separately and take the product of the two.
-:::
+## Post grace period  
+
+How does one carry the IPW weight forward after the grace period? This depends on the treatment strategy. If all that is required is initiation of treatment within the grace period, then there is no reason for censoring after the grace period. So the IPCW continues as a fixed--time-invariant--weight. However, if there were rules like "maintain treatment", or "don't initiate some other treatment", then these would be applied still and so the computations should reflect those scenarios.
+
+In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point. 
+
+## Summary of weighting scheme  
+
+Examples of IPW by different treatment strategies:
+
+| **Time period**                       | **No Intervention** | **No Treatment Ever**          | **No Treatment within grace period** | **Treatment by grace period**  |
+|---------------------------------------|---------------------|--------------------------------|--------------------------------------|--------------------------------|
+| **    Prior to last grace period   ** |         1 / 1       |     1 / P(C = 0 \| X, L, T)    |        1 / P(C = 0 \| X, L, T)       |              1 / 1             |
+| **    End of grace period   **        |         1 / 1       |     1 / P(C = 0 \| X, L, T)    |        1 / P(C = 0 \| X, L, T)       |     1 / P(C = 0 \| X, L, T)    |
+| **    After grace period**            |         1 / 1       |     1 / P(C = 0 \| X, L, T)    |                 1 / 1                |              1 / 1             |
+
+# Weighting and Outcome Models  
+
+After the weight is calculated, then the outcome models can estimate the adjusted cumulative incidences using pooled logistic regression. A simple example of PLR is provided: [Discrete time analyses](surv_02_disctime.qmd). 
 

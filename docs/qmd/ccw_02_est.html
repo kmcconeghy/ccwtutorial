@@ -277,14 +277,26 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a>
+  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
+  <li><a href="#ipcwplr" id="toc-ipcwplr" class="nav-link" data-scroll-target="#ipcwplr">Estimation of censoring weights</a>
   <ul class="collapse">
-  <li><a href="#stepwise-approach" id="toc-stepwise-approach" class="nav-link" data-scroll-target="#stepwise-approach">Stepwise approach</a></li>
+  <li><a href="#probability-of-treatment-initiation" id="toc-probability-of-treatment-initiation" class="nav-link" data-scroll-target="#probability-of-treatment-initiation">Probability of treatment initiation</a></li>
   </ul></li>
-  <li><a href="#ipcwplr" id="toc-ipcwplr" class="nav-link" data-scroll-target="#ipcwplr">IPCW Pooled Logistic Regression</a>
+  <li><a href="#calculation-of-weights" id="toc-calculation-of-weights" class="nav-link" data-scroll-target="#calculation-of-weights">Calculation of weights</a>
   <ul class="collapse">
-  <li><a href="#build-a-longitudinal-panel" id="toc-build-a-longitudinal-panel" class="nav-link" data-scroll-target="#build-a-longitudinal-panel">Build a longitudinal panel</a></li>
-  <li><a href="#calculation-of-weights" id="toc-calculation-of-weights" class="nav-link" data-scroll-target="#calculation-of-weights">Calculation of weights</a></li>
+  <li><a href="#unstabilized-weights" id="toc-unstabilized-weights" class="nav-link" data-scroll-target="#unstabilized-weights">Unstabilized weights</a></li>
+  <li><a href="#stabilized-weights" id="toc-stabilized-weights" class="nav-link" data-scroll-target="#stabilized-weights">Stabilized weights</a></li>
+  <li><a href="#final-weights" id="toc-final-weights" class="nav-link" data-scroll-target="#final-weights">Final weights</a></li>
+  </ul></li>
+  <li><a href="#outcome-model" id="toc-outcome-model" class="nav-link" data-scroll-target="#outcome-model">Outcome model</a>
+  <ul class="collapse">
+  <li><a href="#plr-model-for-cumulative-incidences" id="toc-plr-model-for-cumulative-incidences" class="nav-link" data-scroll-target="#plr-model-for-cumulative-incidences">PLR model for cumulative incidences</a></li>
+  <li><a href="#estimate-cumulative-incidences" id="toc-estimate-cumulative-incidences" class="nav-link" data-scroll-target="#estimate-cumulative-incidences">Estimate cumulative incidences</a></li>
+  </ul></li>
+  <li><a href="#summarize-results" id="toc-summarize-results" class="nav-link" data-scroll-target="#summarize-results">Summarize Results</a>
+  <ul class="collapse">
+  <li><a href="#figure" id="toc-figure" class="nav-link" data-scroll-target="#figure">Figure</a></li>
+  <li><a href="#table" id="toc-table" class="nav-link" data-scroll-target="#table">Table</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -312,67 +324,36 @@ div.csl-indent {
 </header>
 
 
-<section id="data" class="level1">
-<h1>Data</h1>
-<p>We continue the below using the cloned dataset panel generated in <a href="01_syndata.v3.qmd">Data</a>.</p>
-<section id="stepwise-approach" class="level2">
-<h2 class="anchored" data-anchor-id="stepwise-approach">Stepwise approach</h2>
-<p>I recommend the following stepwise procedure in estimation:</p>
-<dl>
-<dt>PLR</dt>
-<dd>
-<p>Pooled Logistic Regression, a model which approximates the hazards by discretizing follow-up time.</p>
-</dd>
-<dt>KM</dt>
-<dd>
-<p>Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.</p>
-</dd>
-</dl>
-<ol type="1">
-<li>Estimate unweighted/unadjusted cumulative incidences with KM method</li>
-<li>Estimate a PLR model without weights</li>
-</ol>
-<!-- -->
-<ol type="i">
-<li>Compare KM vs PLR</li>
-</ol>
-<!-- -->
-<ol start="3" type="1">
-<li>Estimate censoring weights</li>
-</ol>
-<!-- -->
-<ol type="i">
-<li><p>Estimate PLR for treatment initiation</p>
-<p>A. Estimate treatment model</p>
-<p>B. Compare KM / PLR estimates</p>
-<p>C. Compute IPCW</p>
-<p>D. Examine IPCW weights for extreme values, non-sensical values</p>
-<p>E. Examine balance in covariates across time</p></li>
-<li><p>Generate “table 1” with some weighted difference statistic (e.g.&nbsp;wSMD)</p></li>
-</ol>
-<!-- -->
-<ol start="4" type="1">
-<li>Estimate weighted outcome models</li>
-</ol>
-<!-- -->
-<ol type="i">
-<li>Estimate a weighted outcome model, no covariate adjustment</li>
-<li>Estimate a weighted outcome + covariates (usually main estimate)</li>
-</ol>
-<!-- -->
-<ol start="5" type="1">
-<li>Once satisfied with stability from steps 1-4, execute bootstraps</li>
-<li>Finalize report</li>
-</ol>
-<!-- -->
-<ol type="i">
-<li>provide KM, Cox unweighted, and PLR unweighted estimates in an appendix</li>
-<li>main results reported should be the IPCW-weighted PLR analysis</li>
-</ol>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Example uses the cloned dataset panel generated in <a href="../qmd/app_01_syndata.html">Data</a>.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 50,097
+Columns: 17
+$ model     &lt;chr&gt; "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", "ay", …
+$ id        &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+$ time      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
+$ t_outcome &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, …
+$ t_treat   &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, …
+$ t_censor  &lt;dbl&gt; Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, …
+$ censor    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ event     &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ assign    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ enter     &lt;dbl&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
+$ exit      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
+$ age       &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, …
+$ female    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ X         &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ X_t       &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ treat     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ outcome   &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</code></pre>
+</div>
+</div>
+<p>The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.</p>
 </section>
-</section>
-<section id="ipcwplr" class="level1">
-<h1>IPCW Pooled Logistic Regression</h1>
+<section id="ipcwplr" class="level2">
+<h2 class="anchored" data-anchor-id="ipcwplr">Estimation of censoring weights</h2>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -386,34 +367,24 @@ Note
 <p>There is no consideration here to model training, causal DAGs or covariate selection. It is simply a toy example to show the procedure.</p>
 </div>
 </div>
-<section id="build-a-longitudinal-panel" class="level2">
-<h2 class="anchored" data-anchor-id="build-a-longitudinal-panel">Build a longitudinal panel</h2>
-<p>The person- or clone-level data must be expanded to a longitudinal panel where each observation (row) is a period of follow-up.</p>
-<ol type="1">
-<li><p>This may be a little confusing, but I am taking clones where assign=0 from the <code>dta_c_panel</code> dataset which is a person-clone level dataset. These are clones assigned to not receive treatment, so their censoring time is time of treatment start.</p></li>
-<li><p>We are estimating time to treatment, not outcome. The clone, assign=0 is already set up for this but for other projects this step will have to be modified if the comparator is different.</p></li>
-</ol>
+<section id="probability-of-treatment-initiation" class="level3">
+<h3 class="anchored" data-anchor-id="probability-of-treatment-initiation">Probability of treatment initiation</h3>
+<p>Since the example treatment strategy focuses on whether or not treatment initiates, the censoring weights can be computed from a model on the <em>uncloned</em> dataset where the event is treatment, and time to treatment.</p>
+<p>This may be a little confusing, but since my dataset is already cloned (duplicated by assignment). I take the clones where <code>assign=0</code> from the <code>dta_c_panel</code> dataset. These are clones assigned to not receive treatment, so their censoring time is time to treatment start and can be used for the treatment model. We are estimating time to treatment, not outcome. The clone, <code>assign=0</code> is already set up for this but for other projects this step will have to be modified if the comparator is different.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Numerator (margin probability)</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-2" class="code-annotation-target"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
-<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-5"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_censnum <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> dta_c_panel, <span class="at">type=</span><span class="st">'response'</span>)</span>
-<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Denominator </span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-8" class="code-annotation-target"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t,</span>
-<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-1-10"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_censdenom <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> dta_c_panel, <span class="at">type=</span><span class="st">'response'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-1" class="code-annotation-target"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t <span class="sc">+</span> age <span class="sc">+</span> female,</span>
+<span id="annotated-cell-1-2"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-4" class="code-annotation-target"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_treat <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> dta_c_panel, <span class="at">type=</span><span class="st">'response'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="2,3,5" data-code-annotation="1">Marginal probability of no censoring.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="1,2" data-code-annotation="1">logit model, where outcome is treat event, and it is regressed on a polynomial for time, along with covariates <code>X</code>, <code>X_t</code>, <code>age</code> and <code>female</code>.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="8,9,11" data-code-annotation="2">Conditional probability (covariate-adjusted) for no censoring</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="4" data-code-annotation="2">For each person, I estimate the conditional probability of treatment initiation at each timepoint.</span>
 </dd>
 </dl>
 </div>
@@ -428,77 +399,97 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>There is some controversy in this procedure. Others have not modeled the censoring probability off of a person-unique (no clones) dataset with treatment times, but rather directly in the cloned dataset with the outcome of “censoring” where that may mean treatment initiation or some other thing.<span class="citation" data-cites="gaber2024">(<a href="#ref-gaber2024" role="doc-biblioref">Gaber et al. 2024</a>)</span></p>
+<p>There is some controversy in this workflow. Some do it like here by modeling the censoring probability off of a person-unique (no clones) dataset with treatment times, but others do it directly in the cloned dataset with the outcome of “censoring” where that may mean treatment initiation or some other thing.<span class="citation" data-cites="gaber2024">(<a href="#ref-gaber2024" role="doc-biblioref">Gaber et al. 2024</a>)</span></p>
+<p>I am unsure which is better?!</p>
 </div>
 </div>
 </section>
+</section>
 <section id="calculation-of-weights" class="level2">
 <h2 class="anchored" data-anchor-id="calculation-of-weights">Calculation of weights</h2>
-<p>This step is highly specific to a project and must be considered carefully. I have found this step is the most prone to errors due to coding or misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to the <a href="ccw_00_intro.qmd">Weighting scheme</a> section for further discussion.</p>
+<p>This step is highly specific to a project and must be considered carefully. I have found this step is error-prone to errors due to misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to the <a href="../qmd/ccw_01_intro.html#sec-weightscheme">Weighting scheme</a> section for further discussion.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I only show the procedure here, for full diagnostics to evaluate weighting and model specification see: <a href="../qmd/ccw_04_diag.html#sec-ipwdiag">IPW diagnostics</a></p>
+</div>
+</div>
+<section id="unstabilized-weights" class="level3">
+<h3 class="anchored" data-anchor-id="unstabilized-weights">Unstabilized weights</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setDT</span>(dta_c_panel)</span>
 <span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="annotated-cell-2-3"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-4" class="code-annotation-target"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom),</span>
-<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-6" class="code-annotation-target"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-2-7" class="code-annotation-target"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-2-8" class="code-annotation-target"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_censdenom),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-2-9" class="code-annotation-target"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">0</span>, <span class="dv">0</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="6" onclick="event.preventDefault();">6</a><span id="annotated-cell-2-10" class="code-annotation-target"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;</span><span class="dv">12</span> <span class="sc">&amp;</span> event<span class="sc">==</span><span class="dv">1</span>, <span class="dv">1</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="7" onclick="event.preventDefault();">7</a><span id="annotated-cell-2-11" class="code-annotation-target"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span></span>
-<span id="annotated-cell-2-12"><a href="#annotated-cell-2-12" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<span id="annotated-cell-2-13"><a href="#annotated-cell-2-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="8" onclick="event.preventDefault();">8</a><span id="annotated-cell-2-14" class="code-annotation-target"><a href="#annotated-cell-2-14" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
-<span id="annotated-cell-2-15"><a href="#annotated-cell-2-15" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, (<span class="dv">1</span><span class="sc">-</span>pr_censnum) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_censdenom),</span>
-<span id="annotated-cell-2-16"><a href="#annotated-cell-2-16" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span> <span class="sc">&amp;</span> t_treat   <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, pr_censnum <span class="sc">/</span> (pr_censdenom),</span>
-<span id="annotated-cell-2-17"><a href="#annotated-cell-2-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">default =</span> ipw</span>
-<span id="annotated-cell-2-18"><a href="#annotated-cell-2-18" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<span id="annotated-cell-2-19"><a href="#annotated-cell-2-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="9" onclick="event.preventDefault();">9</a><span id="annotated-cell-2-20" class="code-annotation-target"><a href="#annotated-cell-2-20" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw),</span>
-<span id="annotated-cell-2-21"><a href="#annotated-cell-2-21" aria-hidden="true" tabindex="-1"></a>                     <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)),</span>
-<span id="annotated-cell-2-22"><a href="#annotated-cell-2-22" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-4" class="code-annotation-target"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-5" class="code-annotation-target"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,</span>
+<span id="annotated-cell-2-6"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-2-7" class="code-annotation-target"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-2-8" class="code-annotation-target"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-2-9" class="code-annotation-target"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_treat),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="6" onclick="event.preventDefault();">6</a><span id="annotated-cell-2-10" class="code-annotation-target"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span></span>
+<span id="annotated-cell-2-11"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a>  )]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="4" data-code-annotation="1">(assign=0) Cumulative probability of no vaccination = Probability of remaining uncensored</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="4" data-code-annotation="1">(assign=0); because the model is Pr(treat=1), the no treatment clones are assigned 1 - Pr(treat=1), or the cumulative probability of no vaccination ~ Probability of remaining uncensored.</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="6" data-code-annotation="2">(assign=1) Clones cannot artificially censor prior to grace period</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="5,6" data-code-annotation="2">If a clone is censored, I assigned weight=0.</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="7" data-code-annotation="3">(assign=1) If treatment started prior to grace window ending, the clone cannot censor</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="7" data-code-annotation="3">(assign=1) Clones cannot artificially censor prior to grace period</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="8" data-code-annotation="4">(assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window).</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="8" data-code-annotation="4">(assign=1) If treatment started prior to grace window ending, the clone cannot censor</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="5">5</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="9" data-code-annotation="5">(assign=1) If a clone is not treated, and does not die (<code>event=1</code>) they censor at the end of the window</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="9" data-code-annotation="5">(assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window).</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="6">6</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="10" data-code-annotation="6">If died in last interval (<code>event=1</code>), do not set weight to zero. This is a misstep others have done, if the person dies at the end of the interval, then that is still consistent with treatment strategy (i.e.&nbsp;they died before end of grace window when they were supposed to recieve treatment) so they are not censor=1 and death is counted.</span>
-</dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="7">7</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="11" data-code-annotation="7">(assign=1) Set post-grace period weights = 1 for all.</span>
-</dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="8">8</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="14,15,16,17" data-code-annotation="8">For a marginal IPW, numerator of 1 is replaced with marginal probability of censoring at each tiempoint.</span>
-</dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="9">9</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="20,21,22" data-code-annotation="9">After setting these conditions, compute the cumulative product of the weights.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="10" data-code-annotation="6">(assign=1) Set post-grace period weights = 1 for all, since treatment must occur by period 12 and no artificial censoring happens after this point for <code>assign==1</code></span>
 </dd>
 </dl>
 </div>
 </div>
+</section>
+<section id="stabilized-weights" class="level3">
+<h3 class="anchored" data-anchor-id="stabilized-weights">Stabilized weights</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_c0  <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">mean</span>(censor), by <span class="ot">=</span> <span class="fu">list</span>(assign, time)]</span>
+<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
+<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat),</span>
+<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
+<span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
+<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,  </span>
+<span id="annotated-cell-3-9"><a href="#annotated-cell-3-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (pr_treat),</span>
+<span id="annotated-cell-3-10"><a href="#annotated-cell-3-10" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
+<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>  )]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For the stabilized weights: 1. Compute the mean by period and assignment group. 2. Replace the numerator in the ipw calculation with the marginal probability.</p>
+</section>
+<section id="final-weights" class="level3">
+<h3 class="anchored" data-anchor-id="final-weights">Final weights</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw), </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)), </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Compute the cumulative product within person-clone to reach final IPCW.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -512,61 +503,80 @@ Note
 <p>Be very careful with IPW truncation with this design. If the probability of treatment is very low, then those treated at the end of the grace period will have very large weights. If you truncate at 99% for example, it could mostly just truncate the weights of those treated at the end of the grace period, and this could severely bias estimates. These persons are meant to account for all those being artificially censored in the treatment group for non-treatment and so will likely have large weights by design.</p>
 </div>
 </div>
-<p>Now with the estimated weights, it is simple to generate weighted cumulative incidences:</p>
+</section>
+</section>
+<section id="outcome-model" class="level2">
+<h2 class="anchored" data-anchor-id="outcome-model">Outcome model</h2>
+<section id="plr-model-for-cumulative-incidences" class="level3">
+<h3 class="anchored" data-anchor-id="plr-model-for-cumulative-incidences">PLR model for cumulative incidences</h3>
+<p>With the estimated weights, it is simple to generate weighted cumulative incidences:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
-<span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ],</span>
-<span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
-<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
-<span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ],</span>
-<span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
-<span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-9" class="code-annotation-target"><a href="#annotated-cell-3-9" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> dta_c_panel,</span>
-<span id="annotated-cell-3-10"><a href="#annotated-cell-3-10" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>)</span>
-<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> dta_c_panel,</span>
-<span id="annotated-cell-3-12"><a href="#annotated-cell-3-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-1" class="code-annotation-target"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ],</span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>dta_c_panel[dta_c_panel<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ],</span>
+<span id="annotated-cell-5-7"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw)</span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-9" class="code-annotation-target"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> dta_c_panel,</span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>)</span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>  dta_c_panel<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> dta_c_panel,</span>
+<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="1,2,3,4,5,6,7" data-code-annotation="1">Estimate for each assignment group separately. This isn’t necessary but its good practice, and if you are adjusting for other covariates may give different results. Note the <code>weights = ipw</code> argument. R <code>glm()</code> will generate a warning message because the weighted counts are “non-integer”, but this is expected and not a problem.</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="1,2,3,4,5,6,7" data-code-annotation="1">Estimate probability of the event for each assignment group separately. This isn’t necessary but its good practice, and adjusting for other covariates may give different results as well. Note the <code>weights = ipw</code> argument. R <code>glm()</code> will generate a warning message because the weighted counts are “non-integer”, but this is expected and not a problem.</span>
 </dd>
-<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-3" data-code-lines="9,10,11,12" data-code-annotation="2">Fitted probabilities from each model</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="9,10,11,12" data-code-annotation="2">Assign conditional probabilities for event to each person-clone.</span>
 </dd>
 </dl>
 </div>
 </div>
+</section>
+<section id="estimate-cumulative-incidences" class="level3">
+<h3 class="anchored" data-anchor-id="estimate-cumulative-incidences">Estimate cumulative incidences</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-1" class="code-annotation-target"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-4-4" class="code-annotation-target"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>  d_plrwt_est <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-5"><a href="#annotated-cell-4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-6"><a href="#annotated-cell-4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1),</span>
-<span id="annotated-cell-4-7"><a href="#annotated-cell-4-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0), </span>
-<span id="annotated-cell-4-8"><a href="#annotated-cell-4-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-9"><a href="#annotated-cell-4-9" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-10"><a href="#annotated-cell-4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-4-11"><a href="#annotated-cell-4-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-1" class="code-annotation-target"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
+<span id="annotated-cell-6-3"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-6-4" class="code-annotation-target"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a>  d_plrwt_est <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-6-5"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1),</span>
+<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0), </span>
+<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-6-9"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-6-10"><a href="#annotated-cell-6-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
+<span id="annotated-cell-6-11"><a href="#annotated-cell-6-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="1,2" data-code-annotation="1">Cumulative product</span>
+<span data-code-cell="annotated-cell-6" data-code-lines="1,2" data-code-annotation="1">To estimate the cumulative event-free survival (1 - P(S) for incidence) you take the cumulative product within person-clone.</span>
 </dd>
-<dt data-target-cell="annotated-cell-4" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="4,5,8,9,10,11" data-code-annotation="2">Summarize across group, time as before.</span>
+<span data-code-cell="annotated-cell-6" data-code-lines="4,5,8,9,10,11" data-code-annotation="2">Summarize across group, time. I will generally compute both the risk difference <code>cid</code> and relative differences <code>cir</code>.</span>
 </dd>
 </dl>
 </div>
 </div>
+</section>
+</section>
+<section id="summarize-results" class="level2">
+<h2 class="anchored" data-anchor-id="summarize-results">Summarize Results</h2>
+<section id="figure" class="level3">
+<h3 class="anchored" data-anchor-id="figure">Figure</h3>
 <div class="cell fig-cap-location-top">
 
 </div>
+<p>The results can be easily depicted in a standard graphical format like any survival analysis. You could hypothetically also present the unweighted or weighted person and event counts at each point of follow-up like many do in a Kaplan-Meier analysis.</p>
+</section>
+<section id="table" class="level3">
+<h3 class="anchored" data-anchor-id="table">Table</h3>
 </section>
 </section>
 <section id="references" class="level1">

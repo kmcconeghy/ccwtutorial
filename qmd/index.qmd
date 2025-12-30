@@ -14,7 +14,7 @@ CCW is popular in the pharmacoepidemiology field, but its execution can be trick
 
 1. [Survival Analysis](surv_00_summ.qmd). While not strictly about CCW, the first section of website provides some background for the most common statistical analyses techniques that are used when doing CCW in practice. [non-parametric analyses](surv_01_kaplan.qmd) can be used for simple examples but most researchers are using [pooled logistic regressions](surv_02_disctime.qmd) to approximate hazard ratios. I explain this in some detail and provide references to gain further understanding. Being comfortable with parametric discrete survival time analyses is crucial to properly executing more complex CCW analyses with time-varying confounders. 
 
-2. [Cloning-Censoring-Weighting](ccw_00_summ.qmd). The primary section of this website is the stepwise guide on how to do a CCW analysis. This includes: [background discussion](ccw_01_intro.qmd), [estimation](ccw_02_est.qmd), [inference](ccw_03_inf.qmd) and [diagnostics/validation](ccw_04_diag.qmd).
+2. [Clone-Censor-Weight](ccw_00_summ.qmd). The primary section of this website is the stepwise guide on how to do a CCW analysis. This includes: [background discussion](ccw_01_intro.qmd), [estimation](ccw_02_est.qmd), [inference](ccw_03_inf.qmd) and [diagnostics/validation](ccw_04_diag.qmd).
 
 3. [Appendix](app_00_summ.qmd): Additional sections include a description of the [synthetic data](app_01_syndata.qmd), [bootstrapping](app_02_boot.qmd), [computation](app_03_speed.qmd) notes and some related methods.
 

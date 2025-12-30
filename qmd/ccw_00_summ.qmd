@@ -18,6 +18,64 @@ The [Introduction](ccw_01_intro.qmd) section reviews the basic target trial emul
 
 After establishing the TTE, the [Estimator](ccw_02_est.qmd) step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in [Diagnostics](ccw_04_diag.qmd). [Inference](ccw_03_inf.qmd) gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See [Bootstrapping](app_02_boot.qmd)).
 
+## Stepwise approach
+
+I recommend the this generic stepwise procedure for CCW methods:
+
+1.  Estimate unweighted/unadjusted cumulative incidences with KM method [KM estimator](surv_01_kaplan.qmd)
+2.  Estimate a PLR model without weights [Discrete time section](surv_02_disctime.qmd)
+
+<!-- -->
+
+i)  Compare KM vs PLR, [Diagnostics](ccw_04_diag.qmd)
+
+<!-- -->
+
+3.  Estimate censoring weights, [IPCW Estimation](ccw_02_est.qmd#ipcwplr)
+
+<!-- -->
+
+i)  Estimate PLR for treatment initiation [Estimate](ccw_02_est.qmd)
+
+    A. Estimate treatment model
+
+    B. Compare KM / PLR estimates
+
+    C. Compute IPCW
+
+    D. Examine IPCW weights for extreme values, non-sensical values
+
+    E. Examine balance in covariates across time
+
+ii) Generate "table 1" with some weighted difference statistic (e.g. wSMD) [Diagnostics](ccw_02_est.qmd)
+
+<!-- -->
+
+4.  Estimate weighted outcome models [Estimate](ccw_02_est.qmd)
+
+<!-- -->
+
+i)  Estimate a weighted outcome model, no covariate adjustment
+ii) Estimate a weighted outcome + covariates (usually main estimate)
+
+<!-- -->
+
+5.  Once satisfied with stability from steps 1-4, execute bootstraps [Inference](ccw_03_inf.qmd)
+6.  Finalize report
+
+<!-- -->
+
+i)  provide KM, Cox unweighted, and PLR unweighted estimates in an appendix
+ii) main results reported should be the IPCW-weighted PLR analysis
+
+PLR [Discrete time section](surv_02_disctime.qmd)
+
+:   Pooled Logistic Regression, a parametric model which approximates the hazards with discretized follow-up time periods.
+
+KM [KM estimator](surv_01_kaplan.qmd)
+
+:   Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.
+
 ## Applied examples in the literature:
 
 My first CCW application was an evaluation of vaccine effects on all-cause death.[@McConeghy2024-me] 

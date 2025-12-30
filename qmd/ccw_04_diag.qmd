@@ -474,7 +474,7 @@ kables(
 ```
 Note. The IPW-PLR finds a null effect, and similar results to a time-dependent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.
 
-# Weight distributions  
+# Weight distributions {#sec-ipwdiag}
 ### Overall IPW Distribution  
 
 #### Unstabilized weights  

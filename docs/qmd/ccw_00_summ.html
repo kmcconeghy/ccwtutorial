@@ -244,6 +244,7 @@ div.csl-indent {
   <ul>
   <li><a href="#clone-censor-weight" id="toc-clone-censor-weight" class="nav-link active" data-scroll-target="#clone-censor-weight">Clone-Censor-Weight</a></li>
   <li><a href="#sec-sections" id="toc-sec-sections" class="nav-link" data-scroll-target="#sec-sections">Sections</a></li>
+  <li><a href="#stepwise-approach" id="toc-stepwise-approach" class="nav-link" data-scroll-target="#stepwise-approach">Stepwise approach</a></li>
   <li><a href="#applied-examples-in-the-literature" id="toc-applied-examples-in-the-literature" class="nav-link" data-scroll-target="#applied-examples-in-the-literature">Applied examples in the literature:</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_00_summ.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -292,6 +293,61 @@ Note
 <h2 class="anchored" data-anchor-id="sec-sections">Sections</h2>
 <p>The <a href="../qmd/ccw_01_intro.html">Introduction</a> section reviews the basic target trial emulation protocol, treatment assignments and cloning. This is a key first step that establishes all the subsequent analytical choices. It is also very project specific, so what is done here may not generalize well to others.</p>
 <p>After establishing the TTE, the <a href="../qmd/ccw_02_est.html">Estimator</a> step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in <a href="../qmd/ccw_04_diag.html">Diagnostics</a>. <a href="../qmd/ccw_03_inf.html">Inference</a> gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See <a href="../qmd/app_02_boot.html">Bootstrapping</a>).</p>
+</section>
+<section id="stepwise-approach" class="level2">
+<h2 class="anchored" data-anchor-id="stepwise-approach">Stepwise approach</h2>
+<p>I recommend the this generic stepwise procedure for CCW methods:</p>
+<ol type="1">
+<li>Estimate unweighted/unadjusted cumulative incidences with KM method <a href="../qmd/surv_01_kaplan.html">KM estimator</a></li>
+<li>Estimate a PLR model without weights <a href="../qmd/surv_02_disctime.html">Discrete time section</a></li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Compare KM vs PLR, <a href="../qmd/ccw_04_diag.html">Diagnostics</a></li>
+</ol>
+<!-- -->
+<ol start="3" type="1">
+<li>Estimate censoring weights, <a href="../qmd/ccw_02_est.html#ipcwplr">IPCW Estimation</a></li>
+</ol>
+<!-- -->
+<ol type="i">
+<li><p>Estimate PLR for treatment initiation <a href="../qmd/ccw_02_est.html">Estimate</a></p>
+<p>A. Estimate treatment model</p>
+<p>B. Compare KM / PLR estimates</p>
+<p>C. Compute IPCW</p>
+<p>D. Examine IPCW weights for extreme values, non-sensical values</p>
+<p>E. Examine balance in covariates across time</p></li>
+<li><p>Generate “table 1” with some weighted difference statistic (e.g.&nbsp;wSMD) <a href="../qmd/ccw_02_est.html">Diagnostics</a></p></li>
+</ol>
+<!-- -->
+<ol start="4" type="1">
+<li>Estimate weighted outcome models <a href="../qmd/ccw_02_est.html">Estimate</a></li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>Estimate a weighted outcome model, no covariate adjustment</li>
+<li>Estimate a weighted outcome + covariates (usually main estimate)</li>
+</ol>
+<!-- -->
+<ol start="5" type="1">
+<li>Once satisfied with stability from steps 1-4, execute bootstraps <a href="../qmd/ccw_03_inf.html">Inference</a></li>
+<li>Finalize report</li>
+</ol>
+<!-- -->
+<ol type="i">
+<li>provide KM, Cox unweighted, and PLR unweighted estimates in an appendix</li>
+<li>main results reported should be the IPCW-weighted PLR analysis</li>
+</ol>
+<dl>
+<dt>PLR <a href="../qmd/surv_02_disctime.html">Discrete time section</a></dt>
+<dd>
+<p>Pooled Logistic Regression, a parametric model which approximates the hazards with discretized follow-up time periods.</p>
+</dd>
+<dt>KM <a href="../qmd/surv_01_kaplan.html">KM estimator</a></dt>
+<dd>
+<p>Kaplan-Meier, non-parametric estimator which computes the instantaneous hazard at points of follow-up. Does not allow for time-varying confounding, but the non-parametric evaluation of time-trends can be useful for diagnostics and model specification of the PLR.</p>
+</dd>
+</dl>
 </section>
 <section id="applied-examples-in-the-literature" class="level2">
 <h2 class="anchored" data-anchor-id="applied-examples-in-the-literature">Applied examples in the literature:</h2>

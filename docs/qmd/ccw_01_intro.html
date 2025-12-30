@@ -258,6 +258,7 @@ window.Quarto = {
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
   <ul class="collapse">
   <li><a href="#case-study" id="toc-case-study" class="nav-link" data-scroll-target="#case-study">Case Study</a></li>
+  <li><a href="#target-trial-specification" id="toc-target-trial-specification" class="nav-link" data-scroll-target="#target-trial-specification">Target Trial Specification</a></li>
   </ul></li>
   <li><a href="#grace-windows" id="toc-grace-windows" class="nav-link" data-scroll-target="#grace-windows">Grace windows</a>
   <ul class="collapse">
@@ -271,7 +272,10 @@ window.Quarto = {
   <li><a href="#sec-weightscheme" id="toc-sec-weightscheme" class="nav-link" data-scroll-target="#sec-weightscheme">Weight assignments in CCW design</a>
   <ul class="collapse">
   <li><a href="#simple-example-probability-weighting-with-a-grace-period" id="toc-simple-example-probability-weighting-with-a-grace-period" class="nav-link" data-scroll-target="#simple-example-probability-weighting-with-a-grace-period">Simple example: Probability weighting with a grace period</a></li>
+  <li><a href="#post-grace-period" id="toc-post-grace-period" class="nav-link" data-scroll-target="#post-grace-period">Post grace period</a></li>
+  <li><a href="#summary-of-weighting-scheme" id="toc-summary-of-weighting-scheme" class="nav-link" data-scroll-target="#summary-of-weighting-scheme">Summary of weighting scheme</a></li>
   </ul></li>
+  <li><a href="#weighting-and-outcome-models" id="toc-weighting-and-outcome-models" class="nav-link" data-scroll-target="#weighting-and-outcome-models">Weighting and Outcome Models</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_01_intro.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -303,7 +307,121 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="case-study">Case Study</h2>
 <p>For the following, I simulated a dataset with treatment, <code>treat</code> or A, and treatment strategy <code>assign</code> which is either 1) receive treatment by time period 12, or 2) never receive treatment through follow-up. The outcome <code>Y</code> is a function of <code>X</code>, <code>age</code> and gender (<code>female</code>) in model ‘xy’, and in model ‘ay’ there is a direct causal effect of A (<code>treat</code>) on Y. The effect is in opposite direction to the confounders, <code>X</code>, which is recorded as a baseline value at time zero, and <code>X_t</code> which varies across time.</p>
 <p>So a naive estimator, not adjusting for <code>X</code> should identify a positive association between treatment and outcome in model ‘xy’ but little to no association in ‘ay’, while adjustment for <code>X</code> and <code>X_t</code> should find a null association in ‘xy’ but an association in ‘ay’. This helps interpret results from the code procedures below. The sample size is 1000, so associations may not be statistically significant.</p>
-<p>See: <a href="01_syndata.v3.qmd">Data</a> for full explanation of procedure for generating data.</p>
+<p>See: <a href="../qmd/app_01_syndata.html">Data</a> for full explanation of procedure for generating data.</p>
+</section>
+<section id="target-trial-specification" class="level2">
+<h2 class="anchored" data-anchor-id="target-trial-specification">Target Trial Specification</h2>
+<p>The full design of a TTE is a not a goal of this guide, but it is essential to start with a clear idea of research question, intervention/treatment, cohort to study and statistical analysis. It it is typical to present these elements in a table and compare the idealized ‘target’ trial to the emulation in the observational data.</p>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-1wig{font-weight:bold;text-align:left;vertical-align:top}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-1wig">
+Aim
+</th>
+<th class="tg-0lax" colspan="2">
+Estimate and contrast risk of death under two different treatment strategies
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-0lax">
+</td>
+<td class="tg-1wig">
+Target Trial
+</td>
+<td class="tg-1wig">
+Emulation
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Eligibility criteria
+</td>
+<td class="tg-0lax">
+Time periods, Inclusion(s); Exclusion(s);
+</td>
+<td class="tg-0lax">
+Note differences
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Treatment
+</td>
+<td class="tg-0lax">
+Two strategies: <br>1) Initiate treatment in 12 months, <br>2) Do no initiate treatment ever
+</td>
+<td class="tg-baqh">
+““
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Assignment
+</td>
+<td class="tg-0lax">
+Randomly assigned, assigned within strata etc.
+</td>
+<td class="tg-0lax">
+Generally described as assumed no confounding within <br>strata of observed covariates, and weighted estimates <br>are as good as randomly assigned
+</td>
+</tr>
+<tr>
+<td class="tg-0lax">
+<span style="font-weight:bold">Outcomes</span>
+</td>
+<td class="tg-0lax">
+Death
+</td>
+<td class="tg-0lax">
+““
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Follow-up
+</td>
+<td class="tg-0lax">
+Death, non-adherence to treatment, or 60 time periods
+</td>
+<td class="tg-0lax">
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Causal contrasts
+</td>
+<td class="tg-0lax">
+Intention to treat; per-protocol effects weighted by inverse <br>probability of treatment adherence
+</td>
+<td class="tg-0lax">
+Observational analogue of per protocol effect
+</td>
+</tr>
+<tr>
+<td class="tg-1wig">
+Statistical Analysis
+</td>
+<td class="tg-0lax">
+Cumulative incidences, Kaplan-Meier or Cox regression
+</td>
+<td class="tg-0lax">
+Pooled logistic regression with probability weighting <br>to adjust for confounder
+</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 <section id="grace-windows" class="level1">
@@ -542,7 +660,7 @@ Note
 <p>Why is it 1/2 even though there are three people (i.e.&nbsp;not ⅓)? This is because person C already received the treatment in period 1. They are immutably uncensored from that point forward. So the only two who can censor are persons A and B, since person B censors in period 2, the <code>Pr(C=1)</code> = ½.</p>
 </div>
 </div>
-<p>The probability of not censoring, <code>Pr(C=0)</code> is simply 1 - <code>Pr(C=1</code>.</p>
+<p>The probability of not censoring, <code>Pr(C=0)</code> is simply 1 - <code>Pr(C=1)</code>.</p>
 <div class="cell tbl-cap-location-top" data-tbl-cap="Simple Weighting Example - Censoring Probabilities">
 <div class="cell-output-display">
 <table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
@@ -685,23 +803,64 @@ Note
 </table>
 </div>
 </div>
-<p>Person A is given a weight of 2, making up for the loss of censored person B. Person C is given a weight of 1 because they received treatment in the first period, and so couldn’t censor at the end of the grace period. Three person, and the sum of the weights in both periods is 3.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>How does one carry the IPW weight forward after the grace period? In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point. However, if another censoring mechanism was important (i.e.&nbsp;censor due to death or loss to follow-up), then you might compute that probability separately and take the product of the two.</p>
-</div>
-</div>
-
-
+<p>Person A is given a weight of 2, making up for the loss of censored person B. Person C is given a weight of 1 because they received treatment in the first period, and so couldn’t censor at the end of the grace period. Three persons, and the sum of the weights in both periods is 3.</p>
 </section>
+<section id="post-grace-period" class="level2">
+<h2 class="anchored" data-anchor-id="post-grace-period">Post grace period</h2>
+<p>How does one carry the IPW weight forward after the grace period? This depends on the treatment strategy. If all that is required is initiation of treatment within the grace period, then there is no reason for censoring after the grace period. So the IPCW continues as a fixed–time-invariant–weight. However, if there were rules like “maintain treatment”, or “don’t initiate some other treatment”, then these would be applied still and so the computations should reflect those scenarios.</p>
+<p>In this simple scheme, assign a weight of 1 for each time period after grace, and compute a cumulative product of the weights for each timepoint up until the end of follow-up. So person B, IPW=2, person C, IPW=1, for each subsequent time-point.</p>
+</section>
+<section id="summary-of-weighting-scheme" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-weighting-scheme">Summary of weighting scheme</h2>
+<p>Examples of IPW by different treatment strategies:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 24%">
+<col style="width: 12%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Time period</strong></th>
+<th><strong>No Intervention</strong></th>
+<th><strong>No Treatment Ever</strong></th>
+<th><strong>No Treatment within grace period</strong></th>
+<th><strong>Treatment by grace period</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>** Prior to last grace period **</td>
+<td>1 / 1</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+<td>1 / 1</td>
+</tr>
+<tr class="even">
+<td>** End of grace period **</td>
+<td>1 / 1</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+</tr>
+<tr class="odd">
+<td>** After grace period**</td>
+<td>1 / 1</td>
+<td>1 / P(C = 0 | X, L, T)</td>
+<td>1 / 1</td>
+<td>1 / 1</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="weighting-and-outcome-models" class="level1">
+<h1>Weighting and Outcome Models</h1>
+<p>After the weight is calculated, then the outcome models can estimate the adjusted cumulative incidences using pooled logistic regression. A simple example of PLR is provided: <a href="../qmd/surv_02_disctime.html">Discrete time analyses</a>.</p>
+
+
 </section>
 
 </main> <!-- /main -->
