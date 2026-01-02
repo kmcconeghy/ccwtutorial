@@ -16,7 +16,7 @@ I originally learned this as 'clone-censor-weight', but I am seeing 'cloning-cen
 
 The [Introduction](ccw_01_intro.qmd) section reviews the basic target trial emulation protocol, treatment assignments and cloning. This is a key first step that establishes all the subsequent analytical choices. It is also very project specific, so what is done here may not generalize well to others. 
 
-After establishing the TTE, the [Estimator](ccw_02_est.qmd) step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in [Diagnostics](ccw_04_diag.qmd). [Inference](ccw_03_inf.qmd) gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See [Bootstrapping](app_02_boot.qmd)).
+After establishing the TTE, the [Estimator](ccw_02_est.qmd) step is shown. This page simply goes through the procedure, but many aspects need to be interrogated for proper model specification, which is reviewed in [Diagnostics](ccw_04_diag.qmd). [Inference](ccw_03_inf.qmd) gives my personal approach for bootstrapping uncertainty estimates, there are a few choices for that (See [Bootstrapping](app_02_boot.qmd)). Finally, I provide some recommendations for a manuscript [Presentation](ccw_05_rep.qmd). 
 
 ## Stepwise approach
 

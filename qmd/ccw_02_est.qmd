@@ -348,7 +348,11 @@ dta_c_panel[, marg_ipw := fcase(
     assign==1 & time > 12, 1 
   )]
   
-d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
+  dta_c_panel[, `:=`(ipw = cumprod(ipw), 
+                     marg_ipw = cumprod(marg_ipw)), 
+               by=list(id, assign)] 
+
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
                    data=dta_c_panel[dta_c_panel$assign==1, ], # <1>
                    family=binomial(), weights = ipw) # <1>
   # <1>
@@ -360,7 +364,8 @@ d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
                              type='response') # <2>
   dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, # <2>
                              type='response') # <2>
-dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
   dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
   
   d_plrwt_est = dta_c_panel %>% # <2>
@@ -371,24 +376,10 @@ dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
     ungroup %>% # <2>
     mutate(cid = pr_ev_1 - pr_ev_0, # <2>
            cir = pr_ev_1 / pr_ev_0) # <2>
-d_all_est = 
-  bind_rows(
-    select(d_plrnv_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
-      mutate(Model = 'Naive'),
-    select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
-      mutate(Model = 'IPCW'),
-    select(d_plrstabwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
-      mutate(Model = 'Stabilized')
-  ) %>%
-  dplyr::filter(time %in% c(6, 12, 36, 60))
 
-dta_c_panel[, `:=`(ipw = cumprod(ipw), 
-                     marg_ipw = cumprod(marg_ipw)), 
-               by=list(id, assign)] 
-
-d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
-                   data=dta_c_panel[dta_c_panel$assign==1, ],
-                   family=binomial(), weights = marg_ipw) 
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                     data=dta_c_panel[dta_c_panel$assign==1, ],
+                     family=binomial(), weights = marg_ipw) 
   
   d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
                    data=dta_c_panel[dta_c_panel$assign==0, ], 
@@ -436,6 +427,17 @@ d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T),
     mutate(cid = pr_ev_1 - pr_ev_0, 
            cir = pr_ev_1 / pr_ev_0)
   
+d_all_est = 
+  bind_rows(
+    select(d_plrnv_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Naive'),
+    select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'IPCW'),
+    select(d_plrstabwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Stabilized')
+  ) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60))
+
 t_summ_all = kables(caption = 'X -> A, Y, A does not cause Y',
   list(d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%

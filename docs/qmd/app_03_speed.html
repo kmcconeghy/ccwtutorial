@@ -214,6 +214,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Additional Topics</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../qmd/ccw_05_rep.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Presentation</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -356,10 +362,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-           expr    min    lq   mean median    uq   max neval
-       base GLM 0.3190 0.423 0.4130 0.4260 0.431 0.440    20
- GLM with inits 0.1350 0.138 0.1600 0.1400 0.144 0.246    20
-         PARGLM 0.0847 0.088 0.0992 0.0886 0.090 0.195    20</code></pre>
+           expr    min     lq  mean median    uq   max neval
+       base GLM 0.3150 0.4200 0.411 0.4270 0.429 0.439    20
+ GLM with inits 0.1320 0.1370 0.159 0.1390 0.142 0.245    20
+         PARGLM 0.0843 0.0873 0.099 0.0879 0.091 0.194    20</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> significantly outperforms base <code>glm()</code>. This will scale considerably with multiple cores and larger datasets as well.</p>

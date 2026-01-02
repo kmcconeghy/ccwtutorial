@@ -52,6 +52,7 @@ website:
         - qmd/ccw_02_est.qmd
         - qmd/ccw_03_inf.qmd
         - qmd/ccw_04_diag.qmd
+        - qmd/ccw_05_rep.qmd
         
       - section: 'Appendix'
         href: qmd/app_00_summ.qmd
