@@ -356,10 +356,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: seconds
-           expr    min     lq   mean median     uq    max neval
-       base GLM 0.1600 0.1660 0.2040 0.1770 0.2380 0.3300    20
- GLM with inits 0.0647 0.0700 0.0878 0.0740 0.0805 0.2040    20
-         PARGLM 0.0404 0.0437 0.0476 0.0483 0.0502 0.0552    20</code></pre>
+           expr    min    lq   mean median    uq   max neval
+       base GLM 0.3190 0.423 0.4130 0.4260 0.431 0.440    20
+ GLM with inits 0.1350 0.138 0.1600 0.1400 0.144 0.246    20
+         PARGLM 0.0847 0.088 0.0992 0.0886 0.090 0.195    20</code></pre>
 </div>
 </div>
 <p>Even in a small example, <code>parglm()</code> significantly outperforms base <code>glm()</code>. This will scale considerably with multiple cores and larger datasets as well.</p>
@@ -378,33 +378,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">5.00817</td>
-<td style="text-align: right;">5.00817</td>
+<td style="text-align: right;">5.44292</td>
+<td style="text-align: right;">5.44292</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">poly(time, 2, raw = T)1</td>
-<td style="text-align: right;">0.00018</td>
-<td style="text-align: right;">0.00018</td>
+<td style="text-align: right;">-0.00999</td>
+<td style="text-align: right;">-0.00999</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">poly(time, 2, raw = T)2</td>
-<td style="text-align: right;">-0.00022</td>
-<td style="text-align: right;">-0.00022</td>
+<td style="text-align: right;">-0.00013</td>
+<td style="text-align: right;">-0.00013</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">assign</td>
-<td style="text-align: right;">-0.07290</td>
-<td style="text-align: right;">-0.07290</td>
+<td style="text-align: right;">-0.28224</td>
+<td style="text-align: right;">-0.28224</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">poly(time, 2, raw = T)1:assign</td>
-<td style="text-align: right;">0.03263</td>
-<td style="text-align: right;">0.03263</td>
+<td style="text-align: right;">0.07837</td>
+<td style="text-align: right;">0.07837</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">poly(time, 2, raw = T)2:assign</td>
-<td style="text-align: right;">-0.00041</td>
-<td style="text-align: right;">-0.00041</td>
+<td style="text-align: right;">-0.00104</td>
+<td style="text-align: right;">-0.00104</td>
 </tr>
 </tbody>
 </table>

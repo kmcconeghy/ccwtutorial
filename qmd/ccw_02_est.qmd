@@ -57,7 +57,7 @@ This may be a little confusing, but since my dataset is already cloned (duplicat
 #| label: est-treat-prob
 #| warning: FALSE
 #| 
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + female, # <1>
+  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
                  data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
   
   dta_c_panel$pr_treat = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
@@ -256,7 +256,7 @@ With the estimated weights, it is simple to generate weighted cumulative inciden
 #| fig-cap: Weighted PLR Analysis
 #| fig-cap-location: top
 #| echo: false
-#| eval: false
+#| eval: true
     d_gg_ci = d_plrwt_est %>%
       pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'Assignment', values_to = 'pr_ev') %>%
       ggplot(aes(x=time, y = pr_ev, color = Assignment)) +
@@ -271,16 +271,15 @@ With the estimated weights, it is simple to generate weighted cumulative inciden
     d_gg_ci
 ```
 
-The results can be easily depicted in a standard graphical format like any survival analysis. You could hypothetically also present the unweighted or weighted person and event counts at each point of follow-up like many do in a Kaplan-Meier analysis. 
+The results can be easily depicted in a standard graph like any survival analysis. You could  also combine the lineplot with a table of the unweighted or weighted person and event counts at each point of follow-up like many do in a Kaplan-Meier analysis. 
 
 ### Table  
 
 ```{r }
 #| label: tab-plr-result
-#| tab-cap: Results from Pooled Logistic Regression Analysis
 #| tab-cap-location: top
 #| echo: false
-#| eval: false
+#| eval: true
 
 d_all_est = 
   bind_rows(
@@ -293,18 +292,152 @@ d_all_est =
   ) %>%
   dplyr::filter(time %in% c(6, 12, 36, 60))
 
-t_summ_all = kables(
+t_summ_all = kables(caption = 'A -> Y, X -> A, Y',
   list(d_all_est %>%
-         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_0) %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("Incidence: No treatment initiation ever" = 4)),
+         add_header_above(., c("Risk Differences" = 4)),
        d_all_est %>%
-         pivot_wider(., id_cols = time, names_from = Model, values_from = pr_ev_1) %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cir) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
-         add_header_above(., c("Incidence: Treatment initiation at 12 months" = 4)),
-       d_all_est %>%
+         add_header_above(., c("Relative Risks" = 4))
+       )
+  )
+
+t_summ_all
+```
+
+```{r }
+#| label: tab-plr-result-xy
+#| tab-cap-location: top
+#| warning: false
+#| echo: false
+#| eval: true
+
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
+  dplyr::filter(model == 'xy')
+
+d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
+                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
+  
+dta_c_panel$pr_treat = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+  
+setDT(dta_c_panel)
+  
+dta_c_panel[, ipw := fcase(
+    assign==0 & censor==0, 1 / (1-pr_treat), # <1>
+    assign==0 & censor==1, 0, # <2>
+    assign==1 & censor==1, 0, # <2>
+    assign==1 & time < 12, 1, # <3>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
+    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_treat), # <5> 
+    assign==1 & time > 12, 1 # <6>
+  )]
+  
+dta_c_panel[, marg_c0  := 1-mean(censor), by = list(assign, time)] # <1>
+
+dta_c_panel[, marg_ipw := fcase(
+    assign==0 & censor==0, marg_c0 / (1-pr_treat), # <2>
+    assign==0 & censor==1, 0,  
+    assign==1 & censor==1, 0,  
+    assign==1 & time < 12, 1, 
+    assign==1 & time == 12  & t_treat  < 12, 1,  
+    assign==1 & time == 12  & t_treat  ==12 & censor==0, marg_c0 / (pr_treat), # <2> 
+    assign==1 & time > 12, 1 
+  )]
+  
+d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
+                   data=dta_c_panel[dta_c_panel$assign==1, ], # <1>
+                   family=binomial(), weights = ipw) # <1>
+  # <1>
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), # <1>
+                   data=dta_c_panel[dta_c_panel$assign==0, ], # <1>
+                     family=binomial(), weights = ipw) # <1>
+  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, # <2>
+                             type='response') # <2>
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, # <2>
+                             type='response') # <2>
+dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] # <1>
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] # <1>
+  
+  d_plrwt_est = dta_c_panel %>% # <2>
+    group_by(time) %>% # <2>
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% # <2>
+    ungroup %>% # <2>
+    mutate(cid = pr_ev_1 - pr_ev_0, # <2>
+           cir = pr_ev_1 / pr_ev_0) # <2>
+d_all_est = 
+  bind_rows(
+    select(d_plrnv_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Naive'),
+    select(d_plrwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'IPCW'),
+    select(d_plrstabwt_est, time, pr_ev_1, pr_ev_0, cid, cir) %>%
+      mutate(Model = 'Stabilized')
+  ) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60))
+
+dta_c_panel[, `:=`(ipw = cumprod(ipw), 
+                     marg_ipw = cumprod(marg_ipw)), 
+               by=list(id, assign)] 
+
+d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[dta_c_panel$assign==1, ],
+                   family=binomial(), weights = marg_ipw) 
+  
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[dta_c_panel$assign==0, ], 
+                     family=binomial(), weights = marg_ipw) 
+  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                             type='response') 
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') 
+  
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_plrstabwt_est = dta_c_panel %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% 
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0) 
+  
+  d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[dta_c_panel$assign==1, ], 
+                   family=binomial()) 
+  
+  d_glm_pe_0 = glm(event==0 ~ poly(time, 2, raw=T), 
+                   data=dta_c_panel[dta_c_panel$assign==0, ], 
+                     family=binomial()) 
+  
+  dta_c_panel$pr_1 = predict(d_glm_pe_1, newdata = dta_c_panel, 
+                             type='response') 
+  dta_c_panel$pr_0 = predict(d_glm_pe_0, newdata = dta_c_panel, 
+                             type='response') 
+  
+  dta_c_panel[, `:=`(pr_cum_1 = cumprod(pr_1)), by=list(id, assign)] 
+  dta_c_panel[, `:=`(pr_cum_0 = cumprod(pr_0)), by=list(id, assign)] 
+  
+  d_plrnv_est = dta_c_panel %>% 
+    group_by(time) %>% 
+    summarize(pr_ev_1 = mean(1-pr_cum_1),
+              pr_ev_0 = mean(1-pr_cum_0), 
+              .groups = 'drop') %>% 
+    ungroup %>% 
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0)
+  
+t_summ_all = kables(caption = 'X -> A, Y, A does not cause Y',
+  list(d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
          kable(digits=3, align = 'c') %>%
          kable_styling() %>%
