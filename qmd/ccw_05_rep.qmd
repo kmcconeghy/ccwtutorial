@@ -158,7 +158,7 @@ Note: `r paste0("Mahalanobis distance between groups, ", 'Naive: ', round(mahal_
 ### Table 1 with weighted differences
 
 ::: callout-note
-See [Estimators](02_est.qmd) for full description of weight estimation
+See [Estimators](ccw_02_est.qmd) for full description of weight estimation
 :::
 
 ```{r }

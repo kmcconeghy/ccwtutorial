@@ -44,13 +44,10 @@ The bootstrap procedure must sample at the person level to account for the cloni
 #| label: bad-bootstrap-ex
 boot_it_1 = function(x) {
   
-  ids = distinct(x, id) #<1>
-sampled_ids = slice_sample(ids, prop=1, replace = TRUE) %>%
-  group_by(id) %>%
-    summarize(freqwt = n()) # <2>
+  X = x %>% nest(-id) # <1>
   
-  d_boot = left_join(x, sampled_ids, by = join_by(id)) %>%
-    mutate(freqwt = coalesce(freqwt, 0L))
+  d_boot = slice_sample(X, prop=1, replace=T) %>% # <2>
+    unnest()
   
   d_glm_pe_1 = glm(event==0 ~ poly(time, 2, raw=T), 
                      data=d_boot[d_boot$assign==1, ], 
@@ -165,9 +162,9 @@ boot_it_3 = function(x) {
   
   d_res = x %>% 
     group_by(time) %>% 
-    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, w=freqwt), 
-              pr_ev_0 = weighted.mean(1-pr_cum_0, w=freqwt),
-              .groups = 'drop') %>% 
+    summarize(pr_ev_1 = weighted.mean(1-pr_cum_1, freqwt), 
+          pr_ev_0 = weighted.mean(1-pr_cum_0, freqwt),
+          .groups = 'drop') %>% 
     ungroup %>%
     mutate(cid = pr_ev_1 - pr_ev_0, 
            cir = pr_ev_1 / pr_ev_0) 
@@ -204,7 +201,7 @@ If you don't believe this provides similar coverage estimates, here are the inte
 #| message: false
 #| echo: false
 library(furrr)
-boots = 200
+boots = 500
 
 plan(multisession, workers = 10) # <1>
 

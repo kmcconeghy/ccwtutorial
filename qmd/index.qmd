@@ -32,7 +32,7 @@ The following readings are recommended for that background and to prepare for th
 
 ## Troubleshooting your own project
 
-For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Cloning-Censoring-Weighting](ccw_00_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences lie. 
+For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: [Example Data](https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds). Then follow the CCW code: [Clone-Censor-Weight](ccw_00_summ.qmd) and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences are. 
 
 For developments notes see [About](about.qmd).
 
