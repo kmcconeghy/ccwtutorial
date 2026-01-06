@@ -55,27 +55,7 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -285,25 +265,23 @@ div.csl-indent {
   <ul>
   <li><a href="#evaluation-of-target-trial-design-elements" id="toc-evaluation-of-target-trial-design-elements" class="nav-link active" data-scroll-target="#evaluation-of-target-trial-design-elements">Evaluation of Target Trial Design Elements</a>
   <ul class="collapse">
-  <li><a href="#evaluation-of-grace-period" id="toc-evaluation-of-grace-period" class="nav-link" data-scroll-target="#evaluation-of-grace-period">Evaluation of Grace Period</a></li>
-  </ul></li>
-  <li><a href="#model-misspefication" id="toc-model-misspefication" class="nav-link" data-scroll-target="#model-misspefication">Model misspefication</a>
+  <li><a href="#evaluation-of-grace-period" id="toc-evaluation-of-grace-period" class="nav-link" data-scroll-target="#evaluation-of-grace-period">Evaluation of Grace Period</a>
   <ul class="collapse">
-  <li><a href="#kaplan-meier-estimator" id="toc-kaplan-meier-estimator" class="nav-link" data-scroll-target="#kaplan-meier-estimator">Kaplan-Meier Estimator</a></li>
-  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
-  <li><a href="#summarize-km-estimator" id="toc-summarize-km-estimator" class="nav-link" data-scroll-target="#summarize-km-estimator">Summarize KM estimator</a></li>
-  <li><a href="#cox-model" id="toc-cox-model" class="nav-link" data-scroll-target="#cox-model">Cox model</a></li>
+  <li><a href="#alternative-grace-periods" id="toc-alternative-grace-periods" class="nav-link" data-scroll-target="#alternative-grace-periods">Alternative grace periods</a></li>
   </ul></li>
-  <li><a href="#pooled-logistic-regression" id="toc-pooled-logistic-regression" class="nav-link" data-scroll-target="#pooled-logistic-regression">Pooled logistic regression</a>
+  </ul></li>
+  <li><a href="#model-testing" id="toc-model-testing" class="nav-link" data-scroll-target="#model-testing">Model testing</a>
   <ul class="collapse">
-  <li><a href="#estimation-1" id="toc-estimation-1" class="nav-link" data-scroll-target="#estimation-1">Estimation</a></li>
-  <li><a href="#comparison-of-covariate-adjusted-plr-with-cox-model" id="toc-comparison-of-covariate-adjusted-plr-with-cox-model" class="nav-link" data-scroll-target="#comparison-of-covariate-adjusted-plr-with-cox-model">Comparison of Covariate-adjusted PLR with Cox model</a></li>
+  <li><a href="#examination-of-time-function" id="toc-examination-of-time-function" class="nav-link" data-scroll-target="#examination-of-time-function">Examination of time function</a>
+  <ul class="collapse">
+  <li><a href="#naive-kaplan-meier-estimator" id="toc-naive-kaplan-meier-estimator" class="nav-link" data-scroll-target="#naive-kaplan-meier-estimator">Naive Kaplan-Meier Estimator</a></li>
+  <li><a href="#naive-plr-estimator" id="toc-naive-plr-estimator" class="nav-link" data-scroll-target="#naive-plr-estimator">Naive PLR estimator</a></li>
   </ul></li>
-  <li><a href="#final-comparison" id="toc-final-comparison" class="nav-link" data-scroll-target="#final-comparison">Final Comparison</a></li>
-  <li><a href="#sec-ipwdiag" id="toc-sec-ipwdiag" class="nav-link" data-scroll-target="#sec-ipwdiag">Weight distributions</a>
+  <li><a href="#sec-ipwdiag" id="toc-sec-ipwdiag" class="nav-link" data-scroll-target="#sec-ipwdiag">Evaluation of Probability Weights</a>
   <ul class="collapse">
   <li><a href="#overall-ipw-distribution" id="toc-overall-ipw-distribution" class="nav-link" data-scroll-target="#overall-ipw-distribution">Overall IPW Distribution</a></li>
   <li><a href="#ipw-distribution-at-end-of-grace-period-for-treatment-clones" id="toc-ipw-distribution-at-end-of-grace-period-for-treatment-clones" class="nav-link" data-scroll-target="#ipw-distribution-at-end-of-grace-period-for-treatment-clones">IPW Distribution at end of grace period for treatment clones</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_04_diag.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -314,7 +292,7 @@ div.csl-indent {
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a></li><li class="breadcrumb-item"><a href="../qmd/ccw_04_diag.html">Additional Topics</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Additional Topics</h1>
-<p class="subtitle lead">Reporting CCW results, and troubleshooting</p>
+<p class="subtitle lead">Sensitivity analyses and Troubleshooting</p>
 </div>
 
 
@@ -336,64 +314,49 @@ div.csl-indent {
 <section id="evaluation-of-grace-period" class="level2">
 <h2 class="anchored" data-anchor-id="evaluation-of-grace-period">Evaluation of Grace Period</h2>
 <p>The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.</p>
-<p>Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn’t change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results.</p>
+<p>Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn’t change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results. Additionally, if the many events occur early after time-zero, then grace windows will count most of these events in both arms so your estimate of treatment grace period effects could be more conservative than actual treatment initiation.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Another way of thinking about these issues of how to define treatment, grace periods etc. is in terms of <em>relevance</em>. Your defined intervention must be relevant to the risk for disease, and treatment strategies that are actually used in the real-world.</p>
+</div>
+</div>
+<section id="alternative-grace-periods" class="level3">
+<h3 class="anchored" data-anchor-id="alternative-grace-periods">Alternative grace periods</h3>
+<p>The original dataset is setup with a 12-unit grace period, I create two new datasets with 6 and 18-unit grace periods for comparison. A helper function for this is in the ’~&nbsp;folder: <code>mk_grace_chk.R</code>. For brevity, I only use the <code>ay</code> dataset, where treatment has a causal effect on Y.</p>
+<div class="cell fig-cap-location-top">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ccw_04_diag_files/figure-html/gperiod-setup-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Figure 1. Grace Period Comparison</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Description.</em> Each line presents the cumulative risk difference across time, using different definitions of the treatment intervention. In this case, it makes little difference, which is sensible because the synthetic data did not generate time-varying risks for the outcome or treatment initiation.</p>
 </section>
 </section>
-<section id="model-misspefication" class="level1">
-<h1>Model misspefication</h1>
-<section id="kaplan-meier-estimator" class="level2">
-<h2 class="anchored" data-anchor-id="kaplan-meier-estimator">Kaplan-Meier Estimator</h2>
-<p>A reasonable starting point is to evaluate the cloned dataset without probability weighting or pooled logistic regression models. Although this estimator is “naive” in that the artificial censoring is not considered, it is useful for the following reasons:</p>
+</section>
+<section id="model-testing" class="level1">
+<h1>Model testing</h1>
+<section id="examination-of-time-function" class="level2">
+<h2 class="anchored" data-anchor-id="examination-of-time-function">Examination of time function</h2>
+<p>It is important to explore the data with a “naive” estimator. This is useful for the following reasons:</p>
 <ol type="1">
 <li><p>It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low.</p></li>
-<li><p>The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unadjusted curve provides a good starting point, and practitioners should be very skeptical of weighted analysis that shows dramatically different time trends then the unweighted analysis (e.g.&nbsp;more likely to be an error in coding than real).</p></li>
+<li><p>The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unweighted curves provide a good starting point, and practitioners should be skeptical of a weighted analysis that shows dramatically different time trends then the unweighted analysis (likely to be poorly fit model).</p></li>
 </ol>
-<p>Because the pooled logistic regression models a person-time dataset, for large sample sizes and long follow-up periods this can require a large dataset and make estimation very time consuming.</p>
-</section>
-<section id="estimation" class="level2">
-<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>  d_mods <span class="ot">=</span> dta_c_person <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-2"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">-</span>model) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">est_km =</span> <span class="fu">map</span>(data, </span>
-<span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span>broom<span class="sc">::</span><span class="fu">tidy</span>(</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-1-5" class="code-annotation-target"><a href="#annotated-cell-1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign, <span class="at">data=</span>.)) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-6"><a href="#annotated-cell-1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="fu">str_extract</span>(strata,  <span class="st">'(?&lt;=assign=)</span><span class="sc">\\</span><span class="st">d'</span>)</span>
-<span id="annotated-cell-1-7"><a href="#annotated-cell-1-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-8"><a href="#annotated-cell-1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-9"><a href="#annotated-cell-1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>strata) <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-10" class="code-annotation-target"><a href="#annotated-cell-1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pr_ev =</span> <span class="dv">1</span><span class="sc">-</span>estimate) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">pr_s =</span> estimate) <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-12" class="code-annotation-target"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(time),</span>
-<span id="annotated-cell-1-13"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">names_from =</span> assign,</span>
-<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> <span class="fu">c</span>(pr_ev, pr_s,</span>
-<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a>                                n.risk, n.event)) <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-16" class="code-annotation-target"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0,</span>
-<span id="annotated-cell-1-17"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>           <span class="at">cid =</span> (pr_ev_1 <span class="sc">-</span> pr_ev_0))))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="5" data-code-annotation="1">Naive estimator, K-M estimator, assignment is by clone (not person). <code>t_clone</code> is the follow-up time for each clone, taking into account artificial censoring.</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="10,11" data-code-annotation="2"><code>estimate</code> from the model is the survival probability, so probability of event is 1 - estimate</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="12,13,14,15" data-code-annotation="3">Data is in long form, so one colum per group with cumulative incidence/survival</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="16,17" data-code-annotation="4">Estimands, <code>cir</code> is ratio analogous to relative risk, and <code>cid</code> is analogous to risk difference</span>
-</dd>
-</dl>
-</div>
-</div>
-</section>
-<section id="summarize-km-estimator" class="level2">
-<h2 class="anchored" data-anchor-id="summarize-km-estimator">Summarize KM estimator</h2>
+<p>The <a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a> section provides a working example on fitting a simple naive estimator. Here a helper function <code>f_km_cuminc()</code> is used for brevity.</p>
+<section id="naive-kaplan-meier-estimator" class="level3">
+<h3 class="anchored" data-anchor-id="naive-kaplan-meier-estimator">Naive Kaplan-Meier Estimator</h3>
 <div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -420,122 +383,74 @@ div.csl-indent {
 </div>
 </div>
 </section>
-<section id="cox-model" class="level2">
-<h2 class="anchored" data-anchor-id="cox-model">Cox model</h2>
-<p>For reference a cox model is also estimated, note it does not include X_t.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a>d_mods <span class="ot">=</span> d_mods <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">est_cox =</span> <span class="fu">map</span>(data, </span>
-<span id="annotated-cell-2-3"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a>                     <span class="cf">function</span>(x) {</span>
-<span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>                       fit <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> X, <span class="at">data =</span> x)</span>
-<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">surv_adjustedcurves</span>(<span class="at">fit =</span> fit, <span class="at">variable =</span> <span class="st">"assign"</span>, <span class="at">data =</span> <span class="fu">as.data.frame</span>(x)) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-2-6"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(variable, time) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-2-7"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>      ungroup <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-2-9"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">pr_ev =</span> <span class="dv">1</span> <span class="sc">-</span> surv) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-2-10"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>), </span>
-<span id="annotated-cell-2-11"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">names_from =</span> variable, </span>
-<span id="annotated-cell-2-12"><a href="#annotated-cell-2-12" aria-hidden="true" tabindex="-1"></a>                  <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, </span>
-<span id="annotated-cell-2-13"><a href="#annotated-cell-2-13" aria-hidden="true" tabindex="-1"></a>                  <span class="at">values_from =</span> pr_ev  </span>
-<span id="annotated-cell-2-14"><a href="#annotated-cell-2-14" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-2-15"><a href="#annotated-cell-2-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,  </span>
-<span id="annotated-cell-2-16"><a href="#annotated-cell-2-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)}) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-</section>
-<section id="pooled-logistic-regression" class="level1">
-<h1>Pooled logistic regression</h1>
-<p>Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. These steps are computationally intensive and so this step is important to test your code. The goal is to ensure you have a good starting parametric model for the outcome to avoid any major issues downstream when you add weights. An unadjusted PLR model should closely approximate the KM curves, if it doesn’t then something is wrong. Either the data is too sparse (few events, follow-up exposure time etc.), or the code is wrong.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_mods_pnl <span class="ot">=</span> dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">-</span>model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="estimation-1" class="level2">
-<h2 class="anchored" data-anchor-id="estimation-1">Estimation</h2>
+<section id="naive-plr-estimator" class="level3">
+<h3 class="anchored" data-anchor-id="naive-plr-estimator">Naive PLR estimator</h3>
+<p>Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. The weighting is computationally intensive and so this step is important to test your code. The goal is to ensure you have a good starting parametric model for the outcome to avoid complications when you add weights. An unadjusted PLR model should closely approximate the KM curves, if it doesn’t then something is wrong. Either the time function is misspecified, data is too sparse (few events, follow-up exposure time etc.), or the code is wrong.</p>
+<p>The <a href="../qmd/surv_02_disctime.html">Discrete Time Estimator</a> section provides a working example. Here a helper function <code>f_plr_cuminc()</code> is used for brevity.</p>
 <p>The PLR model requires specification of a function of time. Many start with a quadratic polynomial (i.e.&nbsp;time + time^2). In my own work, I have found this insufficient, and interestingly have found that linear splines work the best. You must decide for yourself. You could compute AIC or some other model fit statistic to select it empirically. I often compare the PLR estimates to the non-parametric estimates for validity. However this doesn’t completely avoid issues, because the weighted estimates (time-varying covariates, interactions with time etc.) could conceivably diverge quite a bit from the unadjusted KM estimator. You can either estimate the outcome in a model with both clones combined in one dataset OR estimate cumulative incidences separately (two models with data limited to <code>assign==1</code> &amp; <code>assign==0</code> respectively). In the combined data, you must specify an interaction between treatment (clone assignment) and f(time), e.g.&nbsp;<code>time + time^2 + treat + treat*time + treat*time^2</code>, shorthand below is <code>poly(time, 2, raw=T)*assign</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-4"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-4-1"><a href="#annotated-cell-4-1" aria-hidden="true" tabindex="-1"></a>d_mods_pnl <span class="ot">=</span> d_mods_pnl <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-2"><a href="#annotated-cell-4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">est_plr_nv =</span> </span>
-<span id="annotated-cell-4-3"><a href="#annotated-cell-4-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">map</span>(data, </span>
-<span id="annotated-cell-4-4"><a href="#annotated-cell-4-4" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(x) {</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-4-5" class="code-annotation-target"><a href="#annotated-cell-4-5" aria-hidden="true" tabindex="-1"></a>                 d_glm <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign, <span class="at">data=</span>x, <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-4-6"><a href="#annotated-cell-4-6" aria-hidden="true" tabindex="-1"></a>                 d_plr_naive_est <span class="ot">=</span> <span class="fu">crossing</span>(<span class="at">assign =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">0</span>, <span class="at">time =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">60</span>)</span>
-<span id="annotated-cell-4-7"><a href="#annotated-cell-4-7" aria-hidden="true" tabindex="-1"></a>                 d_plr_naive_est<span class="sc">$</span>pr_surv <span class="ot">=</span> <span class="fu">predict</span>(d_glm, <span class="at">newdata =</span> d_plr_naive_est, <span class="at">type =</span> <span class="st">'response'</span>) </span>
-<span id="annotated-cell-4-8"><a href="#annotated-cell-4-8" aria-hidden="true" tabindex="-1"></a>                 d_plr_naive_est <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-9"><a href="#annotated-cell-4-9" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">group_by</span>(assign) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-10"><a href="#annotated-cell-4-10" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mutate</span>(<span class="at">pr_cumsurv =</span> <span class="fu">cumprod</span>(pr_surv),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-4-11" class="code-annotation-target"><a href="#annotated-cell-4-11" aria-hidden="true" tabindex="-1"></a>                          <span class="at">pr_cumev =</span> <span class="dv">1</span> <span class="sc">-</span> pr_cumsurv) <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-4" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-4-12" class="code-annotation-target"><a href="#annotated-cell-4-12" aria-hidden="true" tabindex="-1"></a>                   ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-13"><a href="#annotated-cell-4-13" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),</span>
-<span id="annotated-cell-4-14"><a href="#annotated-cell-4-14" aria-hidden="true" tabindex="-1"></a>                               <span class="at">names_from =</span> assign,</span>
-<span id="annotated-cell-4-15"><a href="#annotated-cell-4-15" aria-hidden="true" tabindex="-1"></a>                               <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>,</span>
-<span id="annotated-cell-4-16"><a href="#annotated-cell-4-16" aria-hidden="true" tabindex="-1"></a>                               <span class="at">values_from =</span> pr_cumev</span>
-<span id="annotated-cell-4-17"><a href="#annotated-cell-4-17" aria-hidden="true" tabindex="-1"></a>                               ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-4-18"><a href="#annotated-cell-4-18" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-4-19"><a href="#annotated-cell-4-19" aria-hidden="true" tabindex="-1"></a>                          <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span>
-<span id="annotated-cell-4-20"><a href="#annotated-cell-4-20" aria-hidden="true" tabindex="-1"></a>                 }))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-4" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="5" data-code-annotation="1">PLR model, with time*treat interaction. Binomial family for logistic regression.</span>
-</dd>
-<dt data-target-cell="annotated-cell-4" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="11" data-code-annotation="2">The cumulative incidence is 1 - cumulative event-free survival probability. To compute, you take the cumulative product by assignment group.</span>
-</dd>
-<dt data-target-cell="annotated-cell-4" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-4" data-code-lines="12,13,14,15,16,18" data-code-annotation="3">Reorganize data and summarize by group/time similar to above for the KM estimator.</span>
-</dd>
-</dl>
-</div>
-</div>
 <div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ccw_04_diag_files/figure-html/gg-plr-naive-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>A causes Y</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ccw_04_diag_files/figure-html/gg-plr-naive-2.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>A not a cause of Y</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <p>Figure 2. Unadjusted, unweighted cumulative incidences by treatment group (PLR)</p>
 </div>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb2" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_ci_cmp <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods, model, est_km) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_km)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'KM-Naive'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_1, pr_ev_0, cid),</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods_pnl, model, est_plr_nv) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_plr_nv)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'PLR-Naive'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_0, pr_ev_1, cid)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(pr_ev_0, pr_ev_1), <span class="at">names_to =</span> <span class="st">'assign'</span>, </span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, <span class="at">values_to =</span> <span class="st">'pr_ev'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">-</span>model)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">mutate</span>(d_ci_cmp, <span class="at">km_gg =</span> <span class="fu">map</span>(data, <span class="cf">function</span>(x) {</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">linetype=</span>assign), <span class="at">linewidth=</span><span class="fl">0.9</span>) <span class="sc">+</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">shape=</span>assign), <span class="at">size=</span><span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>) </span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>d_gg_rr <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> cid), <span class="at">linewidth=</span><span class="fl">1.1</span>) <span class="sc">+</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>                           <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Risk Differences'</span>) </span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>   </span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggarrange</span>(d_gg_ci, d_gg_rr, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">common.legend =</span> T)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  }))</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">1</span>]] <span class="co"># A -&gt; Y</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">2</span>]] <span class="co"># X -&gt; Y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d_ci_cmp <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods, model, est_km) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_km)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'KM-Naive'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_1, pr_ev_0, cid),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods_pnl, model, est_plr_nv) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_plr_nv)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'PLR-Naive'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_0, pr_ev_1, cid)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(pr_ev_0, pr_ev_1), <span class="at">names_to =</span> <span class="st">'assign'</span>, </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, <span class="at">values_to =</span> <span class="st">'pr_ev'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">-</span>model)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">mutate</span>(d_ci_cmp, <span class="at">km_gg =</span> <span class="fu">map</span>(data, <span class="cf">function</span>(x) {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">linetype=</span>assign), <span class="at">linewidth=</span><span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">shape=</span>assign), <span class="at">size=</span><span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>) </span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>d_gg_rr <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> cid), <span class="at">linewidth=</span><span class="fl">1.1</span>) <span class="sc">+</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                           <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Risk Differences'</span>) </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggarrange</span>(d_gg_ci, d_gg_rr, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">common.legend =</span> T)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">1</span>]] <span class="co"># A -&gt; Y</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">2</span>]] <span class="co"># X -&gt; Y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -568,56 +483,6 @@ div.csl-indent {
 <li><p>These initial steps will not guarantee a good fit after weighting is applied, it is only a first-look for diagnostic purposes.</p></li>
 <li><p>If the fit is not satisfying, then simply pick a different function of time. Many others to choose from, basis splines, <code>bs::splines(time, df=6, degree=1)</code>, or you can use a <code>mgcv()</code> for penalized splines etc. Also, consider specifying knots at specific time-points like the end of a grace period.</p></li>
 </ol>
-</section>
-<section id="comparison-of-covariate-adjusted-plr-with-cox-model" class="level2">
-<h2 class="anchored" data-anchor-id="comparison-of-covariate-adjusted-plr-with-cox-model">Comparison of Covariate-adjusted PLR with Cox model</h2>
-<p>Another approach is to compare a pooled logistic regression analysis to a time-invariant Cox model. If time-varying confounding not an issue, this should give a similar result. However, censoring weights are still necessary in final analysis even if no confounding.<span class="citation" data-cites="cain2010">(<a href="#ref-cain2010" role="doc-biblioref">Cain et al. 2010</a>)</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a>d_mods_pnl <span class="ot">=</span> d_mods_pnl <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">est_plr_adj =</span> </span>
-<span id="annotated-cell-6-3"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">map</span>(data, </span>
-<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(x) {</span>
-<span id="annotated-cell-6-5"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>                 d_glm <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T)<span class="sc">*</span>assign <span class="sc">+</span> age <span class="sc">+</span> female <span class="sc">+</span> X, </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-6" class="code-annotation-target"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a>                             <span class="at">data=</span>x, <span class="at">family=</span><span class="fu">binomial</span>())</span>
-<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a>                 x<span class="sc">$</span>p.noevent0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(d_glm , x <span class="sc">%&gt;%</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-6-8" class="code-annotation-target"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">assign =</span><span class="dv">1</span>), <span class="at">type=</span><span class="st">"response"</span>)</span>
-<span id="annotated-cell-6-9"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a>                 x<span class="sc">$</span>p.noevent1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(d_glm, x <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-10"><a href="#annotated-cell-6-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">mutate</span>(<span class="at">assign =</span><span class="dv">0</span>), <span class="at">type=</span><span class="st">"response"</span>)</span>
-<span id="annotated-cell-6-11"><a href="#annotated-cell-6-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">setDT</span>(x)</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-6-12" class="code-annotation-target"><a href="#annotated-cell-6-12" aria-hidden="true" tabindex="-1"></a>                  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv_1 =</span> <span class="fu">cumprod</span>(p.noevent1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-6-13"><a href="#annotated-cell-6-13" aria-hidden="true" tabindex="-1"></a>                  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_surv_0 =</span> <span class="fu">cumprod</span>(p.noevent0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)]</span>
-<span id="annotated-cell-6-14"><a href="#annotated-cell-6-14" aria-hidden="true" tabindex="-1"></a>                <span class="fu">setDF</span>(x)</span>
-<span id="annotated-cell-6-15"><a href="#annotated-cell-6-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-6-16" class="code-annotation-target"><a href="#annotated-cell-6-16" aria-hidden="true" tabindex="-1"></a>                 x <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-17"><a href="#annotated-cell-6-17" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-18"><a href="#annotated-cell-6-18" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv_1),</span>
-<span id="annotated-cell-6-19"><a href="#annotated-cell-6-19" aria-hidden="true" tabindex="-1"></a>                             <span class="at">pr_ev_0 =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_surv_0), </span>
-<span id="annotated-cell-6-20"><a href="#annotated-cell-6-20" aria-hidden="true" tabindex="-1"></a>                             <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-21"><a href="#annotated-cell-6-21" aria-hidden="true" tabindex="-1"></a>                   ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-6-22"><a href="#annotated-cell-6-22" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-6-23"><a href="#annotated-cell-6-23" aria-hidden="true" tabindex="-1"></a>                          <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span>
-<span id="annotated-cell-6-24"><a href="#annotated-cell-6-24" aria-hidden="true" tabindex="-1"></a>                 }))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="6" data-code-annotation="1">PLR model with some covariates for adjustment. (model fit for each treatment group)</span>
-</dd>
-<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="8,10" data-code-annotation="2">Predict outcome under each assignment strategy.</span>
-</dd>
-<dt data-target-cell="annotated-cell-6" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="12,13" data-code-annotation="3">Estimate cumulative survival using cumulative product, within person-clone</span>
-</dd>
-<dt data-target-cell="annotated-cell-6" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-6" data-code-lines="16,17,20,21,22,23" data-code-annotation="4">Summarize mean survival rates by time-period</span>
-</dd>
-</dl>
-</div>
-</div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -631,118 +496,10 @@ Note
 <p>Note the outcome regression without weights is just for comparison and understanding, the final analysis must include probability weights for artificial censoring even if no confounding.</p>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-7-1"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a>d_mods_pnl <span class="ot">=</span> d_mods_pnl <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">est_cox_adj =</span> </span>
-<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">map</span>(data, </span>
-<span id="annotated-cell-7-4"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>               <span class="cf">function</span>(x) {</span>
-<span id="annotated-cell-7-5"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>                 d_cox <span class="ot">=</span> <span class="fu">coxph</span>(<span class="fu">Surv</span>(enter, exit, event) <span class="sc">~</span> </span>
-<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a>                                 assign <span class="sc">+</span> female <span class="sc">+</span> age <span class="sc">+</span> X, </span>
-<span id="annotated-cell-7-7"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>                               <span class="at">data =</span> x)</span>
-<span id="annotated-cell-7-8"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a>                 d_cox_est <span class="ot">=</span> <span class="fu">surv_adjustedcurves</span>(<span class="at">fit =</span> d_cox, </span>
-<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>                                                 <span class="at">variable =</span> <span class="st">"assign"</span>, </span>
-<span id="annotated-cell-7-10"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>                                                 <span class="at">data =</span> <span class="fu">as.data.frame</span>(x)) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-11"><a href="#annotated-cell-7-11" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">group_by</span>(variable, time) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-12"><a href="#annotated-cell-7-12" aria-hidden="true" tabindex="-1"></a>                     dplyr<span class="sc">::</span><span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-13"><a href="#annotated-cell-7-13" aria-hidden="true" tabindex="-1"></a>                   ungroup <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-14"><a href="#annotated-cell-7-14" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mutate</span>(<span class="at">pr_ev =</span> <span class="dv">1</span> <span class="sc">-</span> surv) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-15"><a href="#annotated-cell-7-15" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pivot_wider</span>(., <span class="at">id_cols =</span><span class="fu">c</span>(<span class="st">'time'</span>),</span>
-<span id="annotated-cell-7-16"><a href="#annotated-cell-7-16" aria-hidden="true" tabindex="-1"></a>                               <span class="at">names_from =</span> variable,</span>
-<span id="annotated-cell-7-17"><a href="#annotated-cell-7-17" aria-hidden="true" tabindex="-1"></a>                               <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>,</span>
-<span id="annotated-cell-7-18"><a href="#annotated-cell-7-18" aria-hidden="true" tabindex="-1"></a>                               <span class="at">values_from =</span> pr_ev) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-7-19"><a href="#annotated-cell-7-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0,</span>
-<span id="annotated-cell-7-20"><a href="#annotated-cell-7-20" aria-hidden="true" tabindex="-1"></a>             <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0)</span>
-<span id="annotated-cell-7-21"><a href="#annotated-cell-7-21" aria-hidden="true" tabindex="-1"></a>               }))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>For comparison, A time-dependent Cox model is fit.</p>
-<ol type="1">
-<li><p>Cox model, with time1, time2 parameters which represent the start and stop time of each interval. Note that althought the cox model is time-dependent and you could adjust for <code>X_t</code> this could be problematic, because X_t also includes time-points post treatment. In our synthetic data, X_t is not a collider (Treat -&gt; X_t &lt;- Outcome) or on the causal path (Treat -&gt; X_t -&gt; Outcome).</p></li>
-<li><p>Estimation of adjusted survival curves by treatment group, with subpopulations balanced using <code>conditional</code> method.<span class="citation" data-cites="acompar">(<a href="#ref-acompar" role="doc-biblioref"><span>“A Comparison of Different Methods to Adjust Survival Curves for Confounders - Denz - 2023 - Statistics in Medicine - Wiley Online Library,”</span> n.d.</a>)</span></p></li>
-<li><p>Summarizing survival probabilities by time</p></li>
-</ol>
-<div class="sourceCode cell-code" id="cb3" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d_ci_cmp <span class="ot">=</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods_pnl, model, est_cox_adj) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_cox_adj)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'Cox-adj'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_1, pr_ev_0, cid),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(d_mods_pnl, model, est_plr_adj) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(est_plr_adj)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Est =</span> <span class="st">'PLR-adj'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, Est, time, pr_ev_0, pr_ev_1, cid)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(pr_ev_0, pr_ev_1), <span class="at">names_to =</span> <span class="st">'assign'</span>, </span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">names_prefix =</span> <span class="st">'pr_ev_'</span>, <span class="at">values_to =</span> <span class="st">'pr_ev'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>(<span class="at">data =</span> <span class="sc">-</span>model)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">mutate</span>(d_ci_cmp, <span class="at">cox_gg =</span> <span class="fu">map</span>(data, <span class="cf">function</span>(x) {</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">linetype=</span>assign), <span class="at">linewidth=</span><span class="fl">0.9</span>) <span class="sc">+</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">shape=</span>assign), <span class="at">size=</span><span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>) </span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>d_gg_rr <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> cid), <span class="at">linewidth=</span><span class="fl">1.1</span>) <span class="sc">+</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                           <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Risk Differences'</span>) </span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>   </span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggarrange</span>(d_gg_ci, d_gg_rr, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">common.legend =</span> T)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  }))</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>cox_gg[[<span class="dv">1</span>]] <span class="co"># A -&gt; Y</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>cox_gg[[<span class="dv">2</span>]] <span class="co"># X -&gt; Y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="ccw_04_diag_files/figure-html/gg-cmp-adj-models-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>A causes Y</figcaption>
-</figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="ccw_04_diag_files/figure-html/gg-cmp-adj-models-2.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>A not a cause of Y</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
-<p>Figure 4. Comparison of adjusted PLR versus Cox estimator</p>
-</div>
-</div>
-</div>
 </section>
 </section>
-<section id="final-comparison" class="level1">
-<h1>Final Comparison</h1>
-<div id="tbl-compare-est" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="top">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-compare-est-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Comparison of estimates by model, cumulative incidences, risk differences and relative risks
-</figcaption>
-<div aria-describedby="tbl-compare-est-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div>
-
-</div>
-</div>
-</figure>
-</div>
-<p>Note. The IPW-PLR finds a null effect, and similar results to a time-dependent Cox model. PLR = Pooled Logistic Regression, Wtd = with censoring weights, Stab = Marginal Stabilized Weights.</p>
-</section>
-<section id="sec-ipwdiag" class="level1">
-<h1>Weight distributions</h1>
+<section id="sec-ipwdiag" class="level2">
+<h2 class="anchored" data-anchor-id="sec-ipwdiag">Evaluation of Probability Weights</h2>
 <section id="overall-ipw-distribution" class="level3">
 <h3 class="anchored" data-anchor-id="overall-ipw-distribution">Overall IPW Distribution</h3>
 <section id="unstabilized-weights" class="level4">
@@ -768,52 +525,45 @@ Unknown or uninitialised column: `marg_ipw`.</code></pre>
 <p>The weights at the end of the grace period are key so its good to examine them directly:</p>
 <p>You can also plot weights across time for diagnostics:</p>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb6" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(marg_ipw<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>), <span class="at">y =</span> marg_ipw)) <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="fu">aes</span>(<span class="at">group =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>)), </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"width"</span>, <span class="at">fill =</span> cbbPalette[<span class="dv">1</span>], <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> <span class="st">"mean"</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">"point"</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">color =</span> cbbPalette[<span class="dv">2</span>], <span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept=</span><span class="dv">1</span>),<span class="at">linewidth=</span><span class="fl">1.1</span>, <span class="at">linetype=</span><span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">12</span>)) <span class="sc">+</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Follow-up"</span>, <span class="at">y =</span> <span class="st">"IPW"</span>, ) <span class="sc">+</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(marg_ipw<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>), <span class="at">y =</span> marg_ipw)) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="fu">aes</span>(<span class="at">group =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>)), </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"width"</span>, <span class="at">fill =</span> cbbPalette[<span class="dv">1</span>], <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> <span class="st">"mean"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">"point"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">color =</span> cbbPalette[<span class="dv">2</span>], <span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept=</span><span class="dv">1</span>),<span class="at">linewidth=</span><span class="fl">1.1</span>, <span class="at">linetype=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">12</span>)) <span class="sc">+</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Follow-up"</span>, <span class="at">y =</span> <span class="st">"IPW"</span>, ) <span class="sc">+</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Another way to examine the weights is to look at the weighted counts of individuals at risk, and number of events pre- and post-weighting:</p>
 <div class="cell tbl-cap-location-top" data-tbl-cap="Unweighted and Weighted Counts, N at risk">
-<div class="sourceCode cell-code" id="cb7" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time, assign) <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">sum</span>(ipw<span class="sc">!=</span><span class="dv">0</span>), </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_wt =</span> <span class="fu">sum</span>(ipw),</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> time, <span class="at">names_from =</span> assign, <span class="at">values_from =</span> <span class="fu">c</span>(n, n_wt)) <span class="sc">%&gt;%</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">12</span>, <span class="dv">30</span>, <span class="dv">60</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Time</span><span class="st">`</span> <span class="ot">=</span> time,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_0,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_1,</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_wt_0,</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_wt_1,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align=</span><span class="st">'c'</span>, <span class="at">digits =</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time, assign) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">sum</span>(ipw<span class="sc">!=</span><span class="dv">0</span>), </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_wt =</span> <span class="fu">sum</span>(ipw),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> time, <span class="at">names_from =</span> assign, <span class="at">values_from =</span> <span class="fu">c</span>(n, n_wt)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">12</span>, <span class="dv">30</span>, <span class="dv">60</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Time</span><span class="st">`</span> <span class="ot">=</span> time,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_0,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_1,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_wt_0,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_wt_1,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align=</span><span class="st">'c'</span>, <span class="at">digits =</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The size of the unweighted, and weighted counts may identify problems.</p>
 
 
-
 </section>
 </section>
+</section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-acompar" class="csl-entry" role="listitem">
-<span>“A Comparison of Different Methods to Adjust Survival Curves for Confounders - Denz - 2023 - Statistics in Medicine - Wiley Online Library.”</span> n.d. <a href="https://onlinelibrary.wiley.com/doi/10.1002/sim.9681">https://onlinelibrary.wiley.com/doi/10.1002/sim.9681</a>.
-</div>
-<div id="ref-cain2010" class="csl-entry" role="listitem">
-Cain, Lauren E., James M. Robins, Emilie Lanoy, Roger Logan, Dominique Costagliola, and Miguel A. Hernán. 2010. <span>“When to start treatment? A systematic approach to the comparison of dynamic regimes using observational data.”</span> <em>The International Journal of Biostatistics</em> 6 (2): Article 18. <a href="https://doi.org/10.2202/1557-4679.1212">https://doi.org/10.2202/1557-4679.1212</a>.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

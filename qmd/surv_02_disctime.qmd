@@ -15,6 +15,8 @@ library(corrplot)
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
 set.seed(42)
+
+dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) 
 ```
 
 # WORK IN PROGRESS
@@ -52,6 +54,65 @@ The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]
 ::: callout-note
 Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf), which explains why the odds approximates the hazard at a given time-point *k*, with weak assumption the hazard is small (i.e. rare event) at time *k*.
 :::
+
+```{r }
+#| label: plr-naive-est
+d_mods_pnl = dta_c_panel %>%
+  nest(data = -model) %>%
+  mutate(est_plr_nv = 
+           map(data, 
+               function(x) {
+                 d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=x, family=binomial()) # <1>
+                 d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
+                 d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
+                 d_plr_naive_est %>%
+                   group_by(assign) %>%
+                   mutate(pr_cumsurv = cumprod(pr_surv),
+                          pr_cumev = 1 - pr_cumsurv) %>% # <2>
+                   ungroup %>% # <3>
+                   pivot_wider(., id_cols =c('time'), # <3>
+                               names_from = assign, # <3>
+                               names_prefix = 'pr_ev_', # <3>
+                               values_from = pr_cumev # <3>
+                               ) %>%
+                   mutate(cid = pr_ev_1 - pr_ev_0, # <3>
+                          cir = pr_ev_1 / pr_ev_0)
+                 }))
+```
+
+1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
+2.  The cumulative incidence is 1 - cumulative event-free survival probability. To compute, you take the cumulative product by assignment group.
+3.  Reorganize data and summarize by group/time similar to above for the KM estimator.
+
+```{r }
+#| label: gg-plr-naive
+#| fig-cap-location: top
+#| echo: false
+#| fig-cap: "Figure 2. Unadjusted, unweighted cumulative incidences by treatment group (PLR)"
+#| fig-subcap: 
+#|  - 'A causes Y'
+#|  - 'A not a cause of Y'
+#| layout-ncol: 2
+#| message: false
+#| warning: false
+
+d_gg = mutate(d_mods_pnl, km_gg = map(est_plr_nv, function(x) {
+    x %>%
+      pivot_longer(cols = c(pr_ev_0, pr_ev_1), names_to = 'assign', values_to = 'pr_ev') %>%
+      ggplot(aes(x=time, y = pr_ev, color = assign)) +
+      geom_line(aes(linetype=assign), linewidth=1.2) +
+      scale_color_manual(labels = c('Assign=0', 'Assign=1'), values = cbbPalette) +
+      scale_linetype_manual(labels = c('Assign=0', 'Assign=1'), values = c(1, 2)) +
+      scale_x_continuous(breaks = seq(0, 60, 6),
+                         limits = c(0, 60)) +
+      theme_bw() +
+      labs(x = 'Follow-up', y = 'Cumulative incidence')
+  }))
+    
+d_gg$km_gg[[1]] # A -> Y
+
+d_gg$km_gg[[2]] # X -> Y
+```
 
 # Other modeling approaches
 
