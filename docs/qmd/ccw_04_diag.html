@@ -263,25 +263,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#evaluation-of-target-trial-design-elements" id="toc-evaluation-of-target-trial-design-elements" class="nav-link active" data-scroll-target="#evaluation-of-target-trial-design-elements">Evaluation of Target Trial Design Elements</a>
-  <ul class="collapse">
-  <li><a href="#evaluation-of-grace-period" id="toc-evaluation-of-grace-period" class="nav-link" data-scroll-target="#evaluation-of-grace-period">Evaluation of Grace Period</a>
+  <li><a href="#sec-gracediag" id="toc-sec-gracediag" class="nav-link active" data-scroll-target="#sec-gracediag">Evaluation of Grace Period</a>
   <ul class="collapse">
   <li><a href="#alternative-grace-periods" id="toc-alternative-grace-periods" class="nav-link" data-scroll-target="#alternative-grace-periods">Alternative grace periods</a></li>
   </ul></li>
-  </ul></li>
   <li><a href="#model-testing" id="toc-model-testing" class="nav-link" data-scroll-target="#model-testing">Model testing</a>
   <ul class="collapse">
-  <li><a href="#examination-of-time-function" id="toc-examination-of-time-function" class="nav-link" data-scroll-target="#examination-of-time-function">Examination of time function</a>
-  <ul class="collapse">
-  <li><a href="#naive-kaplan-meier-estimator" id="toc-naive-kaplan-meier-estimator" class="nav-link" data-scroll-target="#naive-kaplan-meier-estimator">Naive Kaplan-Meier Estimator</a></li>
-  <li><a href="#naive-plr-estimator" id="toc-naive-plr-estimator" class="nav-link" data-scroll-target="#naive-plr-estimator">Naive PLR estimator</a></li>
+  <li><a href="#sec-tfunc" id="toc-sec-tfunc" class="nav-link" data-scroll-target="#sec-tfunc">Examination of time function</a></li>
   </ul></li>
   <li><a href="#sec-ipwdiag" id="toc-sec-ipwdiag" class="nav-link" data-scroll-target="#sec-ipwdiag">Evaluation of Probability Weights</a>
   <ul class="collapse">
   <li><a href="#overall-ipw-distribution" id="toc-overall-ipw-distribution" class="nav-link" data-scroll-target="#overall-ipw-distribution">Overall IPW Distribution</a></li>
   <li><a href="#ipw-distribution-at-end-of-grace-period-for-treatment-clones" id="toc-ipw-distribution-at-end-of-grace-period-for-treatment-clones" class="nav-link" data-scroll-target="#ipw-distribution-at-end-of-grace-period-for-treatment-clones">IPW Distribution at end of grace period for treatment clones</a></li>
-  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_04_diag.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -309,10 +302,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="evaluation-of-target-trial-design-elements" class="level1">
-<h1>Evaluation of Target Trial Design Elements</h1>
-<section id="evaluation-of-grace-period" class="level2">
-<h2 class="anchored" data-anchor-id="evaluation-of-grace-period">Evaluation of Grace Period</h2>
+<section id="sec-gracediag" class="level2">
+<h2 class="anchored" data-anchor-id="sec-gracediag">Evaluation of Grace Period</h2>
 <p>The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.</p>
 <p>Whatever period is selected, a sound practice is to evaluate how different results appear when different grace periods are selected. It is simplest when the time-frame doesn’t change the estimated effect very much, but a variety of things could impact this. For example, if probability of initiation of treatment varies widely across time due to confounding or some general time-trend then selecting different grace windows could substantially change results. Additionally, if the many events occur early after time-zero, then grace windows will count most of these events in both arms so your estimate of treatment grace period effects could be more conservative than actual treatment initiation.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -344,19 +335,18 @@ Note
 <p><em>Description.</em> Each line presents the cumulative risk difference across time, using different definitions of the treatment intervention. In this case, it makes little difference, which is sensible because the synthetic data did not generate time-varying risks for the outcome or treatment initiation.</p>
 </section>
 </section>
-</section>
-<section id="model-testing" class="level1">
-<h1>Model testing</h1>
-<section id="examination-of-time-function" class="level2">
-<h2 class="anchored" data-anchor-id="examination-of-time-function">Examination of time function</h2>
+<section id="model-testing" class="level2">
+<h2 class="anchored" data-anchor-id="model-testing">Model testing</h2>
+<section id="sec-tfunc" class="level3">
+<h3 class="anchored" data-anchor-id="sec-tfunc">Examination of time function</h3>
 <p>It is important to explore the data with a “naive” estimator. This is useful for the following reasons:</p>
 <ol type="1">
 <li><p>It allows examination of the overall time trends, censoring and sample size which can reveal fatal issues with the target trial emulation. For example, treatment is too rare in the grace window used, or event rate is unexpectedly high or low.</p></li>
 <li><p>The non-parametric model allows a visual examination of the cumulative incidences (or event free survival probabilities) which are modeled parametrically in the pooled logistic regression. In other words, examining the time trend can help you determine if a simple polynomial or some more complex spline function is needed. This is not definitive however, because time-varying weights may change the time trends. But in my experience the unweighted curves provide a good starting point, and practitioners should be skeptical of a weighted analysis that shows dramatically different time trends then the unweighted analysis (likely to be poorly fit model).</p></li>
 </ol>
 <p>The <a href="../qmd/surv_01_kaplan.html">Kaplan-Meier Estimator</a> section provides a working example on fitting a simple naive estimator. Here a helper function <code>f_km_cuminc()</code> is used for brevity.</p>
-<section id="naive-kaplan-meier-estimator" class="level3">
-<h3 class="anchored" data-anchor-id="naive-kaplan-meier-estimator">Naive Kaplan-Meier Estimator</h3>
+<section id="naive-kaplan-meier-estimator" class="level4">
+<h4 class="anchored" data-anchor-id="naive-kaplan-meier-estimator">Naive Kaplan-Meier Estimator</h4>
 <div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -383,8 +373,8 @@ Note
 </div>
 </div>
 </section>
-<section id="naive-plr-estimator" class="level3">
-<h3 class="anchored" data-anchor-id="naive-plr-estimator">Naive PLR estimator</h3>
+<section id="naive-plr-estimator" class="level4">
+<h4 class="anchored" data-anchor-id="naive-plr-estimator">Naive PLR estimator</h4>
 <p>Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. The weighting is computationally intensive and so this step is important to test your code. The goal is to ensure you have a good starting parametric model for the outcome to avoid complications when you add weights. An unadjusted PLR model should closely approximate the KM curves, if it doesn’t then something is wrong. Either the time function is misspecified, data is too sparse (few events, follow-up exposure time etc.), or the code is wrong.</p>
 <p>The <a href="../qmd/surv_02_disctime.html">Discrete Time Estimator</a> section provides a working example. Here a helper function <code>f_plr_cuminc()</code> is used for brevity.</p>
 <p>The PLR model requires specification of a function of time. Many start with a quadratic polynomial (i.e.&nbsp;time + time^2). In my own work, I have found this insufficient, and interestingly have found that linear splines work the best. You must decide for yourself. You could compute AIC or some other model fit statistic to select it empirically. I often compare the PLR estimates to the non-parametric estimates for validity. However this doesn’t completely avoid issues, because the weighted estimates (time-varying covariates, interactions with time etc.) could conceivably diverge quite a bit from the unadjusted KM estimator. You can either estimate the outcome in a model with both clones combined in one dataset OR estimate cumulative incidences separately (two models with data limited to <code>assign==1</code> &amp; <code>assign==0</code> respectively). In the combined data, you must specify an interaction between treatment (clone assignment) and f(time), e.g.&nbsp;<code>time + time^2 + treat + treat*time + treat*time^2</code>, shorthand below is <code>poly(time, 2, raw=T)*assign</code>.</p>
@@ -498,6 +488,7 @@ Note
 </div>
 </section>
 </section>
+</section>
 <section id="sec-ipwdiag" class="level2">
 <h2 class="anchored" data-anchor-id="sec-ipwdiag">Evaluation of Probability Weights</h2>
 <section id="overall-ipw-distribution" class="level3">
@@ -559,7 +550,6 @@ Unknown or uninitialised column: `marg_ipw`.</code></pre>
 <p>The size of the unweighted, and weighted counts may identify problems.</p>
 
 
-</section>
 </section>
 </section>
 

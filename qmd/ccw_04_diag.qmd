@@ -28,9 +28,7 @@ dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds'))
 
 ```
 
-# Evaluation of Target Trial Design Elements
-
-## Evaluation of Grace Period
+## Evaluation of Grace Period {#sec-gracediag}
 
 The selection of a grace period is ideally based on knowledge of the treatment in real-world use. For example, if there were treatment guidelines recommending an intervention take place within a specific time-frame (6 weeks from hospital discharge, 1 hour from presentation in the ED etc.), then it makes sense to follow that recommendation in selecting a grace period. However, practical limitations may change this for a project. Even though it may be recognized that 6 weeks is recommended, maybe very few initiate that early and 12 weeks captures more treated cases.
 
@@ -73,9 +71,9 @@ ggplot(data = d_gg, aes(x = time, y = cid)) +
 ```
 *Description.* Each line presents the cumulative risk difference across time, using different definitions of the treatment intervention. In this case, it makes little difference, which is sensible because the synthetic data did not generate time-varying risks for the outcome or treatment initiation. 
 
-# Model testing
+## Model testing
 
-## Examination of time function 
+### Examination of time function {#sec-tfunc}
 
 It is important to explore the data with a "naive" estimator. This is useful for the following reasons:
 
@@ -85,7 +83,7 @@ It is important to explore the data with a "naive" estimator. This is useful for
 
 The [Kaplan-Meier Estimator](surv_01_kaplan.qmd) section provides a working example on fitting a simple naive estimator. Here a helper function `f_km_cuminc()` is used for brevity.
 
-### Naive Kaplan-Meier Estimator
+#### Naive Kaplan-Meier Estimator
 
 ```{r }
 #| label: gg-km
@@ -122,7 +120,7 @@ d_mods$km_gg[[2]] # X -> Y
 
 ```
 
-### Naive PLR estimator
+#### Naive PLR estimator
 
 Next, we proceed to essentially replicate the finding of the KM estimator with a PLR model. No weights or covariate-adjustment is applied yet. The weighting is computationally intensive and so this step is important to test your code. The goal is to ensure you have a good starting parametric model for the outcome to avoid complications when you add weights. An unadjusted PLR model should closely approximate the KM curves, if it doesn't then something is wrong. Either the time function is misspecified, data is too sparse (few events, follow-up exposure time etc.), or the code is wrong. 
 

@@ -49,11 +49,96 @@ Cumulative Hazard, $H(t)$
 
 The terms are related, $S(t) = 1 – R(t)$. $h(t)=R(t)/S(t)$, $H(t) = -log[S(t)]$ and $S(t) = e –H(t)$. 
 
-# Pooled Logistic Regression  
+# Data  
+
+Proper setup of the data is key here, the data is a person-period dataset. Where each row represents an interval of time for a person (or other observation unit). I make it simpler by having the unit of time interval be consistently 1. However, this is not actually strictly required. The time intervals can be uneven, like days 1-2, 3-7, 10-20 etc. So for each person there is a record `id`, a `time` variable, and an indicator for it a person censors `censor` or experiences the `event` during a period. The `enter`, `exit` variables can be important if the time units are intervals (e.g. 30-day) or uneven. Some variables like `age` may be fixed at the baseline time zero value, while others like `X_t` vary across time. 
+
+::: callout-note
+It is important to be consistent in your rules about whether `event` is counted at the beginning or end of an interval. I typically use of the end, `exit` time. This can get tricky when the interval is wide, like 30 days and you will have ties where people experience events, are censored or treated all in the same interval period.
+:::
+
+```{r }
+#| label: data-look
+#| echo: false
+#| message: false
+glimpse(dplyr::filter(dta_c_panel, model=='ay') %>%
+  select(id, time, censor, event, enter, exit, age, X, X_t))
+```
+
+# Regression  
+
+The following may generically be referred to as 'outcome' models to distinguish them from the weight estimation step (which also may perform similar analyses) in the clone-censor-weight approach.  
+
+## Pooled Logistic Regression  
 
 ::: callout-note
 Pooled logistic regression is an important statistical model for target trial emulation because of its flexibility in estimating weights for time-varying confounding and the estimation of cumulative incidences. The PLR model approximates the hazards with some assumptions, see Technical Point 17.1 on page 227 of [Causal Inference: What If](https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf), which explains why the odds approximates the hazard at a given time-point *k*, with weak assumption the hazard is small (i.e. rare event) at time *k*.
 :::
+
+The PLR model estimates the person-period conditional probability of an event, and the cumulative incidence or event-free survival probability can be estimated by taking the cumulative product of each person-period. since there is a conditional probability for each person-period, this approach can flexibly accommodate complex models of both time-fixed and varying variables (its primary appeal).  
+
+A key model term(s) is time, which can be parameterized in arbitrarily complex ways. Simple linear terms, polynomials, splines etc. Additionally, the model need not be a logistic family, it can also be a complementary log-log or Gompertz model. A few of these choices are compared below, but the synthetic data was generated with a polynomial term for time and logit link function.
+
+## GLM model  
+
+### Model Estimation  
+
+Estimating the GLM model is straightforward if the data is properly setup.  
+
+```{r }
+#| label: glm-mod
+#| message: false
+ 
+d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_c_panel, family=binomial(), model=F)
+```
+
+To experiment with model parameters later on a function is used.  
+
+```{r }
+#| label: glm-func
+#| echo: true
+#| eval: false
+
+# tfun = A model specification for the time function
+# i_covars = a character vector of covariates to adjust for
+# modstrat = Whether to stratify the model by assignment or not
+# ...; Other glm() parameters like `family()` to provide
+
+f_dtmod(dta_c_panel, family = binomial()) 
+```
+
+Once the model is estimated, the conditional probabilities are estimated for the original dataset, and cumulative survival or incidence of the event is computed from this.  
+
+### Cumulative Incidence  
+
+```{r }
+#| label: cuminc-est
+#| echo: true
+#| eval: false
+#| 
+  dta_c_panel$pr_surv = predict(d_glm, newdata = dta_c_panel, type = 'response') 
+  
+  dta_c_panel %>%
+    group_by(assign, id) %>%
+    mutate(pr_cumsurv = cumprod(pr_surv),
+           pr_cumev = 1 - pr_cumsurv) %>% 
+    ungroup %>% 
+    group_by(assign, time) %>%
+    summarize(pr_cumsurv = mean(pr_cumsurv),
+           pr_cumev = 1 - mean(pr_cumsurv), .groups = 'drop') %>% 
+    ungroup %>%
+    pivot_wider(., id_cols =c('time'), 
+                names_from = assign,
+                names_prefix = 'pr_ev_', 
+                values_from = pr_cumev 
+    ) %>%
+    mutate(cid = pr_ev_1 - pr_ev_0, 
+           cir = pr_ev_1 / pr_ev_0)
+  
+# `f_cuminc()` is a helper function to compute this step
+```
+
+
 
 ```{r }
 #| label: plr-naive-est
@@ -62,27 +147,15 @@ d_mods_pnl = dta_c_panel %>%
   mutate(est_plr_nv = 
            map(data, 
                function(x) {
-                 d_glm = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=x, family=binomial()) # <1>
-                 d_plr_naive_est = crossing(assign = 1:0, time = 1:60)
-                 d_plr_naive_est$pr_surv = predict(d_glm, newdata = d_plr_naive_est, type = 'response') 
-                 d_plr_naive_est %>%
-                   group_by(assign) %>%
-                   mutate(pr_cumsurv = cumprod(pr_surv),
-                          pr_cumev = 1 - pr_cumsurv) %>% # <2>
-                   ungroup %>% # <3>
-                   pivot_wider(., id_cols =c('time'), # <3>
-                               names_from = assign, # <3>
-                               names_prefix = 'pr_ev_', # <3>
-                               values_from = pr_cumev # <3>
-                               ) %>%
-                   mutate(cid = pr_ev_1 - pr_ev_0, # <3>
-                          cir = pr_ev_1 / pr_ev_0)
+                 d_glm = f_dtmod(x, family = binomial()) # <1>
+                 x$pr_surv = predict(d_glm, newdata = x, type = 'response') # <2>
+                 f_cuminc(x) # <3>
                  }))
 ```
 
 1.  PLR model, with time\*treat interaction. Binomial family for logistic regression.
-2.  The cumulative incidence is 1 - cumulative event-free survival probability. To compute, you take the cumulative product by assignment group.
-3.  Reorganize data and summarize by group/time similar to above for the KM estimator.
+2. Fit the conditional probabilities back to the original dataset.
+3.  The cumulative incidence is 1 - cumulative event-free survival probability. To compute, you take the cumulative product by assignment group. Reorganize data and summarize by group/time .
 
 ```{r }
 #| label: gg-plr-naive
@@ -112,6 +185,17 @@ d_gg = mutate(d_mods_pnl, km_gg = map(est_plr_nv, function(x) {
 d_gg$km_gg[[1]] # A -> Y
 
 d_gg$km_gg[[2]] # X -> Y
+```
+
+## Modifications to the GLM model
+
+```{r }
+#| label: glm-mods
+#| echo: false
+#| message: false
+
+ 
+
 ```
 
 # Other modeling approaches
