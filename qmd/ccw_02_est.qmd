@@ -126,9 +126,9 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
   )]
 ```
 
-For the stabilized weights: 
-1. Compute the mean by period and assignment group. 
-2. Replace the numerator in the ipw calculation with the marginal probability.
+1.  Compute the mean by period and assignment group.  
+
+2.  Replace the numerator in the ipw calculation with the marginal probability.
 
 ### Final weights
 
