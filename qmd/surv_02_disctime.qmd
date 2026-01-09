@@ -189,13 +189,80 @@ d_gg$km_gg[[2]] # X -> Y
 
 ## Modifications to the GLM model
 
+There are options that can be explored to the basic binomial model. One is using the complementary log-log link instead of logit.  
+
 ```{r }
-#| label: glm-mods
+#| label: glm-mods-cloglog
+#| message: false
+ d_mods_pnl = d_mods_pnl %>%
+  mutate(est_plr_cloglog = 
+           map(data, 
+               function(x) {
+                 d_glm = f_dtmod(x, family = binomial(link = "cloglog")) # <1>
+                 x$pr_surv = predict(d_glm, newdata = x, type = 'response') # <2>
+                 f_cuminc(x) # <3>
+                 }))
+
+```
+
+The other is modifying the time function. For example, using splines:  
+
+```{r }
+#| label: glm-mods-spline
+#| message: false
+ d_mods_pnl = d_mods_pnl %>%
+  mutate(est_plr_spline = 
+           map(data, 
+               function(x) {
+                 d_glm = f_dtmod(x, tfun = 'splines::bs(time, df=6)', 
+                                 family = binomial()) # <1>
+                 x$pr_surv = predict(d_glm, newdata = x, type = 'response') # <2>
+                 f_cuminc(x) # <3>
+                 }))
+
+```
+Because the synthetic data in this example was generating using simple functions, these choices will not yield very different estimates. However, in applied work these choices could significantly impact the findings and should be compared like here:
+
+```{r }
+#| label: glm-table
 #| echo: false
 #| message: false
 
- 
+d_all_est = d_mods_pnl %>%
+  select(model, starts_with('est_')) %>%
+  unnest()
 
+d_summ = d_mods_pnl %>%
+  rename(Data = model) %>%
+  select(-data) %>%
+  pivot_longer(., cols = c(starts_with('est_')), names_to = 'Model', values_to = 'table') %>%
+  unnest(cols = c(table)) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60)) %>%
+  mutate(GLM = case_when(
+    Model == 'est_plr_nv' ~ 'Logit, Poly(time, degree=2)',
+    Model == 'est_plr_cloglog' ~ 'CLOGLOG, Poly(time, degree=2)',
+    Model == 'est_plr_spline' ~ 'Logit, Spline(time, df=6)'
+  ))
+
+  
+
+t_summ_all = kables(caption = 'X -> A, Y, A does not cause Y',
+  list(d_summ %>%
+         dplyr::filter(Data == 'xy') %>%
+         pivot_wider(., id_cols = time, names_from = GLM, values_from = cid) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Risk Differences" = 4)),
+       d_summ %>%
+         dplyr::filter(Data == 'xy') %>%
+         pivot_wider(., id_cols = time, names_from = GLM, values_from = cir) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Relative Risks" = 4))
+       )
+  )
+
+t_summ_all
 ```
 
 # Other modeling approaches
