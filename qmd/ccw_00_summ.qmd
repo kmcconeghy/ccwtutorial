@@ -6,7 +6,7 @@ bibliography: references.bib
 
 ## Clone-Censor-Weight  
 
-This is a huge topic, and the main purpose of the guide. 
+This section is the main purpose of the guide. 
 
 ::: callout-note
 I originally learned this as 'clone-censor-weight', but I am seeing 'cloning-censoring-weighting' also being used more frequently, I prefer the former.

@@ -474,19 +474,30 @@ Note
 <section id="stabilized-weights" class="level3">
 <h3 class="anchored" data-anchor-id="stabilized-weights">Stabilized weights</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_c0  <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">mean</span>(censor), by <span class="ot">=</span> <span class="fu">list</span>(assign, time)]</span>
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-3-1" class="code-annotation-target"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_c0  <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">mean</span>(censor), by <span class="ot">=</span> <span class="fu">list</span>(assign, time)]</span>
 <span id="annotated-cell-3-2"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="annotated-cell-3-3"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a>  dta_c_panel[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
-<span id="annotated-cell-3-4"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat),</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-3-4" class="code-annotation-target"><a href="#annotated-cell-3-4" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat),</span>
 <span id="annotated-cell-3-5"><a href="#annotated-cell-3-5" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
 <span id="annotated-cell-3-6"><a href="#annotated-cell-3-6" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
 <span id="annotated-cell-3-7"><a href="#annotated-cell-3-7" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
 <span id="annotated-cell-3-8"><a href="#annotated-cell-3-8" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,  </span>
 <span id="annotated-cell-3-9"><a href="#annotated-cell-3-9" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (pr_treat),</span>
 <span id="annotated-cell-3-10"><a href="#annotated-cell-3-10" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
-<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>  )]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-3-11"><a href="#annotated-cell-3-11" aria-hidden="true" tabindex="-1"></a>  )]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="1" data-code-annotation="1">Compute the mean by period and assignment group.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="4,9" data-code-annotation="2">Replace the numerator in the ipw calculation with the marginal probability.</span>
+</dd>
+</dl>
 </div>
-<p>For the stabilized weights: 1. Compute the mean by period and assignment group. 2. Replace the numerator in the ipw calculation with the marginal probability.</p>
+</div>
 </section>
 <section id="final-weights" class="level3">
 <h3 class="anchored" data-anchor-id="final-weights">Final weights</h3>

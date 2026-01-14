@@ -9,8 +9,7 @@ bibliography: references.bib
 #| message: false
 #| 
 library(here)
-library(ggdag)
-library(corrplot)
+library(ranger)
 
 source(here('scripts', 'setup.R'), echo=F)
 # Set seed for reproducibility
@@ -228,10 +227,6 @@ Because the synthetic data in this example was generating using simple functions
 #| echo: false
 #| message: false
 
-d_all_est = d_mods_pnl %>%
-  select(model, starts_with('est_')) %>%
-  unnest()
-
 d_summ = d_mods_pnl %>%
   rename(Data = model) %>%
   select(-data) %>%
@@ -246,7 +241,7 @@ d_summ = d_mods_pnl %>%
 
   
 
-t_summ_all = kables(caption = 'X -> A, Y, A does not cause Y',
+t_summ_all = kables(caption = 'X causes {A, Y}, A does not cause Y',
   list(d_summ %>%
          dplyr::filter(Data == 'xy') %>%
          pivot_wider(., id_cols = time, names_from = GLM, values_from = cid) %>%
@@ -267,9 +262,94 @@ t_summ_all
 
 # Other modeling approaches
 
-## TMLE
+## Machine learning algorithms
 
-## Survival RF
+An alternative to regression would be use of random forests. If you wanted to compare to Kaplan-Meier you could use the `randomforestSRC` package. But I compare the logistic models above to a random forest classifier. A  support vector classifier could work well in theory, but in practice most CCW datasets are too large and they become computationally difficult.
+
+```{r }
+#| label: inst-ml-pckgs
+#| eval: false
+#| message: false
+
+library(ranger)
+```
+
+### Machine Learners    
+
+Random forest methods are a complex topic, and training the models requires significant effort and practice. I perform a simple example below but any serious effort would require training, testing and validation to be credible.  
+
+```{r }
+#| label: train-svm
+#| message: false
+
+dta_ml = dta_c_panel %>% 
+    dplyr::filter(model == 'ay') %>% 
+    mutate(time = unlist(scale(time))) %>% # scaled timed
+    select(event, time, assign)
+
+# Logit 
+  glm_model = glm(event==0 ~ poly(time, 2, raw=T)*assign, data=dta_ml, family=binomial(), model=F) # <1>
+  dta_c_panel[dta_c_panel$model == 'ay', 'glm'] = predict(glm_model, type = 'response') # <1>
+
+# Random Forest
+  
+  
+  rf_model = ranger(event ~ time + assign, # <2>
+                    data=dta_ml, # <2>
+                    num.trees = 500, # <2>
+                    ) # <2>
+  
+  dta_c_panel[dta_c_panel$model == 'ay', 'rf'] <- 1 - predict(rf_model, data = dta_ml)$predictions
+```
+
+1. Logit model for comparison
+2. Random forest, using the `ranger()` function and package.
+
+### Calculate cumulative incidences 
+
+I just focus on the `ay` model for comparison:  
+
+```{r }
+#| label: ml-cuminc
+#| message: false
+
+est_rf = mutate(dta_c_panel, pr_surv = rf) %>%
+  dplyr::filter(model == 'ay') %>%
+  f_cuminc(.) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60)) %>%
+  mutate(Model = 'RF')
+
+est_glm = mutate(dta_c_panel, pr_surv = glm) %>%
+  dplyr::filter(model == 'ay') %>%
+  f_cuminc(.) %>%
+  dplyr::filter(time %in% c(6, 12, 36, 60)) %>%
+  mutate(Model = 'GLM')
+
+d_mods_pnl_2 = bind_rows(est_glm, est_rf) 
+```
+
+```{r }
+#| label: glm-table2
+#| echo: false
+#| message: false
+t_summ_all = kables(caption = 'X causes {A, Y}, A causes Y',
+  list(d_mods_pnl_2 %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Risk Differences" = 3)),
+       d_mods_pnl_2 %>%
+         pivot_wider(., id_cols = time, names_from = Model, values_from = cir) %>%
+         kable(digits=3, align = 'c') %>%
+         kable_styling() %>%
+         add_header_above(., c("Relative Risks" = 3))
+       )
+  )
+
+t_summ_all
+```
+
+
 
 # References
 
