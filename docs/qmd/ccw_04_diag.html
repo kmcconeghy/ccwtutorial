@@ -274,7 +274,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#sec-ipwdiag" id="toc-sec-ipwdiag" class="nav-link" data-scroll-target="#sec-ipwdiag">Evaluation of Probability Weights</a>
   <ul class="collapse">
   <li><a href="#overall-ipw-distribution" id="toc-overall-ipw-distribution" class="nav-link" data-scroll-target="#overall-ipw-distribution">Overall IPW Distribution</a></li>
-  <li><a href="#ipw-distribution-at-end-of-grace-period-for-treatment-clones" id="toc-ipw-distribution-at-end-of-grace-period-for-treatment-clones" class="nav-link" data-scroll-target="#ipw-distribution-at-end-of-grace-period-for-treatment-clones">IPW Distribution at end of grace period for treatment clones</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/ccw_04_diag.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -419,28 +418,27 @@ Note
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    d_gg_ci <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">linetype=</span>assign), <span class="at">linewidth=</span><span class="fl">0.9</span>) <span class="sc">+</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> pr_ev, <span class="at">shape=</span>assign), <span class="at">size=</span><span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>) </span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>d_gg_rr <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> cid), <span class="at">linewidth=</span><span class="fl">1.1</span>) <span class="sc">+</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                           <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Risk Differences'</span>) </span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>   </span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggarrange</span>(d_gg_ci, d_gg_rr, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">common.legend =</span> T)</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  }))</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">1</span>]] <span class="co"># A -&gt; Y</span></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">2</span>]] <span class="co"># X -&gt; Y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                         <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">'Cumulative incidence'</span>) </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>d_gg_rr <span class="ot">=</span> x <span class="sc">%&gt;%</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>time, <span class="at">color =</span> Est, <span class="at">Group =</span> Est)) <span class="sc">+</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> cid), <span class="at">linewidth=</span><span class="fl">1.1</span>) <span class="sc">+</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">6</span>),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                           <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">60</span>)) <span class="sc">+</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>, <span class="at">y =</span> <span class="st">'Risk Differences'</span>) </span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggarrange</span>(d_gg_ci, d_gg_rr, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">common.legend =</span> T)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">1</span>]] <span class="co"># A -&gt; Y</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>d_gg<span class="sc">$</span>km_gg[[<span class="dv">2</span>]] <span class="co"># X -&gt; Y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell fig-cap-location-top quarto-layout-panel" data-layout-ncol="2">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -466,10 +464,10 @@ Note
 </div>
 </div>
 </div>
-<p>So the PLR model using a simple polynomial approximates the KM estimator. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:</p>
+<p>So the PLR model using a simple polynomial approximates the KM estimator reasonably well. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:</p>
 <ol type="1">
-<li><p>It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.</p></li>
-<li><p>The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the random noise of the KM estimator.</p></li>
+<li><p>It may not matter if PLR and KM are mildly inconsistent at certain time-points if the plan is to summarize the results at other periods (e.g.&nbsp;early versus later period estimates).</p></li>
+<li><p>The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the noise of the KM estimator.</p></li>
 <li><p>These initial steps will not guarantee a good fit after weighting is applied, it is only a first-look for diagnostic purposes.</p></li>
 <li><p>If the fit is not satisfying, then simply pick a different function of time. Many others to choose from, basis splines, <code>bs::splines(time, df=6, degree=1)</code>, or you can use a <code>mgcv()</code> for penalized splines etc. Also, consider specifying knots at specific time-points like the end of a grace period.</p></li>
 </ol>
@@ -491,65 +489,89 @@ Note
 </section>
 <section id="sec-ipwdiag" class="level2">
 <h2 class="anchored" data-anchor-id="sec-ipwdiag">Evaluation of Probability Weights</h2>
+<p>For below we evaluate the causal A-&gt; Y data.</p>
+<p>Examining the distribution of censoring weights is necessary to identify problems. Extreme weights take on new meaning in CCW designs because the probability of treatment initiation may be very small in discrete time windows. Therefore weights can be quite large. Truncation at the upper 1% is not generally recommended until careful examination of the distribution takes place.</p>
 <section id="overall-ipw-distribution" class="level3">
 <h3 class="anchored" data-anchor-id="overall-ipw-distribution">Overall IPW Distribution</h3>
-<section id="unstabilized-weights" class="level4">
-<h4 class="anchored" data-anchor-id="unstabilized-weights">Unstabilized weights</h4>
-</section>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   0.00    1.00    1.12    1.98    1.57   66.60 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      95%       99%     99.5%     99.9% 
+ 2.541021 21.657771 63.395866 65.917985 </code></pre>
+</div>
+</div>
+<p>It can be observed the median is 1, and the mean is 2, the data is heavily skewed. Because the weight is the inverse probability of remaining uncensored and the you only estimate it for the uncensored risk set (where outcome risk is correlated with treatment), it is not expected to be mean 1. However the sum of the weights / (# observations) ~ 1.</p>
+<p>You can plot the counts across time for:</p>
+<div class="cell fig-cap-location-top">
+<div class="sourceCode cell-code" id="cb4" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>n_base <span class="ot">=</span> <span class="fu">nrow</span>(dta_ay[assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time<span class="sc">==</span><span class="dv">1</span>, ])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dta_ay <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">events =</span> <span class="fu">sum</span>(event),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">sum_wts =</span> <span class="fu">sum</span>(ipw),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">base =</span> n_base, <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(assign) <span class="sc">%&gt;%</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">events =</span> <span class="fu">cumsum</span>(events),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">base =</span> n_base <span class="sc">-</span> <span class="fu">lead</span>(events),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">mean =</span> sum_wts <span class="sc">/</span> base) <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="fu">factor</span>(assign)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">group =</span> assign, <span class="at">color =</span> assign)) <span class="sc">+</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean, <span class="at">color =</span> assign)) <span class="sc">+</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>( <span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept=</span><span class="dv">1</span>),<span class="at">linewidth=</span><span class="fl">1.1</span>, <span class="at">linetype=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">12</span>)) <span class="sc">+</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Follow-up"</span>, <span class="at">y =</span> <span class="st">"Weighted Sample / Umweighted - Events"</span>) <span class="sc">+</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ccw_04_diag_files/figure-html/desc-ipw-time-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Weighted versus Unweighted Sample Across Time</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <section id="marginal-stabilized-weights" class="level4">
 <h4 class="anchored" data-anchor-id="marginal-stabilized-weights">Marginal Stabilized weights</h4>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Unknown or uninitialised column: `marg_ipw`.
-Unknown or uninitialised column: `marg_ipw`.</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0.000   0.961   1.000   0.973   1.000   6.870 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Length  Class   Mode 
-     0   NULL   NULL </code></pre>
+<pre><code>     95%      99%    99.5%    99.9% 
+1.071571 1.315477 1.728143 3.891321 </code></pre>
 </div>
 </div>
-<p>The unstabilized weights floor at 1, and we see high weights assigned to some. The marginal weights have a mean of 1 (expected).</p>
-</section>
-</section>
-<section id="ipw-distribution-at-end-of-grace-period-for-treatment-clones" class="level3">
-<h3 class="anchored" data-anchor-id="ipw-distribution-at-end-of-grace-period-for-treatment-clones">IPW Distribution at end of grace period for treatment clones</h3>
-<p>The weights at the end of the grace period are key so its good to examine them directly:</p>
-<p>You can also plot weights across time for diagnostics:</p>
+<p>Stabilized weights should have a mean ~ 1.</p>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb4" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(marg_ipw<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>), <span class="at">y =</span> marg_ipw)) <span class="sc">+</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="fu">aes</span>(<span class="at">group =</span> <span class="fu">cut_width</span>(time, <span class="dv">12</span>)), </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">scale =</span> <span class="st">"width"</span>, <span class="at">fill =</span> cbbPalette[<span class="dv">1</span>], <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> <span class="st">"mean"</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">geom =</span> <span class="st">"point"</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">color =</span> cbbPalette[<span class="dv">2</span>], <span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept=</span><span class="dv">1</span>),<span class="at">linewidth=</span><span class="fl">1.1</span>, <span class="at">linetype=</span><span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">12</span>)) <span class="sc">+</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Follow-up"</span>, <span class="at">y =</span> <span class="st">"IPW"</span>, ) <span class="sc">+</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dta_ay <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(ipw<span class="sc">!=</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(assign, time) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean =</span> <span class="fu">mean</span>(marg_ipw), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">assign =</span> <span class="fu">factor</span>(assign)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">group =</span> assign, <span class="at">color =</span> assign)) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean, <span class="at">color =</span> assign)) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>( <span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept=</span><span class="dv">1</span>),<span class="at">linewidth=</span><span class="fl">1.1</span>, <span class="at">linetype=</span><span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">12</span>)) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Follow-up"</span>, <span class="at">y =</span> <span class="st">"Mean (Stabilized Weights)"</span>) <span class="sc">+</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ccw_04_diag_files/figure-html/desc-marg_ipw-time-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Average Weights Across Time</figcaption>
+</figure>
 </div>
-<p>Another way to examine the weights is to look at the weighted counts of individuals at risk, and number of events pre- and post-weighting:</p>
-<div class="cell tbl-cap-location-top" data-tbl-cap="Unweighted and Weighted Counts, N at risk">
-<div class="sourceCode cell-code" id="cb5" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dta_c_panel <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time, assign) <span class="sc">%&gt;%</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">sum</span>(ipw<span class="sc">!=</span><span class="dv">0</span>), </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_wt =</span> <span class="fu">sum</span>(ipw),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> time, <span class="at">names_from =</span> assign, <span class="at">values_from =</span> <span class="fu">c</span>(n, n_wt)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">12</span>, <span class="dv">30</span>, <span class="dv">60</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Time</span><span class="st">`</span> <span class="ot">=</span> time,</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_0,</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Unweighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_1,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=0</span><span class="st">`</span> <span class="ot">=</span> n_wt_0,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Weighted, assign=1</span><span class="st">`</span> <span class="ot">=</span> n_wt_1,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">align=</span><span class="st">'c'</span>, <span class="at">digits =</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The size of the unweighted, and weighted counts may identify problems.</p>
+</div>
 
 
+</section>
 </section>
 </section>
 

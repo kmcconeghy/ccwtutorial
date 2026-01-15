@@ -187,7 +187,6 @@ d_gg = mutate(d_ci_cmp, km_gg = map(data, function(x) {
     d_gg_ci = x %>%
       ggplot(aes(x=time, color = Est, Group = Est)) +
       geom_line(aes(y = pr_ev, linetype=assign), linewidth=0.9) +
-      geom_point(aes(y = pr_ev, shape=assign), size=1.2) +
       scale_x_continuous(breaks = seq(0, 60, 6),
                          limits = c(0, 60)) +
       scale_color_manual(values = cbbPalette) +
@@ -211,11 +210,11 @@ d_gg$km_gg[[1]] # A -> Y
 d_gg$km_gg[[2]] # X -> Y
 ```
 
-So the PLR model using a simple polynomial approximates the KM estimator. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:
+So the PLR model using a simple polynomial approximates the KM estimator reasonably well. At this point it would be a project specific judgement whether to accept this, or test out other parametric functions. Consider the following regarding the parametric time trend:
 
-1.  It may not matter if PLR and KM are inconsistent at earlier time-points if the plan is to only summarize the results at later periods.
+1.  It may not matter if PLR and KM are mildly inconsistent at certain time-points if the plan is to summarize the results at other periods (e.g. early versus later period estimates).
 
-2.  The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the random noise of the KM estimator.
+2.  The non-parametric KM estimator may be imprecise with small sample sizes and/or rare outcomes. The risk difference estimates at each time-point may have considerable random variation, and the parametric model is essentially smoothing out this noise. So while they should be approximately the same, you do not want to overfit the noise of the KM estimator.
 
 3.  These initial steps will not guarantee a good fit after weighting is applied, it is only a first-look for diagnostic purposes.
 
@@ -227,15 +226,92 @@ Note the outcome regression without weights is just for comparison and understan
 
 ## Evaluation of Probability Weights {#sec-ipwdiag}
 
-### Overall IPW Distribution  
+For below we evaluate the causal A-> Y data.  
 
-#### Unstabilized weights  
+```{r }
+#| label: est-wts
+#| echo: false
+
+dta_ay = dta_c_panel %>%
+  dplyr::filter(model == 'ay')
+
+dta_cens = dta_ay[dta_ay$assign==0, ]
+
+# assign == 0
+  d_glm_cwt_num = glm(treat ~ poly(time, 2, raw=T), data=dta_cens, family=binomial()) # <1>
+  
+  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
+                 data=dta_cens, family=binomial()) # <1>
+
+  dta_ay$pr_cens_num = predict(d_glm_cwt_num, newdata = dta_ay, type='response') # <2>
+  dta_ay$pr_cens_den = predict(d_glm_cwt_den, newdata = dta_ay, type='response') # <2>
+
+setDT(dta_ay)
+  
+dta_ay[, ipw := fcase(
+    assign==0 & censor==0, 1 / (1-pr_cens_den), # <1>
+    assign==0 & censor==1, 0, # <2>
+    assign==1 & censor==1, 0, # <2>
+    assign==1 & time < 12, 1, # <3>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
+    assign==1 & time == 12  & t_treat  >=12 & censor==0, 1 / (pr_cens_den), # <5> 
+    assign==1 & time > 12, 1 # <6>
+  )]
+  
+  dta_ay[, marg_ipw := fcase(
+    assign==0 & censor==0, (1-pr_cens_num) / (1-pr_cens_den), # <2>
+    assign==0 & censor==1, 0,  
+    assign==1 & censor==1, 0,  
+    assign==1 & time < 12, 1 / 1, 
+    assign==1 & time == 12  & t_treat  < 12, 1 / 1,  
+    assign==1 & time == 12  & t_treat  >=12 & censor==0, pr_cens_num / (pr_cens_den), # <2> 
+    assign==1 & time > 12, 1 
+  )]
+  
+  dta_ay[, `:=`(ipw = cumprod(ipw), 
+                     marg_ipw = cumprod(marg_ipw)), 
+               by=list(id, assign)] 
+```
+
+Examining the distribution of censoring weights is necessary to identify problems. Extreme weights take on new meaning in CCW designs because the probability of treatment initiation may be very small in discrete time windows. Therefore weights can be quite large. Truncation at the upper 1% is not generally recommended until careful examination of the distribution takes place.  
+
+### Overall IPW Distribution  
 
 ```{r }
 #| label: desc-ipw
 #| echo: false
-#| eval: false
-  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0])
+summary(dta_ay$ipw, digits = 3)
+quantile(dta_ay$ipw, probs = c(0.95, 0.99, 0.995, 0.999))
+```
+
+It can be observed the median is 1, and the mean is 2, the data is heavily skewed. Because the weight is the inverse probability of remaining uncensored and the you only estimate it for the uncensored risk set (where outcome risk is correlated with treatment), it is not expected to be mean 1. However the sum of the weights / (# observations) ~ 1.  
+
+You can plot the counts across time for:
+
+```{r }
+#| label: desc-ipw-time
+#| fig-cap: Weighted versus Unweighted Sample Across Time
+#| fig-cap-location: top
+#| warning: false
+n_base = nrow(dta_ay[assign==1 & time==1, ])
+dta_ay %>%
+  group_by(assign, time) %>%
+  summarize(n = n(),
+            events = sum(event),
+            sum_wts = sum(ipw),
+            base = n_base, .groups = 'drop') %>%
+  group_by(assign) %>%
+  mutate(events = cumsum(events),
+         base = n_base - lead(events),
+         mean = sum_wts / base) %>%
+  mutate(assign = factor(assign)) %>%
+ ggplot(., aes(x = time, group = assign, color = assign)) +
+  geom_line(aes(y = mean, color = assign)) +
+  scale_color_manual( values = cbbPalette) +
+  geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
+  scale_x_discrete(labels = seq(0, 60, 12)) +
+  labs(x = "Follow-up", y = "Weighted Sample / Umweighted - Events") +
+  theme_bw()
 ```
 
 #### Marginal Stabilized weights  
@@ -243,66 +319,26 @@ Note the outcome regression without weights is just for comparison and understan
 ```{r }
 #| label: desc-marg_ipw
 #| echo: false
-  summary(dta_c_panel$marg_ipw[dta_c_panel$marg_ipw!=0])
+summary(dta_ay$marg_ipw, digits = 3)
+quantile(dta_ay$marg_ipw, probs = c(0.95, 0.99, 0.995, 0.999))
 ```
-
-The unstabilized weights floor at 1, and we see high weights assigned to some. The marginal weights have a mean of 1 (expected). 
-
-### IPW Distribution at end of grace period for treatment clones
-
-The weights at the end of the grace period are key so its good to examine them directly: 
+Stabilized weights should have a mean ~ 1.  
 
 ```{r }
-#| label: desc-ipw-grace
-#| echo: false
-#| eval: false
-  summary(dta_c_panel$ipw[dta_c_panel$ipw!=0 & dta_c_panel$assign==1 & dta_c_panel$time==12])
-```
-
-You can also plot weights across time for diagnostics:
-
-```{r }
-#| label: desc-ipw-time
-#| fig-cap: Distribution of Censoring Weights Across Time
+#| label: desc-marg_ipw-time
+#| fig-cap: Average Weights Across Time
 #| fig-cap-location: top
-#| eval: false
-
-dta_c_panel %>%
-    dplyr::filter(marg_ipw!=0) %>%
- ggplot(., aes(x = cut_width(time, 12), y = marg_ipw)) +
-  geom_violin(aes(group = cut_width(time, 12)), 
-               scale = "width", fill = cbbPalette[1], alpha = 0.5) +
-  stat_summary(fun = "mean",
-               geom = "point",
-               color = cbbPalette[2], size=2) +
+#| warning: false
+dta_ay %>%
+  dplyr::filter(ipw!=0) %>%
+  group_by(assign, time) %>%
+  summarize(mean = mean(marg_ipw), .groups = 'drop') %>%
+  mutate(assign = factor(assign)) %>%
+ ggplot(., aes(x = time, group = assign, color = assign)) +
+  geom_line(aes(y = mean, color = assign)) +
+  scale_color_manual( values = cbbPalette) +
   geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
   scale_x_discrete(labels = seq(0, 60, 12)) +
-  labs(x = "Follow-up", y = "IPW", ) +
+  labs(x = "Follow-up", y = "Mean (Stabilized Weights)") +
   theme_bw()
 ```
-
-Another way to examine the weights is to look at the weighted counts of individuals at risk, and number of events pre- and post-weighting:
-
-```{r }
-#| label: weight-table
-#| tbl-cap: Unweighted and Weighted Counts, N at risk
-#| tbl-cap-location: top
-#| eval: false
-dta_c_panel %>%
-  group_by(time, assign) %>%
-  summarize(n = sum(ipw!=0), 
-            n_wt = sum(ipw),
-            .groups = 'drop') %>%
-  pivot_wider(id_cols = time, names_from = assign, values_from = c(n, n_wt)) %>%
-  dplyr::filter(time %in% c(1, 12, 30, 60)) %>%
-  rename(`Time` = time,
-         `Unweighted, assign=0` = n_0,
-         `Unweighted, assign=1` = n_1,
-         `Weighted, assign=0` = n_wt_0,
-         `Weighted, assign=1` = n_wt_1,
-         ) %>%
-  kable(align='c', digits =0) %>%
-  kable_styling()
-```
-
-The size of the unweighted, and weighted counts may identify problems. 

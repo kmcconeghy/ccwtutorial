@@ -56,11 +56,17 @@ This may be a little confusing, but since my dataset is already cloned (duplicat
 ```{r }
 #| label: est-treat-prob
 #| warning: FALSE
-#| 
-  d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
-                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
+
+dta_cens = dta_c_panel[dta_c_panel$assign==0, ]
+
+# assign == 0
+  d_glm_cwt_num = glm(treat ~ poly(time, 2, raw=T), data=dta_cens, family=binomial()) # <1>
   
-  dta_c_panel$pr_treat = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
+                 data=dta_cens, family=binomial()) # <1>
+
+  dta_c_panel$pr_cens_num = predict(d_glm_cwt_num, newdata = dta_c_panel, type='response') # <2>
+  dta_c_panel$pr_cens_den = predict(d_glm_cwt_den, newdata = dta_c_panel, type='response') # <2>
 ```
 
 1.  logit model, where outcome is treat event, and it is regressed on a polynomial for time, along with covariates `X`, `X_t`, `age` and `female`. 
@@ -87,12 +93,12 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
   setDT(dta_c_panel)
   
   dta_c_panel[, ipw := fcase(
-    assign==0 & censor==0, 1 / (1-pr_treat), # <1>
+    assign==0 & censor==0, 1 / (1-pr_cens_den), # <1>
     assign==0 & censor==1, 0, # <2>
     assign==1 & censor==1, 0, # <2>
     assign==1 & time < 12, 1, # <3>
     assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
-    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_treat), # <5> 
+    assign==1 & time == 12  & t_treat  >=12 & censor==0, 1 / (pr_cens_den), # <5> 
     assign==1 & time > 12, 1 # <6>
   )]
 ```
@@ -113,15 +119,14 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
 
 ```{r }
 #| label: cpt-weights-st
-  dta_c_panel[, marg_c0  := 1-mean(censor), by = list(assign, time)] # <1>
 
   dta_c_panel[, marg_ipw := fcase(
-    assign==0 & censor==0, marg_c0 / (1-pr_treat), # <2>
+    assign==0 & censor==0, (1-pr_cens_num) / (1-pr_cens_den), # <2>
     assign==0 & censor==1, 0,  
     assign==1 & censor==1, 0,  
     assign==1 & time < 12, 1, 
     assign==1 & time == 12  & t_treat  < 12, 1,  
-    assign==1 & time == 12  & t_treat  ==12 & censor==0, marg_c0 / (pr_treat), # <2> 
+    assign==1 & time == 12  & t_treat  >=12 & censor==0, pr_cens_num / (pr_cens_den), # <2> 
     assign==1 & time > 12, 1 
   )]
 ```
@@ -292,7 +297,7 @@ d_all_est =
   ) %>%
   dplyr::filter(time %in% c(6, 12, 36, 60))
 
-t_summ_all = kables(caption = 'A -> Y, X -> A, Y',
+t_summ_all = kables(caption = 'A -> Y, X -> {A, Y}',
   list(d_all_est %>%
          pivot_wider(., id_cols = time, names_from = Model, values_from = cid) %>%
          kable(digits=3, align = 'c') %>%
