@@ -341,7 +341,7 @@ Note
 <p>Bootstrapping is fairly straightforward, but for specific projects the procedure may need to be modified because of computing resources. Here we execute the entire procedure in one step, but it may make sense for your project to generate a single bootstrapped data first, then run each estimation step sequentially and store the results in a file before executing the next one. This would make sense if 1) one bootstrap takes a very long time, 2) there is a decent chance that the procedure may be interrupted (like a cloud server cuts off user etc.).</p>
 <p>The function generates a continuous frequency weight from a random exponent distribution with rate=1, also known as Bayesian bootstrap. This weight is used through the IPW estimation and outcome model steps.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>boot_ipw <span class="ot">=</span> <span class="cf">function</span>(x, <span class="at">point=</span>F) {</span>
+<div class="sourceCode cell-code" id="annotated-cell-1"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1"><a href="#annotated-cell-1-1" aria-hidden="true" tabindex="-1"></a>boot_ipw <span class="ot">=</span> <span class="cf">function</span>(x, <span class="at">point=</span>F, <span class="at">stab=</span>T) {</span>
 <span id="annotated-cell-1-2"><a href="#annotated-cell-1-2" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="annotated-cell-1-3"><a href="#annotated-cell-1-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">setDT</span>(x)</span>
 <span id="annotated-cell-1-4"><a href="#annotated-cell-1-4" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -354,66 +354,85 @@ Note
 <span id="annotated-cell-1-11"><a href="#annotated-cell-1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="annotated-cell-1-12"><a href="#annotated-cell-1-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (point) x<span class="sc">$</span>freqwt <span class="ot">=</span> <span class="dv">1</span> <span class="co"># Option to get non-bootstrapped est</span></span>
 <span id="annotated-cell-1-13"><a href="#annotated-cell-1-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>  d_glm_wt <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t <span class="sc">+</span> age <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> female, </span>
-<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ], <span class="at">family=</span><span class="fu">binomial</span>(),</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-16" class="code-annotation-target"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">weights =</span> freqwt)</span>
-<span id="annotated-cell-1-17"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-18"><a href="#annotated-cell-1-18" aria-hidden="true" tabindex="-1"></a>x<span class="sc">$</span>pr_treat <span class="ot">=</span> <span class="fu">predict</span>(d_glm_wt, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
-<span id="annotated-cell-1-19"><a href="#annotated-cell-1-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-20"><a href="#annotated-cell-1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(x)</span>
-<span id="annotated-cell-1-21"><a href="#annotated-cell-1-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-22"><a href="#annotated-cell-1-22" aria-hidden="true" tabindex="-1"></a>x[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
-<span id="annotated-cell-1-23"><a href="#annotated-cell-1-23" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat), </span>
-<span id="annotated-cell-1-24"><a href="#annotated-cell-1-24" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
-<span id="annotated-cell-1-25"><a href="#annotated-cell-1-25" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
-<span id="annotated-cell-1-26"><a href="#annotated-cell-1-26" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
-<span id="annotated-cell-1-27"><a href="#annotated-cell-1-27" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
-<span id="annotated-cell-1-28"><a href="#annotated-cell-1-28" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_treat), </span>
-<span id="annotated-cell-1-29"><a href="#annotated-cell-1-29" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
-<span id="annotated-cell-1-30"><a href="#annotated-cell-1-30" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<span id="annotated-cell-1-31"><a href="#annotated-cell-1-31" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-32"><a href="#annotated-cell-1-32" aria-hidden="true" tabindex="-1"></a>x[, marg_c0  <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">mean</span>(censor), by <span class="ot">=</span> <span class="fu">list</span>(assign, time)]</span>
-<span id="annotated-cell-1-33"><a href="#annotated-cell-1-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-1-34"><a href="#annotated-cell-1-34" aria-hidden="true" tabindex="-1"></a>x[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
-<span id="annotated-cell-1-35"><a href="#annotated-cell-1-35" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_treat), </span>
-<span id="annotated-cell-1-36"><a href="#annotated-cell-1-36" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
-<span id="annotated-cell-1-37"><a href="#annotated-cell-1-37" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>,  </span>
-<span id="annotated-cell-1-38"><a href="#annotated-cell-1-38" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
-<span id="annotated-cell-1-39"><a href="#annotated-cell-1-39" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>,  </span>
-<span id="annotated-cell-1-40"><a href="#annotated-cell-1-40" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">0</span>, marg_c0 <span class="sc">/</span> (pr_treat), </span>
-<span id="annotated-cell-1-41"><a href="#annotated-cell-1-41" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span> </span>
-<span id="annotated-cell-1-42"><a href="#annotated-cell-1-42" aria-hidden="true" tabindex="-1"></a>  )]</span>
-<span id="annotated-cell-1-43"><a href="#annotated-cell-1-43" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-44"><a href="#annotated-cell-1-44" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw), </span>
-<span id="annotated-cell-1-45"><a href="#annotated-cell-1-45" aria-hidden="true" tabindex="-1"></a>                     <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)), </span>
-<span id="annotated-cell-1-46"><a href="#annotated-cell-1-46" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
-<span id="annotated-cell-1-47"><a href="#annotated-cell-1-47" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-48" class="code-annotation-target"><a href="#annotated-cell-1-48" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
-<span id="annotated-cell-1-49"><a href="#annotated-cell-1-49" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ],</span>
-<span id="annotated-cell-1-50"><a href="#annotated-cell-1-50" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw<span class="sc">*</span>freqwt)</span>
-<span id="annotated-cell-1-51"><a href="#annotated-cell-1-51" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
-<span id="annotated-cell-1-52"><a href="#annotated-cell-1-52" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ],</span>
-<span id="annotated-cell-1-53"><a href="#annotated-cell-1-53" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw<span class="sc">*</span>freqwt)</span>
-<span id="annotated-cell-1-54"><a href="#annotated-cell-1-54" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-55"><a href="#annotated-cell-1-55" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> x, </span>
-<span id="annotated-cell-1-56"><a href="#annotated-cell-1-56" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
-<span id="annotated-cell-1-57"><a href="#annotated-cell-1-57" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> x, </span>
-<span id="annotated-cell-1-58"><a href="#annotated-cell-1-58" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-14"><a href="#annotated-cell-1-14" aria-hidden="true" tabindex="-1"></a>  dta_cens <span class="ot">=</span> x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ]</span>
+<span id="annotated-cell-1-15"><a href="#annotated-cell-1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-16"><a href="#annotated-cell-1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># assign == 0</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-1-17" class="code-annotation-target"><a href="#annotated-cell-1-17" aria-hidden="true" tabindex="-1"></a>  d_glm_cwt_num <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T), <span class="at">data=</span>dta_cens, <span class="at">weights =</span> freqwt, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-1-18"><a href="#annotated-cell-1-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-19"><a href="#annotated-cell-1-19" aria-hidden="true" tabindex="-1"></a>  d_glm_cwt_den <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T) <span class="sc">+</span> X <span class="sc">+</span> X_t <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> female, <span class="at">data=</span>dta_cens, <span class="at">weights =</span> freqwt, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-1-20"><a href="#annotated-cell-1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-21"><a href="#annotated-cell-1-21" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_cens_num <span class="ot">=</span> <span class="fu">predict</span>(d_glm_cwt_num, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-22"><a href="#annotated-cell-1-22" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_cens_den <span class="ot">=</span> <span class="fu">predict</span>(d_glm_cwt_den, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-23"><a href="#annotated-cell-1-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-24"><a href="#annotated-cell-1-24" aria-hidden="true" tabindex="-1"></a>  dta_cens_grace <span class="ot">=</span> dta_cens <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-1-25"><a href="#annotated-cell-1-25" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(time<span class="sc">==</span><span class="dv">12</span> <span class="sc">&amp;</span> t_treat<span class="sc">&gt;=</span><span class="dv">12</span>) </span>
+<span id="annotated-cell-1-26"><a href="#annotated-cell-1-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-27"><a href="#annotated-cell-1-27" aria-hidden="true" tabindex="-1"></a>  d_glm_grace_num <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data=</span>dta_cens_grace, <span class="at">weights =</span> freqwt, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-1-28"><a href="#annotated-cell-1-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-29"><a href="#annotated-cell-1-29" aria-hidden="true" tabindex="-1"></a>  d_glm_grace_den <span class="ot">=</span> <span class="fu">glm</span>(treat <span class="sc">~</span> X <span class="sc">+</span> X_t <span class="sc">+</span> <span class="fu">poly</span>(age, <span class="dv">2</span>) <span class="sc">+</span> female, <span class="at">data=</span>dta_cens_grace, <span class="at">weights =</span> freqwt, <span class="at">family=</span><span class="fu">binomial</span>())</span>
+<span id="annotated-cell-1-30"><a href="#annotated-cell-1-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-31"><a href="#annotated-cell-1-31" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_grace_num <span class="ot">=</span> <span class="fu">predict</span>(d_glm_grace_num, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-32"><a href="#annotated-cell-1-32" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_grace_den <span class="ot">=</span> <span class="fu">predict</span>(d_glm_grace_den, <span class="at">newdata =</span> x, <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-33"><a href="#annotated-cell-1-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-34"><a href="#annotated-cell-1-34" aria-hidden="true" tabindex="-1"></a><span class="fu">setDT</span>(x)</span>
+<span id="annotated-cell-1-35"><a href="#annotated-cell-1-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-36"><a href="#annotated-cell-1-36" aria-hidden="true" tabindex="-1"></a>  x[, ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
+<span id="annotated-cell-1-37"><a href="#annotated-cell-1-37" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span>, <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_cens_den), </span>
+<span id="annotated-cell-1-38"><a href="#annotated-cell-1-38" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
+<span id="annotated-cell-1-39"><a href="#annotated-cell-1-39" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
+<span id="annotated-cell-1-40"><a href="#annotated-cell-1-40" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-41"><a href="#annotated-cell-1-41" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-42"><a href="#annotated-cell-1-42" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;=</span><span class="dv">12</span>, <span class="dv">1</span> <span class="sc">/</span> (pr_grace_den), </span>
+<span id="annotated-cell-1-43"><a href="#annotated-cell-1-43" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-44"><a href="#annotated-cell-1-44" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span></span>
+<span id="annotated-cell-1-45"><a href="#annotated-cell-1-45" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="annotated-cell-1-46"><a href="#annotated-cell-1-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-47"><a href="#annotated-cell-1-47" aria-hidden="true" tabindex="-1"></a>x[, marg_c0  <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">mean</span>(censor), by <span class="ot">=</span> <span class="fu">list</span>(assign, time)] </span>
+<span id="annotated-cell-1-48"><a href="#annotated-cell-1-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-49"><a href="#annotated-cell-1-49" aria-hidden="true" tabindex="-1"></a>x[, marg_ipw <span class="sc">:</span><span class="er">=</span> <span class="fu">fcase</span>(</span>
+<span id="annotated-cell-1-50"><a href="#annotated-cell-1-50" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span>, (marg_c0) <span class="sc">/</span> (<span class="dv">1</span><span class="sc">-</span>pr_cens_den), </span>
+<span id="annotated-cell-1-51"><a href="#annotated-cell-1-51" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">0</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
+<span id="annotated-cell-1-52"><a href="#annotated-cell-1-52" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span>, </span>
+<span id="annotated-cell-1-53"><a href="#annotated-cell-1-53" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-54"><a href="#annotated-cell-1-54" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&lt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-55"><a href="#annotated-cell-1-55" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">==</span> <span class="dv">12</span>  <span class="sc">&amp;</span> t_treat  <span class="sc">&gt;=</span><span class="dv">12</span>, marg_c0 <span class="sc">/</span> (pr_grace_den), </span>
+<span id="annotated-cell-1-56"><a href="#annotated-cell-1-56" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> time <span class="sc">&gt;</span> <span class="dv">12</span>, <span class="dv">1</span>, </span>
+<span id="annotated-cell-1-57"><a href="#annotated-cell-1-57" aria-hidden="true" tabindex="-1"></a>    assign<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> censor<span class="sc">==</span><span class="dv">1</span>, <span class="dv">0</span></span>
+<span id="annotated-cell-1-58"><a href="#annotated-cell-1-58" aria-hidden="true" tabindex="-1"></a>  )]</span>
 <span id="annotated-cell-1-59"><a href="#annotated-cell-1-59" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-60"><a href="#annotated-cell-1-60" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
-<span id="annotated-cell-1-61"><a href="#annotated-cell-1-61" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
-<span id="annotated-cell-1-62"><a href="#annotated-cell-1-62" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-63"><a href="#annotated-cell-1-63" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> x <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-1-64"><a href="#annotated-cell-1-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-65" class="code-annotation-target"><a href="#annotated-cell-1-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1, freqwt),</span>
-<span id="annotated-cell-1-66"><a href="#annotated-cell-1-66" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0, freqwt),</span>
-<span id="annotated-cell-1-67"><a href="#annotated-cell-1-67" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-1-68"><a href="#annotated-cell-1-68" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
-<span id="annotated-cell-1-69"><a href="#annotated-cell-1-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0, </span>
-<span id="annotated-cell-1-70"><a href="#annotated-cell-1-70" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
-<span id="annotated-cell-1-71"><a href="#annotated-cell-1-71" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-1-72"><a href="#annotated-cell-1-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res)</span>
-<span id="annotated-cell-1-73"><a href="#annotated-cell-1-73" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-1-60"><a href="#annotated-cell-1-60" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">ipw =</span> <span class="fu">cumprod</span>(ipw), </span>
+<span id="annotated-cell-1-61"><a href="#annotated-cell-1-61" aria-hidden="true" tabindex="-1"></a>                     <span class="at">marg_ipw =</span> <span class="fu">cumprod</span>(marg_ipw)), </span>
+<span id="annotated-cell-1-62"><a href="#annotated-cell-1-62" aria-hidden="true" tabindex="-1"></a>               by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-1-63"><a href="#annotated-cell-1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-1-64"><a href="#annotated-cell-1-64" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (stab) x[, ipw <span class="sc">:</span><span class="er">=</span> marg_ipw]</span>
+<span id="annotated-cell-1-65"><a href="#annotated-cell-1-65" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-1-66" class="code-annotation-target"><a href="#annotated-cell-1-66" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_1 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
+<span id="annotated-cell-1-67"><a href="#annotated-cell-1-67" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">1</span>, ],</span>
+<span id="annotated-cell-1-68"><a href="#annotated-cell-1-68" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw<span class="sc">*</span>freqwt)</span>
+<span id="annotated-cell-1-69"><a href="#annotated-cell-1-69" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-70"><a href="#annotated-cell-1-70" aria-hidden="true" tabindex="-1"></a>  d_glm_pe_0 <span class="ot">=</span> <span class="fu">glm</span>(event<span class="sc">==</span><span class="dv">0</span> <span class="sc">~</span> <span class="fu">poly</span>(time, <span class="dv">2</span>, <span class="at">raw=</span>T),</span>
+<span id="annotated-cell-1-71"><a href="#annotated-cell-1-71" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data=</span>x[x<span class="sc">$</span>assign<span class="sc">==</span><span class="dv">0</span>, ],</span>
+<span id="annotated-cell-1-72"><a href="#annotated-cell-1-72" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family=</span><span class="fu">binomial</span>(), <span class="at">weights =</span> ipw<span class="sc">*</span>freqwt)</span>
+<span id="annotated-cell-1-73"><a href="#annotated-cell-1-73" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-74"><a href="#annotated-cell-1-74" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_1 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_1, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-1-75"><a href="#annotated-cell-1-75" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-76"><a href="#annotated-cell-1-76" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">$</span>pr_0 <span class="ot">=</span> <span class="fu">predict</span>(d_glm_pe_0, <span class="at">newdata =</span> x, </span>
+<span id="annotated-cell-1-77"><a href="#annotated-cell-1-77" aria-hidden="true" tabindex="-1"></a>                             <span class="at">type=</span><span class="st">'response'</span>) </span>
+<span id="annotated-cell-1-78"><a href="#annotated-cell-1-78" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-79"><a href="#annotated-cell-1-79" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_1 =</span> <span class="fu">cumprod</span>(pr_1)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-1-80"><a href="#annotated-cell-1-80" aria-hidden="true" tabindex="-1"></a>  x[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">pr_cum_0 =</span> <span class="fu">cumprod</span>(pr_0)), by<span class="ot">=</span><span class="fu">list</span>(id, assign)] </span>
+<span id="annotated-cell-1-81"><a href="#annotated-cell-1-81" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-82"><a href="#annotated-cell-1-82" aria-hidden="true" tabindex="-1"></a>  d_res <span class="ot">=</span> x <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-1-83"><a href="#annotated-cell-1-83" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-1-84" class="code-annotation-target"><a href="#annotated-cell-1-84" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">pr_ev_1 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_1, freqwt),</span>
+<span id="annotated-cell-1-85"><a href="#annotated-cell-1-85" aria-hidden="true" tabindex="-1"></a>              <span class="at">pr_ev_0 =</span> <span class="fu">weighted.mean</span>(<span class="dv">1</span><span class="sc">-</span>pr_cum_0, freqwt),</span>
+<span id="annotated-cell-1-86"><a href="#annotated-cell-1-86" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-1-87"><a href="#annotated-cell-1-87" aria-hidden="true" tabindex="-1"></a>    ungroup <span class="sc">%&gt;%</span> </span>
+<span id="annotated-cell-1-88"><a href="#annotated-cell-1-88" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cid =</span> pr_ev_1 <span class="sc">-</span> pr_ev_0, </span>
+<span id="annotated-cell-1-89"><a href="#annotated-cell-1-89" aria-hidden="true" tabindex="-1"></a>           <span class="at">cir =</span> pr_ev_1 <span class="sc">/</span> pr_ev_0) </span>
+<span id="annotated-cell-1-90"><a href="#annotated-cell-1-90" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-1-91"><a href="#annotated-cell-1-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(d_res)</span>
+<span id="annotated-cell-1-92"><a href="#annotated-cell-1-92" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
@@ -422,15 +441,15 @@ Note
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="16" data-code-annotation="2">Note the <code>freqwt</code> used in the <code>glm()</code> procedure.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="17,19,27,29" data-code-annotation="2">Note the <code>freqwt</code> used in the <code>glm()</code> procedure.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="48,49,50,51,52,53" data-code-annotation="3">Note the <code>freqwt*ipw</code> used in the <code>glm()</code> procedure.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="66,67,68,70,71,72" data-code-annotation="3">Note the <code>freqwt*ipw</code> used in the <code>glm()</code> procedure.</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="65,66" data-code-annotation="4">Note the use of <code>weighted.mean()</code> and <code>freqwt</code>.</span>
+<span data-code-cell="annotated-cell-1" data-code-lines="84,85" data-code-annotation="4">Note the use of <code>weighted.mean()</code> and <code>freqwt</code>.</span>
 </dd>
 </dl>
 </div>
@@ -438,13 +457,13 @@ Note
 <p>The function can be run iteratively, with <code>replicate()</code> or purrr/furrr or many other options.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(furrr)</span>
-<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>boots <span class="ot">=</span> <span class="dv">20</span></span>
+<span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a>boots <span class="ot">=</span> <span class="dv">50</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-2-3" class="code-annotation-target"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">10</span>)</span>
 <span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-5" class="code-annotation-target"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>d_pe <span class="ot">=</span> <span class="fu">boot_ipw</span>(dta_c_panel, <span class="at">point=</span>T)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-2-5" class="code-annotation-target"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a>d_pe <span class="ot">=</span> <span class="fu">boot_ipw</span>(dta_c_panel, <span class="at">point=</span>T, <span class="at">stab =</span> F)</span>
 <span id="annotated-cell-2-6"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="annotated-cell-2-7"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>d_boot <span class="ot">=</span> <span class="fu">future_map</span>(<span class="dv">1</span><span class="sc">:</span>boots, </span>
-<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">function</span>(x) <span class="fu">boot_ipw</span>(dta_c_panel), </span>
+<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>                        <span class="cf">function</span>(x) <span class="fu">boot_ipw</span>(dta_c_panel, <span class="at">stab=</span>F), </span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-2-9" class="code-annotation-target"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">.options =</span> <span class="fu">furrr_options</span>(<span class="at">seed=</span>T))</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
@@ -511,24 +530,64 @@ Note
 <tbody>
 <tr class="odd">
 <td style="text-align: center;">12.00</td>
-<td style="text-align: center;">0.04 (0.04, 0.05)</td>
-<td style="text-align: center;">0.06 (0.05, 0.06)</td>
-<td style="text-align: center;">-0.01 (-0.02, -0.01)</td>
-<td style="text-align: center;">0.77 (0.64, 0.88)</td>
+<td style="text-align: center;">0.04 (0.04, 0.06)</td>
+<td style="text-align: center;">0.06 (0.05, 0.07)</td>
+<td style="text-align: center;">-0.01 (-0.02, -0.00)</td>
+<td style="text-align: center;">0.79 (0.64, 0.95)</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">24.00</td>
-<td style="text-align: center;">0.08 (0.06, 0.11)</td>
+<td style="text-align: center;">0.09 (0.05, 0.11)</td>
 <td style="text-align: center;">0.12 (0.11, 0.13)</td>
-<td style="text-align: center;">-0.04 (-0.06, -0.01)</td>
-<td style="text-align: center;">0.70 (0.47, 0.90)</td>
+<td style="text-align: center;">-0.03 (-0.06, -0.00)</td>
+<td style="text-align: center;">0.75 (0.47, 0.99)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: center;">60.00</td>
-<td style="text-align: center;">0.15 (0.09, 0.23)</td>
-<td style="text-align: center;">0.36 (0.34, 0.38)</td>
-<td style="text-align: center;">-0.22 (-0.28, -0.14)</td>
-<td style="text-align: center;">0.40 (0.25, 0.61)</td>
+<td style="text-align: center;">0.15 (0.08, 0.23)</td>
+<td style="text-align: center;">0.36 (0.33, 0.38)</td>
+<td style="text-align: center;">-0.20 (-0.27, -0.13)</td>
+<td style="text-align: center;">0.43 (0.23, 0.62)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>You would expect that the stabilized weights provide similar estimates but narrower confidence intervals:</p>
+<div class="cell tbl-cap-location-top" data-tbl-cap="Stabilized IPW-adjusted cumulative incidences, differences and relative risks">
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Stabilized IPW-adjusted cumulative incidences, differences and relative risks</caption>
+<thead>
+<tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">time</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Assign=0</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">CID</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">RR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">12.00</td>
+<td style="text-align: center;">0.05 (0.04, 0.06)</td>
+<td style="text-align: center;">0.05 (0.05, 0.07)</td>
+<td style="text-align: center;">-0.01 (-0.01, -0.00)</td>
+<td style="text-align: center;">0.87 (0.79, 0.96)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">24.00</td>
+<td style="text-align: center;">0.08 (0.07, 0.11)</td>
+<td style="text-align: center;">0.12 (0.10, 0.13)</td>
+<td style="text-align: center;">-0.03 (-0.05, -0.01)</td>
+<td style="text-align: center;">0.72 (0.56, 0.90)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">60.00</td>
+<td style="text-align: center;">0.16 (0.12, 0.22)</td>
+<td style="text-align: center;">0.36 (0.33, 0.40)</td>
+<td style="text-align: center;">-0.19 (-0.25, -0.15)</td>
+<td style="text-align: center;">0.46 (0.34, 0.59)</td>
 </tr>
 </tbody>
 </table>

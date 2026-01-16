@@ -240,37 +240,48 @@ dta_cens = dta_ay[dta_ay$assign==0, ]
 # assign == 0
   d_glm_cwt_num = glm(treat ~ poly(time, 2, raw=T), data=dta_cens, family=binomial()) # <1>
   
-  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
+  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + poly(age, 2) + female, # <1>
                  data=dta_cens, family=binomial()) # <1>
 
   dta_ay$pr_cens_num = predict(d_glm_cwt_num, newdata = dta_ay, type='response') # <2>
   dta_ay$pr_cens_den = predict(d_glm_cwt_den, newdata = dta_ay, type='response') # <2>
-
+  
+dta_cens_grace = dta_cens %>% # <1>
+    dplyr::filter(time==12 & t_treat>=12) #<1>
+  
+  d_glm_grace_num = glm(treat ~ 1, data=dta_cens_grace, family=binomial()) # <2>
+  
+  d_glm_grace_den = glm(treat ~ X + X_t + poly(age, 2) + female, # <2>
+                 data=dta_cens_grace, family=binomial()) # <2>
+  
+  dta_ay$pr_grace_num = predict(d_glm_grace_num, newdata = dta_ay, type='response') 
+  dta_ay$pr_grace_den = predict(d_glm_grace_den, newdata = dta_ay, type='response') 
+  
 setDT(dta_ay)
   
-dta_ay[, ipw := fcase(
-    assign==0 & censor==0, 1 / (1-pr_cens_den), # <1>
+  dta_ay[, ipw := fcase(
+    assign==0, 1 / (1-pr_cens_den), # <1>
     assign==0 & censor==1, 0, # <2>
     assign==1 & censor==1, 0, # <2>
     assign==1 & time < 12, 1, # <3>
     assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
-    assign==1 & time == 12  & t_treat  >=12 & censor==0, 1 / (pr_cens_den), # <5> 
-    assign==1 & time > 12, 1 # <6>
+    assign==1 & time == 12  & t_treat  >=12, 1 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
   
-  dta_ay[, marg_ipw := fcase(
-    assign==0 & censor==0, (1-pr_cens_num) / (1-pr_cens_den), # <2>
-    assign==0 & censor==1, 0,  
-    assign==1 & censor==1, 0,  
-    assign==1 & time < 12, 1 / 1, 
-    assign==1 & time == 12  & t_treat  < 12, 1 / 1,  
-    assign==1 & time == 12  & t_treat  >=12 & censor==0, pr_cens_num / (pr_cens_den), # <2> 
-    assign==1 & time > 12, 1 
+dta_ay[, marg_c0  := 1-mean(censor), by = list(assign, time)] # <1>
+
+dta_ay[, marg_ipw := fcase(
+    assign==0, (marg_c0) / (1-pr_cens_den), # <1>
+    assign==0 & censor==1, 0, # <2>
+    assign==1 & censor==1, 0, # <2>
+    assign==1 & time < 12, 1, # <3>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
+    assign==1 & time == 12  & t_treat  >=12, marg_c0 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
-  
-  dta_ay[, `:=`(ipw = cumprod(ipw), 
-                     marg_ipw = cumprod(marg_ipw)), 
-               by=list(id, assign)] 
 ```
 
 Examining the distribution of censoring weights is necessary to identify problems. Extreme weights take on new meaning in CCW designs because the probability of treatment initiation may be very small in discrete time windows. Therefore weights can be quite large. Truncation at the upper 1% is not generally recommended until careful examination of the distribution takes place.  
@@ -284,33 +295,28 @@ summary(dta_ay$ipw, digits = 3)
 quantile(dta_ay$ipw, probs = c(0.95, 0.99, 0.995, 0.999))
 ```
 
-It can be observed the median is 1, and the mean is 2, the data is heavily skewed. Because the weight is the inverse probability of remaining uncensored and the you only estimate it for the uncensored risk set (where outcome risk is correlated with treatment), it is not expected to be mean 1. However the sum of the weights / (# observations) ~ 1.  
+It can be observed the median is ~1, and the mean is ~1, the data is skewed. 
 
 You can plot the counts across time for:
 
 ```{r }
 #| label: desc-ipw-time
-#| fig-cap: Weighted versus Unweighted Sample Across Time
+#| fig-cap: Unstabilized weights across time
 #| fig-cap-location: top
 #| warning: false
-n_base = nrow(dta_ay[assign==1 & time==1, ])
 dta_ay %>%
   group_by(assign, time) %>%
-  summarize(n = n(),
-            events = sum(event),
-            sum_wts = sum(ipw),
-            base = n_base, .groups = 'drop') %>%
-  group_by(assign) %>%
-  mutate(events = cumsum(events),
-         base = n_base - lead(events),
-         mean = sum_wts / base) %>%
+  summarize(mean = mean(ipw), .groups = 'drop') %>%
   mutate(assign = factor(assign)) %>%
  ggplot(., aes(x = time, group = assign, color = assign)) +
   geom_line(aes(y = mean, color = assign)) +
   scale_color_manual( values = cbbPalette) +
-  geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
+  geom_hline(aes(yintercept=1),linewidth=0.8, linetype=2) +
+  geom_hline(aes(yintercept=1.2),linewidth=0.8, linetype=3) +
+  geom_hline(aes(yintercept=0.8),linewidth=0.8, linetype=3) +
   scale_x_discrete(labels = seq(0, 60, 12)) +
-  labs(x = "Follow-up", y = "Weighted Sample / Umweighted - Events") +
+  scale_y_continuous(limits = c(0.7, 1.3)) +
+  labs(x = "Follow-up", y = "Mean (Weights)") +
   theme_bw()
 ```
 
@@ -323,22 +329,3 @@ summary(dta_ay$marg_ipw, digits = 3)
 quantile(dta_ay$marg_ipw, probs = c(0.95, 0.99, 0.995, 0.999))
 ```
 Stabilized weights should have a mean ~ 1.  
-
-```{r }
-#| label: desc-marg_ipw-time
-#| fig-cap: Average Weights Across Time
-#| fig-cap-location: top
-#| warning: false
-dta_ay %>%
-  dplyr::filter(ipw!=0) %>%
-  group_by(assign, time) %>%
-  summarize(mean = mean(marg_ipw), .groups = 'drop') %>%
-  mutate(assign = factor(assign)) %>%
- ggplot(., aes(x = time, group = assign, color = assign)) +
-  geom_line(aes(y = mean, color = assign)) +
-  scale_color_manual( values = cbbPalette) +
-  geom_hline(aes(yintercept=1),linewidth=1.1, linetype=3) +
-  scale_x_discrete(labels = seq(0, 60, 12)) +
-  labs(x = "Follow-up", y = "Mean (Stabilized Weights)") +
-  theme_bw()
-```

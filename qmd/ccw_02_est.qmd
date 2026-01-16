@@ -62,15 +62,37 @@ dta_cens = dta_c_panel[dta_c_panel$assign==0, ]
 # assign == 0
   d_glm_cwt_num = glm(treat ~ poly(time, 2, raw=T), data=dta_cens, family=binomial()) # <1>
   
-  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
+  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + poly(age, 2) + female, # <1>
                  data=dta_cens, family=binomial()) # <1>
 
   dta_c_panel$pr_cens_num = predict(d_glm_cwt_num, newdata = dta_c_panel, type='response') # <2>
   dta_c_panel$pr_cens_den = predict(d_glm_cwt_den, newdata = dta_c_panel, type='response') # <2>
 ```
 
-1.  logit model, where outcome is treat event, and it is regressed on a polynomial for time, along with covariates `X`, `X_t`, `age` and `female`. 
+1.  logit model, where outcome is treat event, and it is regressed on a polynomial for time, along with covariates `X`, `X_t`, `age` and `female`. Separate numerator/denominators model for the stabilized weights. 
+
 2. For each person, I estimate the conditional probability of treatment initiation at each timepoint.
+
+
+```{r }
+#| label: est-treat-grace
+#| warning: FALSE
+#| 
+  dta_cens_grace = dta_cens %>% # <1>
+    dplyr::filter(time==12 & t_treat>=12) #<1>
+  
+  d_glm_grace_num = glm(treat ~ 1, data=dta_cens_grace, family=binomial()) # <2>
+  
+  d_glm_grace_den = glm(treat ~ X + X_t + poly(age, 2) + female, # <2>
+                 data=dta_cens_grace, family=binomial()) # <2>
+  
+  dta_c_panel$pr_grace_num = predict(d_glm_grace_num, newdata = dta_c_panel, type='response') 
+  dta_c_panel$pr_grace_den = predict(d_glm_grace_den, newdata = dta_c_panel, type='response') 
+```
+
+1.  For the assign=1 arm, where treatment is to be initiated by period 12, I select the subset that has not initiated treatment by the beginning of period 12. 
+
+2. I estimate the conditional probability of treatment initiation in this subset, which will be the censoring weight for that arm. Those initiating before week 12, have weights of 1. 
 
 ::: callout-note
 There is some controversy in this workflow. Some do it like here by modeling the censoring probability off of a person-unique (no clones) dataset with treatment times, but others do it directly in the cloned dataset with the outcome of "censoring" where that may mean treatment initiation or some other thing.[@gaber2024]
@@ -80,7 +102,7 @@ I am unsure which is better?!
 
 ## Calculation of weights
 
-This step is highly specific to a project and must be considered carefully. I have found this step is error-prone to errors due to misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to the [Weighting scheme](ccw_01_intro.qmd#sec-weightscheme) section for further discussion.
+This step is highly specific to a project and must be considered carefully. I have found this step is error-prone due to misunderstandings about what the treatment strategy entails, or if the data is setup incorrectly. I refer you to the [Weighting scheme](ccw_01_intro.qmd#sec-weightscheme) section for further discussion.
 
 ::: callout-note
 I only show the procedure here, for full diagnostics to evaluate weighting and model specification see: [IPW diagnostics](ccw_04_diag.qmd#sec-ipwdiag)
@@ -93,13 +115,14 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
   setDT(dta_c_panel)
   
   dta_c_panel[, ipw := fcase(
-    assign==0 & censor==0, 1 / (1-pr_cens_den), # <1>
+    assign==0, 1 / (1-pr_cens_den), # <1>
     assign==0 & censor==1, 0, # <2>
     assign==1 & censor==1, 0, # <2>
     assign==1 & time < 12, 1, # <3>
     assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
-    assign==1 & time == 12  & t_treat  >=12 & censor==0, 1 / (pr_cens_den), # <5> 
-    assign==1 & time > 12, 1 # <6>
+    assign==1 & time == 12  & t_treat  >=12, 1 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
 ```
 
@@ -111,7 +134,7 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
 
 4. (assign=1) If treatment started prior to grace window ending, the clone cannot censor
 
-5.  (assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment by the final period OR (1 - cumulative probability of no treatment at time-point of grace window).
+5.  (assign=1) If a clone is treated in the final period, then the probability of remaining uncensored is the probability of initiating treatment in the final period.
 
 6. (assign=1) Set post-grace period weights = 1 for all, since treatment must occur by period 12 and no artificial censoring happens after this point for `assign==1`
 
@@ -119,15 +142,17 @@ I only show the procedure here, for full diagnostics to evaluate weighting and m
 
 ```{r }
 #| label: cpt-weights-st
+  dta_c_panel[, marg_c0  := 1-mean(censor), by = list(assign, time)] # <1>
 
   dta_c_panel[, marg_ipw := fcase(
-    assign==0 & censor==0, (1-pr_cens_num) / (1-pr_cens_den), # <2>
-    assign==0 & censor==1, 0,  
-    assign==1 & censor==1, 0,  
-    assign==1 & time < 12, 1, 
-    assign==1 & time == 12  & t_treat  < 12, 1,  
-    assign==1 & time == 12  & t_treat  >=12 & censor==0, pr_cens_num / (pr_cens_den), # <2> 
-    assign==1 & time > 12, 1 
+    assign==0, (marg_c0) / (1-pr_cens_den), # <1>
+    assign==0 & censor==1, 0, # <2>
+    assign==1 & censor==1, 0, # <2>
+    assign==1 & time < 12, 1, # <3>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
+    assign==1 & time == 12  & t_treat  >=12, marg_c0 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
 ```
 
@@ -324,33 +349,52 @@ t_summ_all
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) %>%
   dplyr::filter(model == 'xy')
 
-d_glm_wt = glm(treat ~ poly(time, 2, raw=T) + X + X_t + age + poly(age, 2) + female, # <1>
-                 data=dta_c_panel[dta_c_panel$assign==0, ], family=binomial()) # <1>
+dta_cens = dta_c_panel[dta_c_panel$assign==0, ]
+
+# assign == 0
+  d_glm_cwt_num = glm(treat ~ poly(time, 2, raw=T), data=dta_cens, family=binomial()) # <1>
   
-dta_c_panel$pr_treat = predict(d_glm_wt, newdata = dta_c_panel, type='response') # <2>
+  d_glm_cwt_den = glm(treat ~ poly(time, 2, raw=T) + X + X_t + poly(age, 2) + female, # <1>
+                 data=dta_cens, family=binomial()) # <1>
+
+  dta_c_panel$pr_cens_num = predict(d_glm_cwt_num, newdata = dta_c_panel, type='response') # <2>
+  dta_c_panel$pr_cens_den = predict(d_glm_cwt_den, newdata = dta_c_panel, type='response') # <2>
+  
+dta_cens_grace = dta_cens %>% # <1>
+    dplyr::filter(time==12 & t_treat>=12) #<1>
+  
+  d_glm_grace_num = glm(treat ~ 1, data=dta_cens_grace, family=binomial()) # <2>
+  
+  d_glm_grace_den = glm(treat ~ X + X_t + poly(age, 2) + female, # <2>
+                 data=dta_cens_grace, family=binomial()) # <2>
+  
+  dta_c_panel$pr_grace_num = predict(d_glm_grace_num, newdata = dta_c_panel, type='response') 
+  dta_c_panel$pr_grace_den = predict(d_glm_grace_den, newdata = dta_c_panel, type='response') 
   
 setDT(dta_c_panel)
   
-dta_c_panel[, ipw := fcase(
-    assign==0 & censor==0, 1 / (1-pr_treat), # <1>
+  dta_c_panel[, ipw := fcase(
+    assign==0, 1 / (1-pr_cens_den), # <1>
     assign==0 & censor==1, 0, # <2>
     assign==1 & censor==1, 0, # <2>
     assign==1 & time < 12, 1, # <3>
     assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
-    assign==1 & time == 12  & t_treat  ==12 & censor==0, 1 / (pr_treat), # <5> 
-    assign==1 & time > 12, 1 # <6>
+    assign==1 & time == 12  & t_treat  >=12, 1 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
   
 dta_c_panel[, marg_c0  := 1-mean(censor), by = list(assign, time)] # <1>
 
 dta_c_panel[, marg_ipw := fcase(
-    assign==0 & censor==0, marg_c0 / (1-pr_treat), # <2>
-    assign==0 & censor==1, 0,  
-    assign==1 & censor==1, 0,  
-    assign==1 & time < 12, 1, 
-    assign==1 & time == 12  & t_treat  < 12, 1,  
-    assign==1 & time == 12  & t_treat  ==12 & censor==0, marg_c0 / (pr_treat), # <2> 
-    assign==1 & time > 12, 1 
+    assign==0, (marg_c0) / (1-pr_cens_den), # <1>
+    assign==0 & censor==1, 0, # <2>
+    assign==1 & censor==1, 0, # <2>
+    assign==1 & time < 12, 1, # <3>
+    assign==1 & time == 12  & t_treat  < 12, 1, # <4> 
+    assign==1 & time == 12  & t_treat  >=12, marg_c0 / (pr_grace_den), # <5> 
+    assign==1 & time > 12, 1, # <6>
+    assign==1 & censor==1, 0
   )]
   
   dta_c_panel[, `:=`(ipw = cumprod(ipw), 
