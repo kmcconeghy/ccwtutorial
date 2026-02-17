@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>CCW Tutorial – Tutorial on Clone-Censor-Weight</title>
+<title>Cumulative incidence modeling – Tutorial on Clone-Censor-Weight</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,26 +20,42 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
 }
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -48,7 +64,6 @@ div.csl-indent {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../qmd/surv_00_summ.html" rel="next">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -87,6 +102,35 @@ div.csl-indent {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../styles.css">
 </head>
@@ -100,7 +144,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../qmd/index.html">Introduction</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Cumulative incidence modeling</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -133,7 +177,7 @@ div.csl-indent {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../qmd/index.html" class="sidebar-item-text sidebar-link active">
+  <a href="../qmd/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
@@ -246,20 +290,24 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#welcome" id="toc-welcome" class="nav-link active" data-scroll-target="#welcome">Welcome!</a></li>
-  <li><a href="#sections" id="toc-sections" class="nav-link" data-scroll-target="#sections">Sections of this website</a></li>
-  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Background reading</a></li>
-  <li><a href="#troubleshooting-your-own-project" id="toc-troubleshooting-your-own-project" class="nav-link" data-scroll-target="#troubleshooting-your-own-project">Troubleshooting your own project</a></li>
+  <li><a href="#diagnostic-issue" id="toc-diagnostic-issue" class="nav-link active" data-scroll-target="#diagnostic-issue">Diagnostic issue</a>
+  <ul class="collapse">
+  <li><a href="#practice-data" id="toc-practice-data" class="nav-link" data-scroll-target="#practice-data">Practice data</a></li>
+  <li><a href="#measurement" id="toc-measurement" class="nav-link" data-scroll-target="#measurement">Measurement</a></li>
+  <li><a href="#data-setup" id="toc-data-setup" class="nav-link" data-scroll-target="#data-setup">Data setup</a></li>
+  <li><a href="#candidate-models" id="toc-candidate-models" class="nav-link" data-scroll-target="#candidate-models">Candidate models</a></li>
+  <li><a href="#model-performance" id="toc-model-performance" class="nav-link" data-scroll-target="#model-performance">Model performance</a></li>
+  </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/app_04_curvefit.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">CCW Tutorial</h1>
-<p class="subtitle lead">Tutorial for Clone-Censor-Weighting Analyses</p>
+<h1 class="title">Cumulative incidence modeling</h1>
+<p class="subtitle lead">Goodness of fit tests for parametric functions</p>
 </div>
 
 
@@ -276,38 +324,155 @@ div.csl-indent {
 </header>
 
 
-<section id="welcome" class="level2">
-<h2 class="anchored" data-anchor-id="welcome">Welcome!</h2>
-<p>This website is provided as a guide to help researchers interested in applying target trial emulation methods, specifically use of the “clone-censor-weight” or CCW approach.</p>
-<p>CCW is popular in the pharmacoepidemiology field, but its execution can be tricky. A TTE need not be done use CCW, but the approach is popular due to its flexibility. This website will provide a step-by-step guide on how to use this method. I also provide some in-depth discussions of particular aspects of the method, best practices, how to overcome common obstacles etc.</p>
+<section id="diagnostic-issue" class="level1">
+<h1>Diagnostic issue</h1>
+<p>If pooled logistic regression is used to estimate the conditional probability of survival, and cumulative incidences between assignment groups, then assumptions have to be made about the parametric function of time. This is essentially a curve-fitting exercise, and lots of literature on how best to do that. In the <a href="../qmd/ccw_04_diag.html#sec-tfunc">diagnostics/validation</a> section, I show how to visually compare a simple parametric regression to Kaplan-Meier curve. Here, I offer a tutorial here on how to objectively compare.</p>
+<section id="practice-data" class="level2">
+<h2 class="anchored" data-anchor-id="practice-data">Practice data</h2>
+<p>The synthetic data is generated from simple distributions, for a more real-world scenario with noisier curves I use the <code>lung</code> data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dta <span class="ot">=</span> survival<span class="sc">::</span>lung</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>dta <span class="ot">&lt;-</span> </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  dta <span class="sc">|&gt;</span> </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">status =</span> <span class="fu">recode</span>(status, <span class="st">`</span><span class="at">1</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">0</span>, <span class="st">`</span><span class="at">2</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">1</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell fig-cap-location-top">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="app_04_curvefit_files/figure-html/gg-km-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Figure 1. Survival::lung dataset, event risk by gender</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Our objective here is to model this curve with different parametric functions and see which performs best. We will model sex (<code>1</code> and <code>2</code>) as a surrogate for a treatment variable.</p>
 </section>
-<section id="sections" class="level2">
-<h2 class="anchored" data-anchor-id="sections">Sections of this website</h2>
-<ol type="1">
-<li><p><a href="../qmd/surv_00_summ.html">Survival Analysis</a>. While not strictly about CCW, the first section of website provides some background for the most common statistical analyses techniques that are used when doing CCW in practice. <a href="../qmd/surv_01_kaplan.html">non-parametric analyses</a> can be used for simple examples but most researchers are using <a href="../qmd/surv_02_disctime.html">pooled logistic regressions</a> to approximate hazard ratios. I explain this in some detail and provide references to gain further understanding. Being comfortable with parametric discrete survival time analyses is crucial to properly executing more complex CCW analyses with time-varying confounders.</p></li>
-<li><p><a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a>. The primary section of this website is the stepwise guide on how to do a CCW analysis. This includes: <a href="../qmd/ccw_01_intro.html">background discussion</a>, <a href="../qmd/ccw_02_est.html">estimation</a>, <a href="../qmd/ccw_03_inf.html">inference</a> and <a href="../qmd/ccw_04_diag.html">diagnostics/validation</a>.</p></li>
-<li><p><a href="../qmd/app_00_summ.html">Appendix</a>: Additional sections include a description of the <a href="../qmd/app_01_syndata.html">synthetic data</a>, <a href="../qmd/app_02_boot.html">bootstrapping</a>, <a href="../qmd/app_03_speed.html">computation</a> notes and some related methods. <a href="../qmd/app_04_curvefit.html">Fitting time-curves</a> provides some advanced methods to determine the best-fitting parametric functions for a cumulative incidence curve.</p></li>
-</ol>
+<section id="measurement" class="level2">
+<h2 class="anchored" data-anchor-id="measurement">Measurement</h2>
+<p>Some might call this a ‘loss function’, but generically we need to define a measurable thing which can describe the performance of different models against the raw data. There are many options, I choose the root mean squared error, RMSE.</p>
+<p><span class="math display">\[\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2}
+\]</span></p>
+<p>Its a common metric to evaluate curve fitting, measuring the average difference between predicted and actual values. Larger errors are penalized more strongly with squared differences. The square root scales back to the original data.</p>
 </section>
-<section id="reading" class="level2">
-<h2 class="anchored" data-anchor-id="reading">Background reading</h2>
-<p>I provide some personal insight into the process, different approaches that can be done, and mainly focus on the analytical methods. In order to actually emulate a target trial, a researcher needs to understand the fundamentals of randomized, controlled trial (RCT) design, causal inference, probability statistics and their practical application with a statistical programming language. I do not go into detail on this.</p>
-<p>The following readings are recommended for that background and to prepare for the tutorial guide.</p>
-<ol type="1">
-<li><p>For a full in-depth review of causal inference methods, I recommend Robins’ and Hernan’s <a href="https://www.hsph.harvard.edu/miguel-hernan/wp-content/uploads/sites/1268/2024/04/hernanrobins_WhatIf_26apr24.pdf">Causal Inference: What If</a>.</p></li>
-<li><p><a href="https://www.sciencedirect.com/science/article/pii/S0012369220304633?via%3Dihub">Randomized Controlled Trials</a> by Emily Zabor et al.&nbsp;provides background on RCT design. Randomization is a key feature which allows a defensible assumption of no confounding. However, another important but often overlooked advantage of RCTs is a well-defined intervention which allows clear causal contrasts to be made (e.g.&nbsp;enroll eligible persons and then give treatment A versus give treatment B). In observational analyses, a well-defined intervention, and the timing of assignment and assessment of eligibility for that intervention are not always aligned in a logical fashion.</p></li>
-<li><p>Miguel Hernan is a leading expert on TTE and provides a short description of it here: <a href="https://doi.org/10.1001/jama.2022.21383">JAMA 2022</a>. It is a two-step process; first defining the ideal RCT and how it can be emulated in the data, the second step is using TTE methods to perform that emulation (the focus of this guide).</p></li>
-</ol>
+<section id="data-setup" class="level2">
+<h2 class="anchored" data-anchor-id="data-setup">Data setup</h2>
+<p>In order to evaluate the data we need to transform the time,event data into a discrete-time person-period format. Here we are going to summarize the cumulative incidence in the 1) raw data (separately for male/female), 2) aggregated data at monthly level, 3) Different functional parametric forms.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dta_dt <span class="ot">=</span> dta <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">ceiling</span>(time <span class="sc">/</span> <span class="dv">30</span>)) <span class="sc">%&gt;%</span> <span class="co"># 30-day increments</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">do</span>({</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">id =</span> .<span class="sc">$</span>inst,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">period =</span> <span class="dv">1</span><span class="sc">:</span>.<span class="sc">$</span>period,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">event=</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">0</span>, .<span class="sc">$</span>period <span class="sc">-</span> <span class="dv">1</span>), .<span class="sc">$</span>status),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">gender =</span> .<span class="sc">$</span>sex,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">age =</span> .<span class="sc">$</span>age)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  ungroup</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="troubleshooting-your-own-project" class="level2">
-<h2 class="anchored" data-anchor-id="troubleshooting-your-own-project">Troubleshooting your own project</h2>
-<p>For those having issues with their own CCW projects. I recommend that you download the synthetic data for this project, found here: <a href="https://github.com/kmcconeghy/ccwtutorial/blob/main/dta/dta_cloned_panel.Rds">Example Data</a>. Then follow the CCW code: <a href="../qmd/ccw_00_summ.html">Clone-Censor-Weight</a> and see if you can replicate my results. Once you can do that, compare the data, modeling and weighting steps to your own project and try to find where differences are.</p>
-<p>For developments notes see <a href="../qmd/about.html">About</a>.</p>
-<div id="refs" role="list">
-
+<section id="candidate-models" class="level2">
+<h2 class="anchored" data-anchor-id="candidate-models">Candidate models</h2>
+<p>A series of candidate models are evaluated, 1) logit, cloglog and probit, 2) saturated (different intercept for each time period), polynomial (2, and 3), splines (linear, cubic).</p>
+<p>A function, <code>est_cuminc</code> is defined that will be used to efficiently cycle through each model specification.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>est_cuminc <span class="ot">=</span> <span class="cf">function</span>(family, timefunc, <span class="at">dta=</span>dta_dt) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  mod <span class="ot">=</span> <span class="fu">glm</span>(timefunc, <span class="at">family =</span> family, <span class="at">data =</span> dta)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  dta<span class="sc">$</span>p_1 <span class="ot">=</span> <span class="fu">predict</span>(mod, <span class="at">type =</span> <span class="st">'response'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  dta_summ <span class="ot">=</span> dta <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(period) <span class="sc">%&gt;%</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarize</span>(<span class="at">p_ev =</span> <span class="fu">mean</span>(p_1), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">p_s =</span> <span class="fu">cumprod</span>(<span class="dv">1</span><span class="sc">-</span>p_ev),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">p_inc =</span> <span class="dv">1</span> <span class="sc">-</span> p_s)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(dta_summ)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># candidate families </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>i_fams <span class="ot">=</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">logit</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'logit'</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">cloglog</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'cloglog'</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">probit</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'probit'</span>))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>i_form <span class="ot">=</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">factor</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> <span class="fu">factor</span>(period)),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">quadratic</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> <span class="fu">poly</span>(period, <span class="dv">2</span>)),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">cubic</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> <span class="fu">poly</span>(period, <span class="dv">3</span>)),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">cubic spline</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> splines<span class="sc">::</span><span class="fu">bs</span>(period, <span class="at">df=</span><span class="dv">6</span>, <span class="at">degree=</span><span class="dv">3</span>)),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">quad spline</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> splines<span class="sc">::</span><span class="fu">bs</span>(period, <span class="at">df=</span><span class="dv">6</span>, <span class="at">degree=</span><span class="dv">2</span>)),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">`</span><span class="at">linear spline</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">as.formula</span>(event <span class="sc">~</span> splines<span class="sc">::</span><span class="fu">bs</span>(period, <span class="at">df=</span><span class="dv">6</span>, <span class="at">degree=</span><span class="dv">1</span>)))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>              </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># tibble of combinations of model choices</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>d_mods <span class="ot">=</span> <span class="fu">crossing</span>(<span class="at">family =</span> i_fams, <span class="at">formula =</span> i_form)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># loop through all</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>d_mods<span class="sc">$</span>cuminc <span class="ot">=</span> <span class="fu">pmap</span>(<span class="at">.l =</span> <span class="fu">list</span>(d_mods<span class="sc">$</span>family, d_mods<span class="sc">$</span>formula), est_cuminc)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># KM comparator</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>km <span class="ot">&lt;-</span> <span class="fu">survfit</span>(<span class="fu">Surv</span>(time, status) <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> lung)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>km_cuminc <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">time =</span> km<span class="sc">$</span>time,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">period =</span> <span class="fu">ceiling</span>(time <span class="sc">/</span> <span class="dv">30</span>), <span class="co"># 30-day increments</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_s =</span> km<span class="sc">$</span>surv,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_e =</span> <span class="dv">1</span> <span class="sc">-</span> p_s</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(period) <span class="sc">%&gt;%</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">filter</span>(time <span class="sc">==</span> <span class="fu">max</span>(time)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>ungroup</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-performance" class="level2">
+<h2 class="anchored" data-anchor-id="model-performance">Model performance</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rmse <span class="ot">=</span> <span class="cf">function</span>(pred, truth) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>(<span class="fu">mean</span>((pred <span class="sc">-</span> truth)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>d_mods<span class="sc">$</span>dta_jn <span class="ot">=</span> <span class="fu">map</span>(d_mods<span class="sc">$</span>cuminc, <span class="sc">~</span><span class="fu">inner_join</span>(., km_cuminc, <span class="at">by =</span> <span class="fu">join_by</span>(period <span class="sc">==</span> period)))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>d_mods<span class="sc">$</span>rmse <span class="ot">=</span> <span class="fu">map</span>(d_mods<span class="sc">$</span>dta_jn, <span class="sc">~</span><span class="fu">rmse</span>(.<span class="sc">$</span>p_inc, .<span class="sc">$</span>p_e))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rmse_results <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">family =</span> <span class="fu">names</span>(d_mods<span class="sc">$</span>family),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">time =</span> <span class="fu">names</span>(d_mods<span class="sc">$</span>formula),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">rmse =</span> <span class="fu">unlist</span>(d_mods<span class="sc">$</span>rmse))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>rmse_results <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rmse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 18 × 3
+   family  time             rmse
+   &lt;chr&gt;   &lt;chr&gt;           &lt;dbl&gt;
+ 1 probit  factor        0.00460
+ 2 cloglog factor        0.00460
+ 3 logit   factor        0.00460
+ 4 probit  cubic spline  0.0104 
+ 5 logit   cubic spline  0.0104 
+ 6 cloglog cubic spline  0.0104 
+ 7 probit  quad spline   0.0110 
+ 8 logit   quad spline   0.0110 
+ 9 cloglog quad spline   0.0110 
+10 cloglog linear spline 0.0113 
+11 logit   linear spline 0.0113 
+12 probit  linear spline 0.0113 
+13 probit  cubic         0.0131 
+14 logit   cubic         0.0132 
+15 cloglog cubic         0.0132 
+16 probit  quadratic     0.0133 
+17 logit   quadratic     0.0135 
+18 cloglog quadratic     0.0135 </code></pre>
+</div>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -710,15 +875,6 @@ div.csl-indent {
     }
   });
   </script>
-<nav class="page-navigation">
-  <div class="nav-page nav-page-previous">
-  </div>
-  <div class="nav-page nav-page-next">
-      <a href="../qmd/surv_00_summ.html" class="pagination-link" aria-label="Survival Analysis Background">
-        <span class="nav-page-text">Survival Analysis Background</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
-  </div>
-</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
@@ -727,7 +883,7 @@ div.csl-indent {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/kmcconeghy/ccwtutorial/edit/main/qmd/app_04_curvefit.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/kmcconeghy/ccwtutorial/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page built with <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

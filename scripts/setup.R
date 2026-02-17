@@ -2,8 +2,8 @@
 
   pkg_toload <- c('tidyverse', 'dplyr', 'tidyr', 'stringr',
                   'lubridate', 'here', 'knitr', 'kableExtra', 'quarto',
-                  'survival', 'future', 'progressr', 
-                  'ggpubr', 'survminer', 'purrr', 'furrr',
+                  'survival', 'future', 'progressr', 'ggsurvfit',
+                  'ggpubr', 'purrr', 'furrr',
                   'data.table', 'parglm', 'gtsummary')
   
   hold_del <- sapply(pkg_toload, require, 

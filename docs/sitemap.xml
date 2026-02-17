@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/surv_02_disctime.html</loc>
-    <lastmod>2026-01-14T19:28:24.052Z</lastmod>
+    <lastmod>2026-02-13T17:20:40.611Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/surv_00_summ.html</loc>
@@ -10,39 +10,43 @@
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/index.html</loc>
-    <lastmod>2026-01-05T15:57:47.479Z</lastmod>
+    <lastmod>2026-02-13T16:37:57.460Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/ccw_04_diag.html</loc>
-    <lastmod>2026-01-16T17:24:36.618Z</lastmod>
+    <lastmod>2026-02-13T17:18:43.280Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/ccw_02_est.html</loc>
-    <lastmod>2026-01-16T17:25:33.606Z</lastmod>
+    <lastmod>2026-02-13T17:03:16.160Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/ccw_00_summ.html</loc>
     <lastmod>2026-01-12T15:41:18.766Z</lastmod>
   </url>
   <url>
-    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_02_boot.html</loc>
-    <lastmod>2026-01-05T19:47:25.099Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_00_summ.html</loc>
-    <lastmod>2025-12-22T19:47:23.374Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/about.html</loc>
-    <lastmod>2026-01-12T15:46:44.773Z</lastmod>
+    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_03_speed.html</loc>
+    <lastmod>2025-12-23T16:04:44.710Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_01_syndata.html</loc>
     <lastmod>2026-01-02T17:22:45.362Z</lastmod>
   </url>
   <url>
-    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_03_speed.html</loc>
-    <lastmod>2025-12-23T16:04:44.710Z</lastmod>
+    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/about.html</loc>
+    <lastmod>2026-01-12T15:46:44.773Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_00_summ.html</loc>
+    <lastmod>2025-12-22T19:47:23.374Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_02_boot.html</loc>
+    <lastmod>2026-01-05T19:47:25.099Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/app_04_curvefit.html</loc>
+    <lastmod>2026-02-17T18:43:57.214Z</lastmod>
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/ccw_01_intro.html</loc>
@@ -62,6 +66,6 @@
   </url>
   <url>
     <loc>https://kmcconeghy.github.io/ccwtutorial/qmd/qmd/surv_01_kaplan.html</loc>
-    <lastmod>2025-12-23T18:42:48.189Z</lastmod>
+    <lastmod>2026-02-13T17:20:19.464Z</lastmod>
   </url>
 </urlset>

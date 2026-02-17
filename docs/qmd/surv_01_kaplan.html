@@ -425,22 +425,15 @@ $ age       &lt;dbl&gt; 70.0, 70.0, 76.3, 76.3, 74.2, 74.2, 83.9, 83.9, 76.2, 76
 <h2 class="anchored" data-anchor-id="summarize-km-estimator">Summarize KM estimator</h2>
 <p>The KM estimator is usually presented in figures of cumulative incidence or event-free survival probability. Often the figure is combined with tables to illustrate follow-up, events or censoring across time.</p>
 <div class="cell fig-cap-location-top">
-<div class="sourceCode cell-code" id="cb2" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">ggsurvplot</span>(<span class="fu">survfit</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign, <span class="at">data=</span>dta_c_person),</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">data=</span>dta_c_person,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">fun =</span> <span class="st">'event'</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">60</span>),</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                            <span class="at">xlab =</span> <span class="st">'Follow-up'</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                            <span class="at">break.time.by=</span><span class="dv">6</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">palette =</span> cbbPalette,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">linetype =</span> <span class="st">'strata'</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">censor=</span>F,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">cumevents=</span>T,</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">conf.int=</span>F, <span class="at">pval=</span>F,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">risk.table=</span>T, <span class="at">risk.table.col =</span> <span class="st">'strata'</span>,</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">risk.table.height=</span><span class="fl">0.25</span>, </span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">ggtheme =</span> <span class="fu">theme_bw</span>())</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>d_gg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2" data-cap-location="top"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_gg <span class="ot">=</span> <span class="fu">survfit2</span>(<span class="fu">Surv</span>(time, event) <span class="sc">~</span> assign, <span class="at">data=</span>dta_c_person) <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggsurvfit</span>(<span class="at">type =</span> <span class="st">'risk'</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_risktable</span>(<span class="at">risktable_stats =</span> <span class="st">"{n.risk} ({cum.event})"</span>) <span class="sc">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_ggsurvfit</span>(<span class="at">x_scales =</span> <span class="fu">list</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">60</span>, <span class="dv">10</span>)),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">y_scales =</span> <span class="fu">list</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))) <span class="sc">+</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> cbbPalette) <span class="sc">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Follow-up'</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>d_gg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">

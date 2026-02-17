@@ -18,10 +18,6 @@ set.seed(42)
 #increase size for bootstrapping procedure
   options(future.globals.maxSize = 4000*1024^2) 
 
-  grid.draw.ggsurvplot = function(x) {
-    survminer:::print.ggsurvplot(x, newpage=F)
-  }
-
 dta_c_panel = readRDS(here('dta', 'dta_cloned_panel.Rds')) 
 
 dta_c_person = readRDS(here('dta', 'dta_cloned_person.Rds')) 
@@ -99,20 +95,14 @@ The [Kaplan-Meier Estimator](surv_01_kaplan.qmd) section provides a working exam
   
 d_mods =  nest(dta_c_person, c(-model)) %>%
   mutate(est_km = map(.x = data, .f = ~f_km_cuminc(.))) %>%
-  mutate(km_gg = map(.x = data, ~ggsurvplot(survfit(Surv(time, event) ~ assign, data=.),
-                            data=.,
-                            fun = 'event',
-                            xlim = c(1, 60),
-                            xlab = 'Follow-up',
-                            break.time.by=6,
-                            palette = cbbPalette,
-                            linetype = 'strata',
-                            censor=F,
-                            cumevents=T,
-                            conf.int=F, pval=F,
-                            risk.table=T, risk.table.col = 'strata',
-                            risk.table.height=0.25, 
-                            ggtheme = theme_bw())))
+  mutate(km_gg = map(.x = data, ~survfit2(Surv(time, event) ~ assign, data=.) |>
+                       ggsurvfit(type = 'risk', linewidth = 1) +
+                       add_risktable(risktable_stats = "{n.risk} ({cum.event})") +
+                      scale_ggsurvfit(x_scales = list(breaks = seq(0, 60, 10)), 
+                                     y_scales = list(limits = c(0, 1))) +
+                       scale_color_manual(values = cbbPalette) +
+                       labs(x = 'Follow-up'))
+         )
 
 d_mods$km_gg[[1]] # A-> Y
 
@@ -223,6 +213,10 @@ So the PLR model using a simple polynomial approximates the KM estimator reasona
 ::: callout-note
 Note the outcome regression without weights is just for comparison and understanding, the final analysis must include probability weights for artificial censoring even if no confounding.
 :::
+
+#### Objective evaluation of the function of time  
+
+A subjective visual examination to determine the best functional form may be unappealing to some, but you could also compare different curves and rank them by bias/error relative to non-parametric. In [Fitting cumulative incidence curves](app_04_curvefit.qmd) I show how this can be done. 
 
 ## Evaluation of Probability Weights {#sec-ipwdiag}
 

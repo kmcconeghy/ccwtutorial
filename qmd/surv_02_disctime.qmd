@@ -349,8 +349,6 @@ t_summ_all = kables(caption = 'X causes {A, Y}, A causes Y',
 t_summ_all
 ```
 
-
-
 # References
 
 ::: {#refs}

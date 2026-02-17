@@ -16,7 +16,7 @@ CCW is popular in the pharmacoepidemiology field, but its execution can be trick
 
 2. [Clone-Censor-Weight](ccw_00_summ.qmd). The primary section of this website is the stepwise guide on how to do a CCW analysis. This includes: [background discussion](ccw_01_intro.qmd), [estimation](ccw_02_est.qmd), [inference](ccw_03_inf.qmd) and [diagnostics/validation](ccw_04_diag.qmd).
 
-3. [Appendix](app_00_summ.qmd): Additional sections include a description of the [synthetic data](app_01_syndata.qmd), [bootstrapping](app_02_boot.qmd), [computation](app_03_speed.qmd) notes and some related methods.
+3. [Appendix](app_00_summ.qmd): Additional sections include a description of the [synthetic data](app_01_syndata.qmd), [bootstrapping](app_02_boot.qmd), [computation](app_03_speed.qmd) notes and some related methods. [Fitting time-curves](app_04_curvefit.qmd) provides some advanced methods to determine the best-fitting parametric functions for a cumulative incidence curve. 
 
 ## Background reading {#reading}
 
